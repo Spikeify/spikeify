@@ -1,5 +1,6 @@
 package com.spikeify;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Map;
@@ -21,6 +22,12 @@ public class PropertiesTest {
 		ClassMapper mapper = new ClassMapper(EntityOne.class);
 		Map<String, Object> props = mapper.getProperties(entity);
 
-		System.out.println();
+		Assert.assertEquals(123, props.get("one"));
+		Assert.assertEquals("a test", props.get("two"));
+		Assert.assertEquals(123.0d, props.get("three"));
+		Assert.assertEquals(123.0f, props.get("four"));
+		Assert.assertEquals((short) 234, props.get("five"));
+		Assert.assertEquals((byte) 100, props.get("six"));
+		Assert.assertFalse(props.containsKey("ignore"));
 	}
 }
