@@ -7,9 +7,13 @@ public class ValueConverter<TYPE> implements Converter<TYPE, TYPE> {
 	public boolean canConvert(Class type) {
 		return
 				Integer.class.isAssignableFrom(type) ||
+				int.class.isAssignableFrom(type) ||
 				Long.class.isAssignableFrom(type) ||
+				long.class.isAssignableFrom(type) ||
 				Float.class.isAssignableFrom(type) ||
+				float.class.isAssignableFrom(type) ||
 				Double.class.isAssignableFrom(type) ||
+				double.class.isAssignableFrom(type) ||
 				String.class.isAssignableFrom(type);
 	}
 

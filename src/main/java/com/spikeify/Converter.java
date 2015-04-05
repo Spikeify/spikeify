@@ -4,7 +4,7 @@ import com.aerospike.client.Value;
 
 import java.lang.reflect.Type;
 
-public interface  Converter<FIELD, PROPERTY> {
+public interface Converter<FIELD, PROPERTY> {
 
 	boolean canConvert(Class type);
 

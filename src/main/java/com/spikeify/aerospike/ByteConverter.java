@@ -7,7 +7,7 @@ import java.lang.reflect.Type;
 public class ByteConverter implements Converter<Byte, Integer> {
 
 	public boolean canConvert(Class type) {
-		return Byte.class.isAssignableFrom(type);
+		return Byte.class.isAssignableFrom(type) || byte.class.isAssignableFrom(type);
 	}
 
 	public Byte fromProperty(Integer property) {

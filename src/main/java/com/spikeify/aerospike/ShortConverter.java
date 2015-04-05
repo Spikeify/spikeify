@@ -6,7 +6,7 @@ import com.spikeify.Converter;
 public class ShortConverter implements Converter<Short, Integer> {
 
 	public boolean canConvert(Class type) {
-		return Short.class.isAssignableFrom(type);
+		return Short.class.isAssignableFrom(type) || short.class.isAssignableFrom(type);
 	}
 
 	public Short fromProperty(Integer property) {
