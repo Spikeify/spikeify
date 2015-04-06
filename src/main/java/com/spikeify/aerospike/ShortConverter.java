@@ -3,18 +3,18 @@ package com.spikeify.aerospike;
 import com.aerospike.client.Record;
 import com.spikeify.Converter;
 
-public class ShortConverter implements Converter<Short, Integer> {
+public class ShortConverter implements Converter<Short, Long> {
 
 	public boolean canConvert(Class type) {
 		return Short.class.isAssignableFrom(type) || short.class.isAssignableFrom(type);
 	}
 
-	public Short fromProperty(Integer property) {
+	public Short fromProperty(Long property) {
 		return property.shortValue();
 	}
 
-	public Integer fromField(Short fieldValue) {
-		return Integer.valueOf(fieldValue);
+	public Long fromField(Short fieldValue) {
+		return Long.valueOf(fieldValue);
 	}
 
 }

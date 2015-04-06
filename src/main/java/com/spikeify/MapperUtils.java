@@ -14,15 +14,18 @@ public class MapperUtils {
 	private static final int IGNORED_FIELD_MODIFIERS = Modifier.FINAL | Modifier.STATIC;
 
 	private static List<? extends Converter> converters = Arrays.asList(
-			new NoopConverter(),
+			new StringConverter(),
+			new IntegerConverter(),
+			new FloatConverter(),
+			new DoubleConverter(),
 			new ByteConverter(),
 			new DateConverter(),
 			new ShortConverter(),
 			new ByteArrayConverter());
 
-	public static Converter findConverter(Class type) {
+	public static Converter findConverter(Class fieldType) {
 		for (Converter converter : converters) {
-			if (converter.canConvert(type)) {
+			if (converter.canConvert(fieldType)) {
 				return converter;
 			}
 		}
@@ -44,7 +47,7 @@ public class MapperUtils {
 			}
 
 			if (mappableField(field)) {
-				mappers.add(new FieldMapper(field.getName(), fieldType, fieldConverter, field));
+				mappers.add(new FieldMapper(field.getName(), fieldConverter, field));
 			}
 
 		}
@@ -57,7 +60,7 @@ public class MapperUtils {
 			if (field.getAnnotation(Generation.class) != null) {
 				Class fieldType = field.getType();
 				if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
-					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
 					throw new IllegalStateException("Error: field marked with @Generation must be of type int or Integer.");
 				}
@@ -71,7 +74,7 @@ public class MapperUtils {
 			if (field.getAnnotation(Expiration.class) != null) {
 				Class fieldType = field.getType();
 				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
-					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
 					throw new IllegalStateException("Error: field marked with @Expiration must be of type long or Long.");
 				}
@@ -85,7 +88,7 @@ public class MapperUtils {
 			if (field.getAnnotation(Namespace.class) != null) {
 				Class fieldType = field.getType();
 				if (String.class.equals(fieldType)) {
-					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
 					throw new IllegalStateException("Error: field marked with @Namespace must be of type String.");
 				}
@@ -99,7 +102,7 @@ public class MapperUtils {
 			if (field.getAnnotation(SetName.class) != null) {
 				Class fieldType = field.getType();
 				if (String.class.equals(fieldType)) {
-					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
 					throw new IllegalStateException("Error: field marked with @SetName must be of type String.");
 				}

@@ -6,7 +6,7 @@ import com.aerospike.client.async.AsyncClient;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class SpikeifyImpl implements Spikeify {
+public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	public SpikeifyImpl(AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor) {
 		this.synClient = synClient;
@@ -22,8 +22,9 @@ public class SpikeifyImpl implements Spikeify {
 
 	private static ThreadLocal<Map<Object/*mapped object*/, Map<String, Object>/*record props*/>> loadedRecordsCache;
 
-	public Loader load() {
-		return new Loader(synClient, asyncClient, classConstructor);
+	@Override
+	public Loader<?> load() {
+		return new Loader<>(synClient, asyncClient, classConstructor);
 	}
 
 	public Updater insert() {

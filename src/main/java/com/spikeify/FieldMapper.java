@@ -4,11 +4,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
-public class FieldMapper<PROP_TYPE> {
+public class FieldMapper<F,P> {
 
-	public FieldMapper(String propName, Class<PROP_TYPE> propType, Converter converter, Field field) {
+	public FieldMapper(String propName, Converter<F,P> converter, Field field) {
 		this.propName = propName;
-		this.propType = propType;
 		this.converter = converter;
 		this.field = field;
 
@@ -22,27 +21,28 @@ public class FieldMapper<PROP_TYPE> {
 		}
 	}
 
-	public PROP_TYPE getPropertyValue(Object object) {
+	public P getPropertyValue(Object object) {
 		try {
-			return (PROP_TYPE) field.get(object);
+			F fieldValue = (F) field.get(object);
+			return converter.fromField(fieldValue);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e); //todo nicer error
 		}
 	}
 
-	public void setFieldValue(Object targetObject, PROP_TYPE propertyValue) {
+	public void setFieldValue(Object targetObject, P propertyValue) {
 		try {
-			field.set(targetObject, propertyValue);
+			field.set(targetObject, converter.fromProperty(propertyValue));
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e); //todo nicer error
 		}
 	}
 
 	public String propName;
-	public Class propType;
+//	public Class<P> propType;
+	public Converter<F,P> converter;
 
-	public Converter converter;
-
+//	public Class<F> fieldType;
 	public Field field;
 	public MethodHandle getter;
 	public MethodHandle setter;

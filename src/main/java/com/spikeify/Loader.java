@@ -19,6 +19,19 @@ public class Loader<T> implements Command<T> {
 	private ClassMapper<T> mapper;
 	private Class<T> type;
 
+	public Loader(Class<T> type, Loader<?> loader) {
+		this.namespace = loader.namespace;
+		this.setName = loader.setName;
+		this.stringKey = loader.stringKey;
+		this.longKey = loader.longKey;
+		this.asyncClient = loader.asyncClient;
+		this.synCLient = loader.synCLient;
+		this.classConstructor = loader.classConstructor;
+		this.readPolicy = loader.readPolicy;
+		this.mapper = MapperService.getMapper(type);
+		this.type = type;
+	}
+
 	public Loader(AerospikeClient synCLient, AsyncClient asyncClient, ClassConstructor classConstructor) {
 		this.synCLient = synCLient;
 		this.asyncClient = asyncClient;
@@ -27,35 +40,33 @@ public class Loader<T> implements Command<T> {
 		this.readPolicy.sendKey = true;
 	}
 
-	public Loader type(Class<T> type) {
-		this.type = type;
-		mapper = MapperService.getMapper(type);
-		return this;
+	public <E> Loader<E> type(Class<E> type) {
+		return new Loader<>(type, this);
 	}
 
-	public Loader namespace(String namespace) {
+	public Loader<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public Loader set(String setName) {
+	public Loader<T> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public Loader key(String key) {
+	public Loader<T> key(String key) {
 		this.stringKey = key;
 		this.longKey = null;
 		return this;
 	}
 
-	public Loader key(long key) {
+	public Loader<T> key(long key) {
 		this.longKey = key;
 		this.stringKey = null;
 		return this;
 	}
 
-	public Loader policy(Policy readPolicy) {
+	public Loader<T> policy(Policy readPolicy) {
 		this.readPolicy = readPolicy;
 		this.readPolicy.sendKey = true;
 		return this;
@@ -65,6 +76,10 @@ public class Loader<T> implements Command<T> {
 
 		Key key;
 		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
+		if (namespace == null) {
+			throw new IllegalStateException("Namespace not set.");
+		}
+
 		String useSetName = setName != null ? setName : mapper.getSetName();
 		if (stringKey != null) {
 			key = new Key(useNamespace, useSetName, stringKey);

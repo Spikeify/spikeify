@@ -2,13 +2,13 @@ package com.spikeify;
 
 public interface Spikeify {
 
-	Loader load();
+	Loader<?> load();
 
-	Updater insert();
+	Updater<?> insert();
 
-	Updater update();
+	Updater<?> update();
 
-	Deleter delete();
+	Deleter<?> delete();
 
-	<R> R transact(Work<R> work);
+//	<R> R transact(Work<R> work);
 }
