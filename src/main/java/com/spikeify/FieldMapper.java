@@ -26,7 +26,7 @@ public class FieldMapper<PROP_TYPE> {
 		try {
 			return (PROP_TYPE) field.get(object);
 		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e); //todo nice error
+			throw new IllegalStateException(e); //todo nicer error
 		}
 	}
 
@@ -34,7 +34,7 @@ public class FieldMapper<PROP_TYPE> {
 		try {
 			field.set(targetObject, propertyValue);
 		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e); //todo nice error
+			throw new IllegalStateException(e); //todo nicer error
 		}
 	}
 

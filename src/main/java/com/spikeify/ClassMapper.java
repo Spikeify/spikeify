@@ -12,21 +12,10 @@ public class ClassMapper<TYPE> {
 
 	public ClassMapper(Class<TYPE> clazz) {
 		this.type = clazz;
-
 		mappers = MapperUtils.getFieldMappers(clazz);
-
-//		for (FieldMapper mapper : MapperUtils.getFieldMappers(clazz)) {
-//			fieldMappings.put(mapper.field, mapper);
-//			propertyMappings.put(mapper.propName, mapper);
-//		}
-
 	}
 
 	private Type type;
-
-//	private Map<Field, FieldMapper> fieldMappings = new HashMap<Field, FieldMapper>();
-
-//	private Map<String, FieldMapper> propertyMappings = new HashMap<String, FieldMapper>();
 
 	public Map<String, Object> getProperties(TYPE object) {
 

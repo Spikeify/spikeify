@@ -2,10 +2,10 @@ package com.spikeify.aerospike;
 
 import com.spikeify.Converter;
 
-public class ValueConverter<TYPE> implements Converter<TYPE, TYPE> {
+public class NoopConverter<TYPE> implements Converter<TYPE, TYPE> {
 
 	public boolean canConvert(Class type) {
-		return
+		return String.class.isAssignableFrom(type) ||
 				Integer.class.isAssignableFrom(type) ||
 				int.class.isAssignableFrom(type) ||
 				Long.class.isAssignableFrom(type) ||
@@ -13,8 +13,7 @@ public class ValueConverter<TYPE> implements Converter<TYPE, TYPE> {
 				Float.class.isAssignableFrom(type) ||
 				float.class.isAssignableFrom(type) ||
 				Double.class.isAssignableFrom(type) ||
-				double.class.isAssignableFrom(type) ||
-				String.class.isAssignableFrom(type);
+				double.class.isAssignableFrom(type);
 	}
 
 	public TYPE fromProperty(TYPE property) {

@@ -3,6 +3,7 @@ package com.spikeify;
 import com.spikeify.aerospike.*;
 import com.spikeify.annotations.Ignore;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ public class MapperUtils {
 	private static final int IGNORED_FIELD_MODIFIERS = Modifier.FINAL | Modifier.STATIC;
 
 	private static List<? extends Converter> converters = Arrays.asList(
-			new ValueConverter(),
+			new NoopConverter(),
 			new ByteConverter(),
 			new DateConverter(),
 			new ShortConverter(),
@@ -35,7 +36,7 @@ public class MapperUtils {
 
 		for (Field field : clazz.getDeclaredFields()) {
 
-			Class<?> fieldType = field.getType();
+			Class fieldType = field.getType();
 			Converter fieldConverter = findConverter(fieldType);
 
 			if (fieldConverter == null) {
@@ -61,4 +62,5 @@ public class MapperUtils {
 				&& (field.getModifiers() & IGNORED_FIELD_MODIFIERS) == 0
 				&& !field.isSynthetic();
 	}
+
 }
