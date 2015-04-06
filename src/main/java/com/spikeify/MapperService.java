@@ -7,10 +7,10 @@ public class MapperService {
 
 	private static Map<Class, ClassMapper> classMappers = new ConcurrentHashMap<Class, ClassMapper>();
 
-	public static <T> ClassMapper<T> getMapper(Class<T> clazz){
+	public static <T> ClassMapper<T> getMapper(Class<T> clazz) {
 
 		ClassMapper<T> classMapper = classMappers.get(clazz);
-		if(classMapper==null){
+		if (classMapper == null) {
 			classMapper = new ClassMapper<T>(clazz);
 			classMappers.put(clazz, classMapper);
 		}

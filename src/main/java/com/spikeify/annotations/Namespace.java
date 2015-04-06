@@ -6,10 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Flags a field to be ignored
+ * Flags a field that holds namespace of the Record
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
-public @interface Ignore {
+public @interface Namespace {
 }
 

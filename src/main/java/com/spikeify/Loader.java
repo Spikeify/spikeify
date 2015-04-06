@@ -12,11 +12,12 @@ public class Loader<T> implements Command<T> {
 	private String setName;
 	private String stringKey;
 	private Long longKey;
-	private Class<T> type;
 	private AerospikeClient synCLient;
 	private AsyncClient asyncClient;
 	private ClassConstructor classConstructor;
 	private Policy readPolicy;
+	private ClassMapper<T> mapper;
+	private Class<T> type;
 
 	public Loader(AerospikeClient synCLient, AsyncClient asyncClient, ClassConstructor classConstructor) {
 		this.synCLient = synCLient;
@@ -26,6 +27,7 @@ public class Loader<T> implements Command<T> {
 
 	public Loader type(Class<T> type) {
 		this.type = type;
+		mapper = MapperService.getMapper(type);
 		return this;
 	}
 
@@ -59,16 +61,17 @@ public class Loader<T> implements Command<T> {
 	public T now() {
 
 		Key key;
+		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
+		String useSetName = setName != null ? setName : mapper.getSetName();
 		if (stringKey != null) {
-			key = new Key(namespace, setName, stringKey);
+			key = new Key(useNamespace, useSetName, stringKey);
 		} else if (longKey != null) {
-			key = new Key(namespace, setName, longKey);
+			key = new Key(useNamespace, useSetName, longKey);
 		} else {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
 		Record record = synCLient.get(readPolicy, key);
-		ClassMapper<T> mapper = MapperService.getMapper(type);
-		T object  = classConstructor.construct(type);
+		T object = classConstructor.construct(type);
 
 		mapper.setFieldValues(object, record.bins);
 

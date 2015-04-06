@@ -1,6 +1,11 @@
 package com.spikeify;
 
-public class Updater {
+public class Updater<T> implements Command<T>{
 
 
+
+	@Override
+	public T now() {
+		return null;
+	}
 }
