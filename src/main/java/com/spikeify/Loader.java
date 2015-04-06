@@ -23,6 +23,8 @@ public class Loader<T> implements Command<T> {
 		this.synCLient = synCLient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
+		this.readPolicy = new Policy();
+		this.readPolicy.sendKey = true;
 	}
 
 	public Loader type(Class<T> type) {
@@ -55,6 +57,7 @@ public class Loader<T> implements Command<T> {
 
 	public Loader policy(Policy readPolicy) {
 		this.readPolicy = readPolicy;
+		this.readPolicy.sendKey = true;
 		return this;
 	}
 
@@ -72,6 +75,8 @@ public class Loader<T> implements Command<T> {
 		}
 		Record record = synCLient.get(readPolicy, key);
 		T object = classConstructor.construct(type);
+
+		mapper.setMetaFieldValues(object, useNamespace, useSetName, record.generation, record.expiration);
 
 		mapper.setFieldValues(object, record.bins);
 

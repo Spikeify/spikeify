@@ -1,9 +1,8 @@
 package com.spikeify;
 
 import com.spikeify.aerospike.*;
-import com.spikeify.annotations.Ignore;
+import com.spikeify.annotations.*;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -21,7 +20,7 @@ public class MapperUtils {
 			new ShortConverter(),
 			new ByteArrayConverter());
 
-	private static Converter findConverter(Class type) {
+	public static Converter findConverter(Class type) {
 		for (Converter converter : converters) {
 			if (converter.canConvert(type)) {
 				return converter;
@@ -51,6 +50,62 @@ public class MapperUtils {
 		}
 
 		return mappers;
+	}
+
+	public static FieldMapper getGenerationFieldMapper(Class clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(Generation.class) != null) {
+				Class fieldType = field.getType();
+				if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
+					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+				} else {
+					throw new IllegalStateException("Error: field marked with @Generation must be of type int or Integer.");
+				}
+			}
+		}
+		return null;
+	}
+
+	public static FieldMapper getExpirationFieldMapper(Class clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(Expiration.class) != null) {
+				Class fieldType = field.getType();
+				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
+					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+				} else {
+					throw new IllegalStateException("Error: field marked with @Expiration must be of type long or Long.");
+				}
+			}
+		}
+		return null;
+	}
+
+	public static FieldMapper getNamespaceFieldMapper(Class clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(Namespace.class) != null) {
+				Class fieldType = field.getType();
+				if (String.class.equals(fieldType)) {
+					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+				} else {
+					throw new IllegalStateException("Error: field marked with @Namespace must be of type String.");
+				}
+			}
+		}
+		return null;
+	}
+
+	public static FieldMapper getSetNameFieldMapper(Class clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(SetName.class) != null) {
+				Class fieldType = field.getType();
+				if (String.class.equals(fieldType)) {
+					return new FieldMapper(null, fieldType, findConverter(fieldType), field);
+				} else {
+					throw new IllegalStateException("Error: field marked with @SetName must be of type String.");
+				}
+			}
+		}
+		return null;
 	}
 
 	/**

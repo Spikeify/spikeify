@@ -15,6 +15,11 @@ public class ClassMapper<TYPE> {
 	private final String setName;
 	private final String namespace;
 
+	private final FieldMapper generationFieldMapper;
+	private final FieldMapper expirationFieldMapper;
+	private final FieldMapper namespaceFieldMapper;
+	private final FieldMapper setNameFieldMapper;
+
 	public ClassMapper(Class<TYPE> clazz) {
 		this.type = clazz;
 
@@ -26,6 +31,11 @@ public class ClassMapper<TYPE> {
 		this.namespace = "".equals(recordAnnotation.namespace()) ? null : recordAnnotation.namespace();
 
 		mappers = MapperUtils.getFieldMappers(clazz);
+
+		generationFieldMapper = MapperUtils.getGenerationFieldMapper(clazz);
+		expirationFieldMapper = MapperUtils.getExpirationFieldMapper(clazz);
+		namespaceFieldMapper = MapperUtils.getNamespaceFieldMapper(clazz);
+		setNameFieldMapper = MapperUtils.getSetNameFieldMapper(clazz);
 	}
 
 	public Type getType() {
@@ -53,6 +63,22 @@ public class ClassMapper<TYPE> {
 
 		for (FieldMapper fieldMapper : mappers) {
 			fieldMapper.setFieldValue(object, properties.get(fieldMapper.propName));
+		}
+	}
+
+	public void setMetaFieldValues(TYPE object, String namespace, String setName, int generation, long expiration) {
+
+		if (generationFieldMapper != null) {
+			generationFieldMapper.setFieldValue(object, generation);
+		}
+		if (expirationFieldMapper != null) {
+			expirationFieldMapper.setFieldValue(object, expiration);
+		}
+		if (namespaceFieldMapper != null) {
+			namespaceFieldMapper.setFieldValue(object, namespace);
+		}
+		if (setNameFieldMapper != null) {
+			setNameFieldMapper.setFieldValue(object, setName);
 		}
 	}
 
