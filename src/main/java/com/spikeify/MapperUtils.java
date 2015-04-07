@@ -1,7 +1,7 @@
 package com.spikeify;
 
-import com.spikeify.converters.*;
 import com.spikeify.annotations.*;
+import com.spikeify.converters.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -122,4 +122,17 @@ public class MapperUtils {
 				&& !field.isSynthetic();
 	}
 
+	public static <TYPE> FieldMapper getKeyFieldMapper(Class<TYPE> clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(UserKey.class) != null) {
+				Class fieldType = field.getType();
+				if (String.class.equals(fieldType) || Long.class.equals(fieldType) || long.class.equals(fieldType)) {
+					return new FieldMapper(null, findConverter(fieldType), field);
+				} else {
+					throw new IllegalStateException("Error: field marked with @UserKey must be of type String, Long or long.");
+				}
+			}
+		}
+		return null;
+	}
 }

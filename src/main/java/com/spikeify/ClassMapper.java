@@ -19,6 +19,7 @@ public class ClassMapper<TYPE> {
 	private final FieldMapper<Long, Long> expirationFieldMapper;
 	private final FieldMapper<String, String> namespaceFieldMapper;
 	private final FieldMapper<String, String> setNameFieldMapper;
+	private final FieldMapper userKeyFieldMapper;
 
 	public ClassMapper(Class<TYPE> clazz) {
 		this.type = clazz;
@@ -36,6 +37,7 @@ public class ClassMapper<TYPE> {
 		expirationFieldMapper = MapperUtils.getExpirationFieldMapper(clazz);
 		namespaceFieldMapper = MapperUtils.getNamespaceFieldMapper(clazz);
 		setNameFieldMapper = MapperUtils.getSetNameFieldMapper(clazz);
+		userKeyFieldMapper = MapperUtils.getKeyFieldMapper(clazz);
 	}
 
 	public Type getType() {
@@ -92,10 +94,10 @@ public class ClassMapper<TYPE> {
 		return expirationFieldMapper.getPropertyValue(object);
 	}
 
-	public Long getId(TYPE object) {
-		if (expirationFieldMapper == null) {
+	public Object getUserKey(Object object) {
+		if (userKeyFieldMapper == null) {
 			return null;
 		}
-		return expirationFieldMapper.getPropertyValue(object);
+		return userKeyFieldMapper.getPropertyValue(object);
 	}
 }

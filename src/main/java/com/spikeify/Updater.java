@@ -3,7 +3,9 @@ package com.spikeify;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
+import com.aerospike.client.Value;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 
 import java.lang.reflect.ParameterizedType;
@@ -14,14 +16,14 @@ public class Updater<T>{
 
 	private final T object;
 
-	public Updater(Class type, T object, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor) {
+	public Updater(Class type, T object, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor, boolean create) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
+		this.create = create;
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
-//		this.type = type;
 		this.object = object;
 	}
 
@@ -32,9 +34,9 @@ public class Updater<T>{
 	protected AerospikeClient synClient;
 	protected AsyncClient asyncClient;
 	protected ClassConstructor classConstructor;
+	private final boolean create;
 	protected WritePolicy policy;
 	protected ClassMapper<T> mapper;
-//	protected Class<T> type;
 
 	public Updater<T> namespace(String namespace) {
 		this.namespace = namespace;
@@ -58,9 +60,28 @@ public class Updater<T>{
 		return this;
 	}
 
+	public Updater<T> key(Key key) {
+		this.namespace = key.namespace;
+		this.setName = key.setName;
+		Value userKey = key.userKey;
+		if (userKey instanceof Value.StringValue) {
+			this.stringKey = ((Value.StringValue) userKey).toString();
+		} else if (userKey instanceof Value.LongValue) {
+			this.longKey = ((Value.LongValue) userKey).toLong();
+		} else {
+			throw  new IllegalStateException("Spikeify only supports Keys created from String and Long.");
+		}
+		return this;
+	}
+
 	public Updater<T> policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
+		if(create){
+			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+		} else {
+			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
+		}
 		return this;
 	}
 

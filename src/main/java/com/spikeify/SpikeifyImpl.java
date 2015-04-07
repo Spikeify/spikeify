@@ -30,17 +30,17 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public <T> Updater<T> insert(T object) {
-		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor);
+	public <T> Updater<T> create(T object) {
+		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor, true);
 	}
 
 	@Override
 	public <T> Updater<T> update(T object) {
-		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor);
+		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor, false);
 	}
 
 	public Deleter delete() {
-		return null;
+		return new Deleter<>(synClient, asyncClient);
 	}
 
 	public <R> R transact(Work<R> work) {

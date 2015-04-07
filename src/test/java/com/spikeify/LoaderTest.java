@@ -3,7 +3,6 @@ package com.spikeify;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
-import com.aerospike.client.Record;
 import com.aerospike.client.policy.WritePolicy;
 import org.junit.Assert;
 import org.junit.Before;
@@ -13,12 +12,11 @@ import java.util.Random;
 
 public class LoaderTest {
 
-	private Long userKey;
+	private Long userKey = new Random().nextLong();
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
-		userKey = new Random().nextLong();
 	}
 
 	@Test

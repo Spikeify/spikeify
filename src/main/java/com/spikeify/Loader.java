@@ -3,6 +3,7 @@ package com.spikeify;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
+import com.aerospike.client.Value;
 import com.aerospike.client.async.AsyncClient;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
@@ -49,6 +50,20 @@ public class Loader<T>{
 	public Loader<T> key(long key) {
 		this.longKey = key;
 		this.stringKey = null;
+		return this;
+	}
+
+	public Loader<T> key(Key key) {
+		this.namespace = key.namespace;
+		this.setName = key.setName;
+		Value userKey = key.userKey;
+		if (userKey instanceof Value.StringValue) {
+			this.stringKey = ((Value.StringValue) userKey).toString();
+		} else if (userKey instanceof Value.LongValue) {
+			this.longKey = ((Value.LongValue) userKey).toLong();
+		} else {
+			throw  new IllegalStateException("Spikeify only supports Keys created from String and Long.");
+		}
 		return this;
 	}
 

@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import java.util.Random;
 
-public class UpdaterTest {
+public class DeleterTest {
 
 	private Long userKey = new Random().nextLong();
 	private String namespace = "test";
@@ -22,17 +22,10 @@ public class UpdaterTest {
 		SpikeifyService.globalConfig("localhost", 3000);
 	}
 
-	@After
-	public void dbCleanup() {
-		Key deleteKey = new Key(namespace, setName, userKey);
-		SpikeifyService.sfy().delete().key(deleteKey).now();
-	}
-
 	@Test
-	public void saveProperties() {
+	public void deleteRecord() {
 
 		EntityOne entity = new EntityOne();
-
 		entity.one = 123;
 		entity.two = "a test";
 		entity.three = 123.0d;
@@ -42,26 +35,22 @@ public class UpdaterTest {
 		entity.seven = true;
 
 		Key saveKey = SpikeifyService.sfy()
-				.update(entity)
+				.create(entity)
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey)
 				.now();
 
-		Key loadKey = new Key(namespace, setName, userKey);
+		Key deleteKey = new Key(namespace, setName, userKey);
+		SpikeifyService.sfy().delete().key(deleteKey).now();
 
 		AerospikeClient client = new AerospikeClient("localhost", 3000);
 		Policy policy = new Policy();
 		policy.sendKey = true;
-		Record record = client.get(policy, loadKey);
+		boolean exists = client.exists(null, saveKey);
 
-		Assert.assertEquals(entity.one, record.getInt("one"));
-		Assert.assertEquals(entity.two, record.getString("two"));
-		Assert.assertEquals(entity.three, record.getDouble("three"), 0.1);
-		Assert.assertEquals(entity.four, record.getFloat("four"), 0.1);
-		Assert.assertEquals(entity.getFive(), record.getShort("five"));
-		Assert.assertEquals(entity.getSix(), record.getByte("six"));
-		Assert.assertEquals(entity.seven, record.getBoolean("seven"));
+		// assert record does not exist
+		Assert.assertFalse(exists);
 	}
 
 }
