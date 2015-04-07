@@ -4,9 +4,9 @@ public interface Spikeify {
 
 	<E> Loader<E> load(Class<E> type);
 
-	Updater<?> insert();
+	<T> Updater<T> insert(T object);
 
-	Updater<?> update();
+	<T> Updater<T> update(T object);
 
 	Deleter<?> delete();
 

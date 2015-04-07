@@ -1,26 +1,121 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.policy.WritePolicy;
 
-public class Updater<T> extends BaseCommand<T> implements Command<T>{
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.Map;
 
-	public Updater(Class<T> type, AerospikeClient synCLient, AsyncClient asyncClient, ClassConstructor classConstructor) {
-		super(type, synCLient, asyncClient, classConstructor);
+public class Updater<T>{
+
+	private final T object;
+
+	public Updater(Class type, T object, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.classConstructor = classConstructor;
+		this.policy = new WritePolicy();
+		this.policy.sendKey = true;
+		this.mapper = MapperService.getMapper(type);
+//		this.type = type;
+		this.object = object;
 	}
 
-	@Override
-	public T now() {
+	protected String namespace;
+	protected String setName;
+	protected String stringKey;
+	protected Long longKey;
+	protected AerospikeClient synClient;
+	protected AsyncClient asyncClient;
+	protected ClassConstructor classConstructor;
+	protected WritePolicy policy;
+	protected ClassMapper<T> mapper;
+//	protected Class<T> type;
+
+	public Updater<T> namespace(String namespace) {
+		this.namespace = namespace;
+		return this;
+	}
+
+	public Updater<T> set(String setName) {
+		this.setName = setName;
+		return this;
+	}
+
+	public Updater<T> key(String key) {
+		this.stringKey = key;
+		this.longKey = null;
+		return this;
+	}
+
+	public Updater<T> key(long key) {
+		this.longKey = key;
+		this.stringKey = null;
+		return this;
+	}
+
+	public Updater<T> policy(WritePolicy policy) {
+		this.policy = policy;
+		this.policy.sendKey = true;
+		return this;
+	}
+
+	protected Key checkKey() {
+
+		String useNamespace = getNamespace();
+		String useSetName = getSetName();
+
+		Key key;
+		if (stringKey != null) {
+			key = new Key(useNamespace, useSetName, stringKey);
+		} else if (longKey != null) {
+			key = new Key(useNamespace, useSetName, longKey);
+		} else {
+			throw new IllegalStateException("Error: missing parameter 'key'");
+		}
+		return key;
+	}
+
+	protected String getNamespace() {
+		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
+		if (useNamespace == null) {
+			throw new IllegalStateException("Namespace not set.");
+		}
+		return useNamespace;
+	}
+
+	protected String getSetName() {
+		return setName != null ? setName : mapper.getSetName();
+	}
+
+	public Key now() {
 
 		Key key = checkKey();
 		String useNamespace = getNamespace();
 		String useSetName = getSetName();
 
-//		mapper.getProperties(ob)
-//
-//		synCLient.put(policy, key, );
+		Map<String, Object> props = mapper.getProperties(object);
 
-		return null;
+		Bin[] bins = new Bin[props.size()];
+		int position = 0;
+		for (Map.Entry<String, Object> prop : props.entrySet()) {
+			bins[position++] = new Bin(prop.getKey(), prop.getValue());
+		}
+
+		Long expiration = mapper.getExpiration(object);
+		if (expiration != null) {
+			// Entities expiration:  Java time in milliseconds
+			// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
+			policy.expiration = (int)(expiration/1000) - 1262304000;
+		}
+
+		mapper.getNamespace();
+
+		synClient.put(policy, key, bins);
+		return key;
 	}
 }

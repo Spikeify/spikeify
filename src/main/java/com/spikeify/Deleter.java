@@ -1,10 +1,6 @@
 package com.spikeify;
 
-public class Deleter<T> implements Command<T> {
+public class Deleter<T>  {
 
 
-	@Override
-	public T now() {
-		return null;
-	}
 }

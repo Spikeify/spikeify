@@ -69,12 +69,12 @@ public class MapperUtils {
 		return null;
 	}
 
-	public static FieldMapper getExpirationFieldMapper(Class clazz) {
+	public static FieldMapper<Long, Long> getExpirationFieldMapper(Class clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(Expiration.class) != null) {
 				Class fieldType = field.getType();
 				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
-					return new FieldMapper(null, findConverter(fieldType), field);
+					return new FieldMapper<>(null, findConverter(fieldType), field);
 				} else {
 					throw new IllegalStateException("Error: field marked with @Expiration must be of type long or Long.");
 				}

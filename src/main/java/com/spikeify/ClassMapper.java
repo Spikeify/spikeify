@@ -15,10 +15,10 @@ public class ClassMapper<TYPE> {
 	private final String setName;
 	private final String namespace;
 
-	private final FieldMapper generationFieldMapper;
-	private final FieldMapper expirationFieldMapper;
-	private final FieldMapper namespaceFieldMapper;
-	private final FieldMapper setNameFieldMapper;
+	private final FieldMapper<Integer, Integer> generationFieldMapper;
+	private final FieldMapper<Long, Long> expirationFieldMapper;
+	private final FieldMapper<String, String> namespaceFieldMapper;
+	private final FieldMapper<String, String> setNameFieldMapper;
 
 	public ClassMapper(Class<TYPE> clazz) {
 		this.type = clazz;
@@ -82,4 +82,17 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
+	public Long getExpiration(TYPE object) {
+		if (expirationFieldMapper == null) {
+			return null;
+		}
+		return expirationFieldMapper.getPropertyValue(object);
+	}
+
+	public Long getId(TYPE object) {
+		if (expirationFieldMapper == null) {
+			return null;
+		}
+		return expirationFieldMapper.getPropertyValue(object);
+	}
 }

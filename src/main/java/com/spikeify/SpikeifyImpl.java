@@ -3,6 +3,8 @@ package com.spikeify;
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.async.AsyncClient;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.TypeVariable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,12 +29,14 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new Loader<>(type, synClient, asyncClient, classConstructor);
 	}
 
-	public Updater insert() {
-		return null;
+	@Override
+	public <T> Updater<T> insert(T object) {
+		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor);
 	}
 
-	public Updater update() {
-		return null;
+	@Override
+	public <T> Updater<T> update(T object) {
+		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor);
 	}
 
 	public Deleter delete() {
