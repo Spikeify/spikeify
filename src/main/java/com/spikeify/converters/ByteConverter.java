@@ -1,8 +1,6 @@
-package com.spikeify.aerospike;
+package com.spikeify.converters;
 
 import com.spikeify.Converter;
-
-import java.lang.reflect.Type;
 
 public class ByteConverter implements Converter<Byte, Long> {
 

@@ -1,6 +1,5 @@
-package com.spikeify.aerospike;
+package com.spikeify.converters;
 
-import com.aerospike.client.Record;
 import com.spikeify.Converter;
 
 public class ShortConverter implements Converter<Short, Long> {

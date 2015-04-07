@@ -1,6 +1,6 @@
 package com.spikeify;
 
-import com.spikeify.aerospike.*;
+import com.spikeify.converters.*;
 import com.spikeify.annotations.*;
 
 import java.lang.reflect.Field;
@@ -19,6 +19,7 @@ public class MapperUtils {
 			new FloatConverter(),
 			new DoubleConverter(),
 			new ByteConverter(),
+			new BooleanConverter(),
 			new DateConverter(),
 			new ShortConverter(),
 			new ByteArrayConverter());

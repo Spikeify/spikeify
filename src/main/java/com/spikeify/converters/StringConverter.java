@@ -1,4 +1,4 @@
-package com.spikeify.aerospike;
+package com.spikeify.converters;
 
 import com.spikeify.Converter;
 

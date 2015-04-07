@@ -48,7 +48,6 @@ public class UpdaterTest {
 		Policy policy = new Policy();
 		policy.sendKey = true;
 		Record record = client.get(policy, loadKey);
-		Map<String, Object> bins = record.bins;
 
 		Assert.assertEquals(entity.one, record.getInt("one"));
 		Assert.assertEquals(entity.two, record.getString("two"));
