@@ -23,8 +23,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private static ThreadLocal<Map<Object/*mapped object*/, Map<String, Object>/*record props*/>> loadedRecordsCache;
 
 	@Override
-	public Loader<?> load() {
-		return new Loader<>(synClient, asyncClient, classConstructor);
+	public  <E> Loader<E> load(Class<E> type) {
+		return new Loader<>(type, synClient, asyncClient, classConstructor);
 	}
 
 	public Updater insert() {

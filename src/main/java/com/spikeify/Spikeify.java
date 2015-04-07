@@ -2,7 +2,7 @@ package com.spikeify;
 
 public interface Spikeify {
 
-	Loader<?> load();
+	<E> Loader<E> load(Class<E> type);
 
 	Updater<?> insert();
 

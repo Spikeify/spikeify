@@ -44,7 +44,7 @@ public class LoaderTest {
 		Key key = new Key(namespace, setName, userKey);
 		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix);
 
-		EntityOne entity = SpikeifyService.sfy().load().type(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
+		EntityOne entity = SpikeifyService.sfy().load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
 
 		Assert.assertEquals(one, entity.one);
 		Assert.assertEquals(two, entity.two);
@@ -53,6 +53,5 @@ public class LoaderTest {
 		Assert.assertEquals(five, entity.getFive());
 		Assert.assertEquals(six, entity.getSix());
 	}
-
 
 }
