@@ -34,6 +34,7 @@ public class UpdaterTest {
 		entity.four = 123.0f;
 		entity.setFive((short) 234);
 		entity.setSix((byte) 100);
+		entity.seven = true;
 
 		Key saveKey = SpikeifyService.sfy()
 				.update(entity)
@@ -55,6 +56,7 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.four, record.getFloat("four"), 0.1);
 		Assert.assertEquals(entity.getFive(), record.getShort("five"));
 		Assert.assertEquals(entity.getSix(), record.getByte("six"));
+		Assert.assertEquals(entity.seven, record.getBoolean("seven"));
 	}
 
 }

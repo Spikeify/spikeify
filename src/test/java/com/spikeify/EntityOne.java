@@ -14,7 +14,7 @@ public class EntityOne {
 	public float four;
 	private short five;
 	private byte six;
-	public byte[] seven;
+	public boolean seven;
 
 	@Ignore
 	public String ignored;
@@ -47,10 +47,9 @@ public class EntityOne {
 		if (Float.compare(entityOne.four, four) != 0) return false;
 		if (five != entityOne.five) return false;
 		if (six != entityOne.six) return false;
+		if (seven != entityOne.seven) return false;
 		if (two != null ? !two.equals(entityOne.two) : entityOne.two != null) return false;
-		if (!Arrays.equals(seven, entityOne.seven)) return false;
 		return !(ignored != null ? !ignored.equals(entityOne.ignored) : entityOne.ignored != null);
-
 	}
 
 	@Override
@@ -64,7 +63,7 @@ public class EntityOne {
 		result = 31 * result + (four != +0.0f ? Float.floatToIntBits(four) : 0);
 		result = 31 * result + (int) five;
 		result = 31 * result + (int) six;
-		result = 31 * result + (seven != null ? Arrays.hashCode(seven) : 0);
+		result = 31 * result + (seven ? 1 : 0);
 		result = 31 * result + (ignored != null ? ignored.hashCode() : 0);
 		return result;
 	}

@@ -9,11 +9,16 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Random;
+
 public class LoaderTest {
+
+	private Long userKey;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
+		userKey = new Random().nextLong();
 	}
 
 	@Test
@@ -25,6 +30,7 @@ public class LoaderTest {
 		float four = 123.0f;
 		short five = (short) 234;
 		byte six = (byte) 100;
+		boolean seven = true;
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -32,6 +38,7 @@ public class LoaderTest {
 		Bin binFour = new Bin("four", four);
 		Bin binFive = new Bin("five", five);
 		Bin binSix = new Bin("six", six);
+		Bin binSeven = new Bin("seven", seven);
 
 		AerospikeClient client = new AerospikeClient("localhost", 3000);
 		WritePolicy policy = new WritePolicy();
@@ -39,10 +46,9 @@ public class LoaderTest {
 
 		String namespace = "test";
 		String setName = "testSet";
-		String userKey = "123456789";
 
 		Key key = new Key(namespace, setName, userKey);
-		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix);
+		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven);
 
 		EntityOne entity = SpikeifyService.sfy().load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
 
@@ -52,6 +58,7 @@ public class LoaderTest {
 		Assert.assertEquals(four, entity.four, 0.1);
 		Assert.assertEquals(five, entity.getFive());
 		Assert.assertEquals(six, entity.getSix());
+		Assert.assertEquals(seven, entity.seven);
 	}
 
 }

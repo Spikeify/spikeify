@@ -62,7 +62,10 @@ public class ClassMapper<TYPE> {
 	public void setFieldValues(TYPE object, Map<String, Object> properties) {
 
 		for (FieldMapper fieldMapper : mappers) {
-			fieldMapper.setFieldValue(object, properties.get(fieldMapper.propName));
+			Object prop = properties.get(fieldMapper.propName);
+			if(prop!=null){
+				fieldMapper.setFieldValue(object, prop);
+			}
 		}
 	}
 
