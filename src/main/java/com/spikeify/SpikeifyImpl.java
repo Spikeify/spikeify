@@ -1,8 +1,10 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.async.IAsyncClient;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.TypeVariable;
@@ -11,14 +13,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
-	public SpikeifyImpl(AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor) {
+	public SpikeifyImpl(IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
 	}
 
-	private AerospikeClient synClient;
-	private AsyncClient asyncClient;
+	private IAerospikeClient synClient;
+	private IAsyncClient asyncClient;
 	private ClassConstructor classConstructor;
 
 	private RecordsCache recordsCache = new RecordsCache();

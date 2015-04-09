@@ -1,15 +1,17 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.async.IAsyncClient;
 
 import java.util.Map;
 
 public class Deleter<T> {
 
-	public Deleter(AerospikeClient synClient, AsyncClient asyncClient, RecordsCache recordsCache) {
+	public Deleter(IAerospikeClient synClient, IAsyncClient asyncClient, RecordsCache recordsCache) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -19,8 +21,8 @@ public class Deleter<T> {
 	private String setName;
 	private String stringKey;
 	private Long longKey;
-	private AerospikeClient synClient;
-	private AsyncClient asyncClient;
+	protected IAerospikeClient synClient;
+	protected IAsyncClient asyncClient;
 	private RecordsCache recordsCache;
 
 	public Deleter<T> namespace(String namespace) {

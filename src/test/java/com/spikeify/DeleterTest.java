@@ -1,10 +1,9 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
-import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
-import org.junit.After;
+import com.spikeify.mock.AerospikeClientMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,9 +16,14 @@ public class DeleterTest {
 	private String namespace = "test";
 	private String setName = "testSet";
 
+	private Spikeify sfy;
+	private IAerospikeClient client;
+
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
+		client = new AerospikeClientMock();
+		sfy = SpikeifyService.mock(client);
 	}
 
 	@Test
@@ -34,7 +38,7 @@ public class DeleterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 
-		Key saveKey = SpikeifyService.sfy()
+		Key saveKey = sfy
 				.create(entity)
 				.namespace(namespace)
 				.set(setName)
@@ -42,9 +46,8 @@ public class DeleterTest {
 				.now();
 
 		Key deleteKey = new Key(namespace, setName, userKey);
-		SpikeifyService.sfy().delete().key(deleteKey).now();
+		sfy.delete().key(deleteKey).now();
 
-		AerospikeClient client = new AerospikeClient("localhost", 3000);
 		Policy policy = new Policy();
 		policy.sendKey = true;
 		boolean exists = client.exists(null, saveKey);

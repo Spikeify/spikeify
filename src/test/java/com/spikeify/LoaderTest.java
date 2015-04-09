@@ -2,8 +2,10 @@ package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Bin;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.mock.AerospikeClientMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,10 +15,14 @@ import java.util.Random;
 public class LoaderTest {
 
 	private Long userKey = new Random().nextLong();
+	private Spikeify sfy;
+	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
+		client = new AerospikeClientMock();
+		sfy = SpikeifyService.mock(client);
 	}
 
 	@Test
@@ -38,7 +44,6 @@ public class LoaderTest {
 		Bin binSix = new Bin("six", six);
 		Bin binSeven = new Bin("seven", seven);
 
-		AerospikeClient client = new AerospikeClient("localhost", 3000);
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
 
@@ -48,7 +53,7 @@ public class LoaderTest {
 		Key key = new Key(namespace, setName, userKey);
 		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven);
 
-		EntityOne entity = SpikeifyService.sfy().load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
+		EntityOne entity = sfy.load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
 
 		Assert.assertEquals(one, entity.one);
 		Assert.assertEquals(two, entity.two);

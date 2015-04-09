@@ -1,10 +1,12 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -17,16 +19,20 @@ public class UpdaterTest {
 	private Long userKey = new Random().nextLong();
 	private String namespace = "test";
 	private String setName = "testSet";
+	private Spikeify sfy;
+	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
+		client = new AerospikeClientMock();
+		sfy = SpikeifyService.mock(client);
 	}
 
 	@After
 	public void dbCleanup() {
 		Key deleteKey = new Key(namespace, setName, userKey);
-		SpikeifyService.sfy().delete().key(deleteKey).now();
+		sfy.delete().key(deleteKey).now();
 	}
 
 	@Test
@@ -42,7 +48,7 @@ public class UpdaterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 
-		Key saveKey = SpikeifyService.sfy()
+		Key saveKey = sfy
 				.update(entity)
 				.namespace(namespace)
 				.set(setName)
@@ -51,7 +57,6 @@ public class UpdaterTest {
 
 		Key loadKey = new Key(namespace, setName, userKey);
 
-		AerospikeClient client = new AerospikeClient("localhost", 3000);
 		Policy policy = new Policy();
 		policy.sendKey = true;
 		Record record = client.get(policy, loadKey);
@@ -77,7 +82,7 @@ public class UpdaterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 
-		Key saveKey = SpikeifyService.sfy()
+		Key saveKey = sfy
 				.update(entity)
 				.namespace(namespace)
 				.set(setName)
@@ -85,7 +90,6 @@ public class UpdaterTest {
 				.now();
 
 		// delete entity by hand
-		AerospikeClient client = new AerospikeClient("localhost", 3000);
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
 		boolean deleted = client.delete(policy, saveKey);
@@ -95,16 +99,14 @@ public class UpdaterTest {
 		entity.one = 100;
 		entity.two = "new string";
 
-	  SpikeifyService.sfy()
-				.update(entity)
+		sfy.update(entity)
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey)
 				.now();
 
 		// reload entity and check that only two properties were updated
-		EntityOne reloaded = SpikeifyService.sfy()
-				.load(EntityOne.class)
+		EntityOne reloaded = sfy.load(EntityOne.class)
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey)

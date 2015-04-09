@@ -1,7 +1,10 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.async.IAsyncClient;
+import com.spikeify.mock.AerospikeClientMock;
 
 /**
  * This is a helper service that provides a Spikeify instance with a default single-cluster configuration.
@@ -13,8 +16,8 @@ public class SpikeifyService {
 		asyncClient = new AsyncClient(host, port);
 	}
 
-	private static AerospikeClient synClient;
-	private static AsyncClient asyncClient;
+	private static IAerospikeClient synClient;
+	private static IAsyncClient asyncClient;
 
 	/**
 	 * A Spikeify with default global configuration. It uses no-arg constructors to instantiate classes.
@@ -28,6 +31,16 @@ public class SpikeifyService {
 		}
 
 		return new SpikeifyImpl(synClient, asyncClient, new NoArgClassConstructor());
+	}
+
+	/**
+	 * A Spikeify that uses a mock AerospikeClient
+	 *
+	 * @return Spikeify instance
+	 */
+	public static Spikeify mock(IAerospikeClient client) {
+
+		return new SpikeifyImpl(client, null, new NoArgClassConstructor());
 	}
 
 }

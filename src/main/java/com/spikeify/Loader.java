@@ -1,10 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
-import com.aerospike.client.Value;
+import com.aerospike.client.*;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 
@@ -16,15 +14,15 @@ public class Loader<T>{
 	protected String setName;
 	protected String stringKey;
 	protected Long longKey;
-	protected AerospikeClient synClient;
-	protected AsyncClient asyncClient;
+	protected IAerospikeClient synClient;
+	protected IAsyncClient asyncClient;
 	protected ClassConstructor classConstructor;
 	private RecordsCache recordsCache;
 	protected Policy policy;
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
 
-	public Loader(Class<T> type, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
+	public Loader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;

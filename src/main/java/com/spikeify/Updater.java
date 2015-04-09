@@ -1,10 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Bin;
-import com.aerospike.client.Key;
-import com.aerospike.client.Value;
+import com.aerospike.client.*;
 import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 
@@ -14,7 +12,7 @@ public class Updater<T> {
 
 	private final T object;
 
-	public Updater(Class type, T object, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor,
+	public Updater(Class type, T object, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
 	               RecordsCache recordsCache, boolean create) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
@@ -31,8 +29,8 @@ public class Updater<T> {
 	protected String setName;
 	protected String stringKey;
 	protected Long longKey;
-	protected AerospikeClient synClient;
-	protected AsyncClient asyncClient;
+	protected IAerospikeClient synClient;
+	protected IAsyncClient asyncClient;
 	protected ClassConstructor classConstructor;
 	private RecordsCache recordsCache;
 	private final boolean create;
