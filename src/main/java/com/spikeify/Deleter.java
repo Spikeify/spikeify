@@ -5,11 +5,14 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.async.AsyncClient;
 
+import java.util.Map;
+
 public class Deleter<T> {
 
-	public Deleter(AerospikeClient synClient, AsyncClient asyncClient) {
+	public Deleter(AerospikeClient synClient, AsyncClient asyncClient, RecordsCache recordsCache) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
 	}
 
 	private String namespace;
@@ -18,6 +21,7 @@ public class Deleter<T> {
 	private Long longKey;
 	private AerospikeClient synClient;
 	private AsyncClient asyncClient;
+	private RecordsCache recordsCache;
 
 	public Deleter<T> namespace(String namespace) {
 		this.namespace = namespace;
@@ -88,6 +92,7 @@ public class Deleter<T> {
 		return key;
 	}
 
+
 	protected String getNamespace() {
 		if (namespace == null) {
 			throw new IllegalStateException("Namespace not set.");
@@ -106,6 +111,7 @@ public class Deleter<T> {
 	 */
 	public boolean now() {
 		Key key = checkKey();
+		recordsCache.remove(key);
 		return synClient.delete(null, key);
 	}
 

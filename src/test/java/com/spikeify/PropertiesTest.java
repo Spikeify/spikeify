@@ -19,7 +19,7 @@ public class PropertiesTest {
 		entityLoad.setSix((byte) 100);
 		entityLoad.ignored = "should be ignored";
 
-		ClassMapper mapper = new ClassMapper(EntityOne.class);
+		ClassMapper<EntityOne> mapper = new ClassMapper<>(EntityOne.class);
 		Map<String, Object> props = mapper.getProperties(entityLoad);
 
 		// database saves & returns everything as long, string or byte array

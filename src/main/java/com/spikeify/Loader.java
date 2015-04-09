@@ -8,6 +8,8 @@ import com.aerospike.client.async.AsyncClient;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 
+import java.util.Map;
+
 public class Loader<T>{
 
 	protected String namespace;
@@ -17,14 +19,16 @@ public class Loader<T>{
 	protected AerospikeClient synClient;
 	protected AsyncClient asyncClient;
 	protected ClassConstructor classConstructor;
+	private RecordsCache recordsCache;
 	protected Policy policy;
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
 
-	public Loader(Class<T> type, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor) {
+	public Loader(Class<T> type, AerospikeClient synClient, AsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
+		this.recordsCache = recordsCache;
 		this.policy = new Policy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
@@ -109,6 +113,9 @@ public class Loader<T>{
 
 		Record record = synClient.get(policy, key);
 		T object = classConstructor.construct(type);
+
+		// save rew records into cache - used later for differential updating
+		recordsCache.insert(key, record.bins);
 
 		mapper.setMetaFieldValues(object, useNamespace, useSetName, record.generation, record.expiration);
 		mapper.setFieldValues(object, record.bins);
