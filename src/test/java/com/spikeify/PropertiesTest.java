@@ -3,6 +3,7 @@ package com.spikeify;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.Map;
 
 public class PropertiesTest {
@@ -18,6 +19,7 @@ public class PropertiesTest {
 		entityLoad.setFive((short) 234);
 		entityLoad.setSix((byte) 100);
 		entityLoad.ignored = "should be ignored";
+		entityLoad.eight = new Date(1420070400);
 
 		ClassMapper<EntityOne> mapper = new ClassMapper<>(EntityOne.class);
 		Map<String, Object> props = mapper.getProperties(entityLoad);
@@ -30,6 +32,7 @@ public class PropertiesTest {
 		Assert.assertEquals(123.0f, (float) Double.longBitsToDouble((long) props.get("four")), 0.1);
 		Assert.assertEquals((short) 234, Long.valueOf((long) props.get("five")).shortValue());
 		Assert.assertEquals((byte) 100, Long.valueOf((long) props.get("six")).byteValue());
+		Assert.assertEquals(1420070400, (long) props.get("eight"));
 		Assert.assertFalse(props.containsKey("ignore"));
 
 		EntityOne entitySave = new EntityOne();

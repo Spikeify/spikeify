@@ -4,9 +4,9 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
-public class FieldMapper<F,P> {
+public class FieldMapper<F, P> {
 
-	public FieldMapper(String propName, Converter<F,P> converter, Field field) {
+	public FieldMapper(String propName, Converter<F, P> converter, Field field) {
 		this.propName = propName;
 		this.converter = converter;
 		this.field = field;
@@ -24,6 +24,9 @@ public class FieldMapper<F,P> {
 	public P getPropertyValue(Object object) {
 		try {
 			F fieldValue = (F) field.get(object);
+			if (fieldValue == null) {
+				return null;
+			}
 			return converter.fromField(fieldValue);
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e); //todo nicer error
@@ -39,10 +42,10 @@ public class FieldMapper<F,P> {
 	}
 
 	public String propName;
-//	public Class<P> propType;
-	public Converter<F,P> converter;
+	//	public Class<P> propType;
+	public Converter<F, P> converter;
 
-//	public Class<F> fieldType;
+	//	public Class<F> fieldType;
 	public Field field;
 	public MethodHandle getter;
 	public MethodHandle setter;

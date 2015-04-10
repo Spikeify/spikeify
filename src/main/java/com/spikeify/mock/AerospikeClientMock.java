@@ -15,10 +15,7 @@ import com.aerospike.client.task.ExecuteTask;
 import com.aerospike.client.task.IndexTask;
 import com.aerospike.client.task.RegisterTask;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class AerospikeClientMock implements IAerospikeClient {
 
@@ -62,6 +59,8 @@ public class AerospikeClientMock implements IAerospikeClient {
 					bins.put(newBin.name, Long.valueOf((Short) obj));
 				} else if (obj.getClass().equals(Byte.class)) {
 					bins.put(newBin.name, Long.valueOf((Byte) obj));
+				} else if (obj.getClass().equals(Date.class)) {
+					bins.put(newBin.name, ((Date) obj).getTime());
 				} else {
 					throw new IllegalStateException("Not yet supported type: " + obj.getClass());
 				}

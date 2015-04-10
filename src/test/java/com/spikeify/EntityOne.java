@@ -4,6 +4,7 @@ import com.spikeify.annotations.Ignore;
 import com.spikeify.annotations.Record;
 
 import java.util.Arrays;
+import java.util.Date;
 
 @Record
 public class EntityOne {
@@ -15,6 +16,7 @@ public class EntityOne {
 	private short five;
 	private byte six;
 	public boolean seven;
+	public Date eight;
 
 	@Ignore
 	public String ignored;

@@ -10,6 +10,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.Random;
 
 public class LoaderTest {
@@ -35,6 +36,7 @@ public class LoaderTest {
 		short five = (short) 234;
 		byte six = (byte) 100;
 		boolean seven = true;
+		Date eight = new Date();
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -43,6 +45,7 @@ public class LoaderTest {
 		Bin binFive = new Bin("five", five);
 		Bin binSix = new Bin("six", six);
 		Bin binSeven = new Bin("seven", seven);
+		Bin binEight = new Bin("eight", eight);
 
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
@@ -51,7 +54,7 @@ public class LoaderTest {
 		String setName = "testSet";
 
 		Key key = new Key(namespace, setName, userKey);
-		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven);
+		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight);
 
 		EntityOne entity = sfy.load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
 
@@ -62,6 +65,7 @@ public class LoaderTest {
 		Assert.assertEquals(five, entity.getFive());
 		Assert.assertEquals(six, entity.getSix());
 		Assert.assertEquals(seven, entity.seven);
+		Assert.assertEquals(eight, entity.eight);
 	}
 
 }

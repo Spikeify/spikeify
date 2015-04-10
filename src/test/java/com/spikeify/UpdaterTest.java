@@ -12,6 +12,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Date;
 import java.util.Random;
 
 public class UpdaterTest {
@@ -47,6 +48,8 @@ public class UpdaterTest {
 		entity.setFive((short) 234);
 		entity.setSix((byte) 100);
 		entity.seven = true;
+		entity.eight = new Date(1420070400);
+
 
 		Key saveKey = sfy
 				.update(entity)
@@ -68,6 +71,8 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.getFive(), record.getShort("five"));
 		Assert.assertEquals(entity.getSix(), record.getByte("six"));
 		Assert.assertEquals(entity.seven, record.getBoolean("seven"));
+		Assert.assertEquals(entity.eight, new Date(record.getLong("eight")));
+
 	}
 
 	@Test
@@ -81,6 +86,7 @@ public class UpdaterTest {
 		entity.setFive((short) 234);
 		entity.setSix((byte) 100);
 		entity.seven = true;
+		entity.eight = new Date(1420070400);
 
 		Key saveKey = sfy
 				.update(entity)
@@ -118,6 +124,7 @@ public class UpdaterTest {
 		Assert.assertEquals(reloaded.four, 0, 0.1);
 		Assert.assertEquals(reloaded.getFive(), 0);
 		Assert.assertEquals(reloaded.getSix(), 0);
+		Assert.assertEquals(reloaded.eight, null);
 	}
 
 }

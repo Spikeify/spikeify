@@ -51,8 +51,11 @@ public class RecordsCache {
 				Object existingProp = existing.get(newEntry.getKey());
 
 				// property does not exist yet or has different value then new property
-				if (existingProp == null || !existingProp.equals(newEntry.getValue())) {
-					changed.put(newEntry.getKey(), newEntry.getValue());
+				Object newEntryValue = newEntry.getValue();
+				if (existingProp == null || !existingProp.equals(newEntryValue)) {
+					if (newEntryValue != null) {
+						changed.put(newEntry.getKey(), newEntryValue);
+					}
 				}
 			}
 

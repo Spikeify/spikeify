@@ -56,7 +56,10 @@ public class ClassMapper<TYPE> {
 
 		Map<String, Object> props = new HashMap<String, Object>(mappers.size());
 		for (FieldMapper fieldMapper : mappers) {
-			props.put(fieldMapper.propName, fieldMapper.getPropertyValue(object));
+			Object propertyValue = fieldMapper.getPropertyValue(object);
+			if (propertyValue != null) {
+				props.put(fieldMapper.propName, propertyValue);
+			}
 		}
 		return props;
 	}
@@ -65,7 +68,7 @@ public class ClassMapper<TYPE> {
 
 		for (FieldMapper fieldMapper : mappers) {
 			Object prop = properties.get(fieldMapper.propName);
-			if(prop!=null){
+			if (prop != null) {
 				fieldMapper.setFieldValue(object, prop);
 			}
 		}
