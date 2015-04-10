@@ -13,6 +13,10 @@
     <url>https://github.com/PeterKnego/spikeify</url>
     <inceptionYear>2015</inceptionYear>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
@@ -57,6 +61,11 @@
             <id>ossrh</id>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
+        <repository>
+            <id>local_deployment</id>
+            <name>Internal Releases</name>
+            <url>http://nexus.iddiction.com/content/repositories/releases/</url>
+        </repository>
     </distributionManagement>
 
     <build>
@@ -76,8 +85,13 @@
                 <version>1.6.5</version>
                 <extensions>true</extensions>
                 <configuration>
+                    <!-- for production deployment
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    -->
+                    <!-- for local deployment -->
+                    <serverId>local_deployment</serverId>
+                    <!-- end of for local deployment -->
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
             </plugin>
@@ -118,6 +132,9 @@
                         <goals>
                             <goal>sign</goal>
                         </goals>
+                        <configuration>
+                            <keyname>Spikeify Team</keyname>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
