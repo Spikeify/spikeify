@@ -10,7 +10,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 public class LoaderTest {
@@ -37,6 +39,9 @@ public class LoaderTest {
 		byte six = (byte) 100;
 		boolean seven = true;
 		Date eight = new Date();
+		List<String> nine = new ArrayList<>();
+		nine.add("one");
+		nine.add("two");
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -46,6 +51,7 @@ public class LoaderTest {
 		Bin binSix = new Bin("six", six);
 		Bin binSeven = new Bin("seven", seven);
 		Bin binEight = new Bin("eight", eight);
+		Bin binNine = new Bin("nine", nine);
 
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
@@ -54,7 +60,7 @@ public class LoaderTest {
 		String setName = "testSet";
 
 		Key key = new Key(namespace, setName, userKey);
-		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight);
+		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine);
 
 		EntityOne entity = sfy.load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
 
@@ -66,6 +72,7 @@ public class LoaderTest {
 		Assert.assertEquals(six, entity.getSix());
 		Assert.assertEquals(seven, entity.seven);
 		Assert.assertEquals(eight, entity.eight);
+		Assert.assertEquals(nine, entity.nine);
 	}
 
 }

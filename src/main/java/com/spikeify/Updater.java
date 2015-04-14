@@ -7,6 +7,7 @@ import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 
 import java.util.Map;
+import java.util.Set;
 
 public class Updater<T> {
 
@@ -119,12 +120,12 @@ public class Updater<T> {
 		String useSetName = getSetName();
 
 		Map<String, Object> props = mapper.getProperties(object);
-		Map<String, Object> changedProps = recordsCache.update(key, props);
+		Set<String> changedProps = recordsCache.update(key, props);
 
 		Bin[] bins = new Bin[changedProps.size()];
 		int position = 0;
-		for (Map.Entry<String, Object> prop : changedProps.entrySet()) {
-			bins[position++] = new Bin(prop.getKey(), prop.getValue());
+		for (String propName : changedProps) {
+			bins[position++] = new Bin(propName, props.get(propName));
 		}
 
 		Long expiration = mapper.getExpiration(object);

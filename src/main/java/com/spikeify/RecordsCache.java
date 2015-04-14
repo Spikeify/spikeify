@@ -3,7 +3,9 @@ package com.spikeify;
 import com.aerospike.client.Key;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A cache of records, used to calculate changes between loaded and saved objects.
@@ -11,7 +13,7 @@ import java.util.Map;
  */
 public class RecordsCache {
 
-	private static Map<Key/*key of mapped object*/, Map<String, Object>/*record properties*/> propertiesCache = new HashMap<>();
+	private static Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/> propertiesCache = new HashMap<>();
 
 	/**
 	 * Insert a set of properties linked to a Key
@@ -20,7 +22,17 @@ public class RecordsCache {
 	 * @param properties
 	 */
 	public void insert(Key key, Map<String, Object> properties) {
-		propertiesCache.put(key, properties);
+
+		Map<String, String> propertiesKeys = new HashMap<>(properties.size());
+		for (Map.Entry<String, Object> prop : properties.entrySet()) {
+			Object property = prop.getValue();
+			if (property != null) {
+				String propertyKey = getPropertyHash(property);
+				propertiesKeys.put(prop.getKey(), propertyKey);
+			}
+		}
+
+		propertiesCache.put(key, propertiesKeys);
 	}
 
 	/**
@@ -34,38 +46,44 @@ public class RecordsCache {
 
 	/**
 	 * Updates a set of possibly existing properties.
-	 * Returns changes between current and previous property sets.
+	 * Returns changes between new and existing property sets.
 	 *
 	 * @param key
 	 * @param newProperties
 	 * @return Changed properties.
 	 */
-	public Map<String, Object> update(Key key, Map<String, Object> newProperties) {
+	public Set<String> update(Key key, Map<String, Object> newProperties) {
 
-		Map<String, Object> existing = propertiesCache.get(key);
+		Map<String, String> existing = propertiesCache.get(key);
 
 		if (existing != null) {
-			Map<String, Object> changed = new HashMap<>(newProperties.size());
+			Set<String> changed = new HashSet<>(newProperties.size());
 
 			for (Map.Entry<String, Object> newEntry : newProperties.entrySet()) {
 				Object existingProp = existing.get(newEntry.getKey());
 
 				// property does not exist yet or has different value then new property
 				Object newEntryValue = newEntry.getValue();
-				if (existingProp == null || !existingProp.equals(newEntryValue)) {
-					if (newEntryValue != null) {
-						changed.put(newEntry.getKey(), newEntryValue);
+				if (newEntryValue != null) {
+					String newEntryHash = getPropertyHash(newEntryValue);
+					if (existingProp == null || !existingProp.equals(newEntryHash)) {
+						changed.add(newEntry.getKey());
 					}
 				}
+
 			}
 
-			propertiesCache.put(key, newProperties);
+			insert(key, newProperties);
 			return changed;
 		}
 
-		propertiesCache.put(key, newProperties);
-		return newProperties;
+		insert(key, newProperties);
+		return newProperties.keySet();
 	}
 
+
+	private String getPropertyHash(Object property) {
+		return property.getClass().getName() + ":" + property.hashCode();
+	}
 
 }

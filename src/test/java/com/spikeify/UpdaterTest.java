@@ -1,9 +1,6 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.mock.AerospikeClientMock;
@@ -12,7 +9,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 public class UpdaterTest {
@@ -87,6 +86,9 @@ public class UpdaterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
+		entity.nine = new ArrayList<>();
+		entity.nine.add("one");
+		entity.nine.add("two");
 
 		Key saveKey = sfy
 				.update(entity)
@@ -104,6 +106,7 @@ public class UpdaterTest {
 		// change two properties
 		entity.one = 100;
 		entity.two = "new string";
+		entity.nine.add("three");
 
 		sfy.update(entity)
 				.namespace(namespace)
@@ -125,6 +128,35 @@ public class UpdaterTest {
 		Assert.assertEquals(reloaded.getFive(), 0);
 		Assert.assertEquals(reloaded.getSix(), 0);
 		Assert.assertEquals(reloaded.eight, null);
+		Assert.assertEquals(reloaded.nine.size(), 1);
+		Assert.assertTrue(reloaded.nine.contains("three"));
+	}
+
+	@Test
+	public void testListUpdate() {
+
+		client = new AerospikeClient("localhost", 3000);
+
+		List aList = new ArrayList();
+		aList.add("test1");
+		aList.add("test2");
+		aList.add(1234);
+		aList.add(123.0d);
+
+//		Bin bin1 = new Bin("one", aList);
+		Bin bin2 = new Bin("two", 1.1f);
+//		Bin bin3 = new Bin("three", false);
+
+		Key saveKey = new Key(namespace, setName, userKey);
+
+		// delete entity by hand
+		WritePolicy policy = new WritePolicy();
+		policy.sendKey = true;
+		client.put(policy, saveKey, bin2);
+
+		Record result = client.get(policy, saveKey);
+
+		System.out.println();
 	}
 
 }

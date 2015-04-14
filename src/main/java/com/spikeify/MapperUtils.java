@@ -22,7 +22,9 @@ public class MapperUtils {
 			new BooleanConverter(),
 			new DateConverter(),
 			new ShortConverter(),
-			new ByteArrayConverter());
+			new ByteArrayConverter(),
+			new ListConverter()
+	);
 
 	public static Converter findConverter(Class fieldType) {
 		for (Converter converter : converters) {
