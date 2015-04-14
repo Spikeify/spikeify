@@ -49,7 +49,6 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 
-
 		Key saveKey = sfy
 				.update(entity)
 				.namespace(namespace)
@@ -128,7 +127,7 @@ public class UpdaterTest {
 		Assert.assertEquals(reloaded.getFive(), 0);
 		Assert.assertEquals(reloaded.getSix(), 0);
 		Assert.assertEquals(reloaded.eight, null);
-		Assert.assertEquals(reloaded.nine.size(), 1);
+		Assert.assertEquals(reloaded.nine.size(), 3);
 		Assert.assertTrue(reloaded.nine.contains("three"));
 	}
 

@@ -4,9 +4,7 @@ import com.aerospike.client.Key;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class RecordCacheTest {
 
@@ -20,7 +18,11 @@ public class RecordCacheTest {
 		Map<String, Object> props1 = new HashMap<>(5);
 		props1.put("one", 1);
 		props1.put("two", "test");
-		props1.put("five", null);
+		props1.put("five", null); // null should be ignored
+		List<Long> longs1 = new ArrayList<>();  // add a list of longs
+		longs1.add(1l);
+		longs1.add(2l);
+		props1.put("longs", longs1);
 		Set<String> updateResult1 = cache.update(key1, props1);
 		Assert.assertEquals(props1.keySet(), updateResult1);
 
@@ -28,6 +30,10 @@ public class RecordCacheTest {
 		Map<String, Object> props2 = new HashMap<>(5);
 		props2.put("one", 1);
 		props2.put("two", "test");
+		List<String> strings = new ArrayList<>();  // add a list of strings
+		strings.add("1");
+		strings.add("2");
+		props2.put("string", strings);
 		Set<String> updateResult2 = cache.update(key2, props2);
 		Assert.assertEquals(props2.keySet(), updateResult2);
 
@@ -36,8 +42,10 @@ public class RecordCacheTest {
 		props1.put("one", 2);
 		props1.put("two", "test"); // same value - should not be updated
 		props1.put("three", 1.1d);
+		longs1.add(3l);  // add another long
+		props1.put("longs", longs1);
 		Set<String> updateResult12 = cache.update(key1, props1);
-		Assert.assertEquals(2, updateResult12.size());
+		Assert.assertEquals(3, updateResult12.size());
 
 		// make some changes on key2
 		props2 = new HashMap<>(5);
@@ -45,9 +53,11 @@ public class RecordCacheTest {
 		props2.put("two", 5);
 		props2.put("three", 1.1d);
 		props2.put("four", 1.5f);
-		props1.put("five", null);
+		props2.put("five", null);  // null should be ignored
+		strings.remove(0); // chanke a list of strings
+		props2.put("string", strings);
 		Set<String> updateResult22 = cache.update(key2, props2);
-		Assert.assertEquals(3, updateResult22.size());
+		Assert.assertEquals(4, updateResult22.size());
 
 		// make more changes on key1 - flip property values
 		props1 = new HashMap<>(5);
