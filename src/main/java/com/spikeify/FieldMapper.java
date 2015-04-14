@@ -35,7 +35,7 @@ public class FieldMapper<F, P> {
 
 	public void setFieldValue(Object targetObject, P propertyValue) {
 		try {
-			field.set(targetObject, converter.fromProperty(propertyValue));
+			field.set(targetObject, converter.fromProperty(propertyValue, targetObject.getClass()));
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException(e); //todo nicer error
 		}

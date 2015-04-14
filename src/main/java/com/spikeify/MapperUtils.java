@@ -23,7 +23,8 @@ public class MapperUtils {
 			new DateConverter(),
 			new ShortConverter(),
 			new ByteArrayConverter(),
-			new ListConverter()
+			new ListConverter(),
+			new MapConverter()
 	);
 
 	public static Converter findConverter(Class fieldType) {
@@ -40,16 +41,14 @@ public class MapperUtils {
 		List<FieldMapper> mappers = new ArrayList<FieldMapper>();
 
 		for (Field field : clazz.getDeclaredFields()) {
-
-			Class fieldType = field.getType();
-			Converter fieldConverter = findConverter(fieldType);
-
-			if (fieldConverter == null) {
-				throw new IllegalStateException("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
-						"of unsupported type '" + fieldType + "'.");
-			}
-
 			if (mappableField(field)) {
+				Class fieldType = field.getType();
+				Converter fieldConverter = findConverter(fieldType);
+
+				if (fieldConverter == null) {
+					throw new IllegalStateException("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
+							"of unsupported type '" + fieldType + "'.");
+				}
 				mappers.add(new FieldMapper(field.getName(), fieldConverter, field));
 			}
 

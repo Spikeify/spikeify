@@ -9,10 +9,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class UpdaterTest {
 
@@ -134,7 +131,57 @@ public class UpdaterTest {
 	@Test
 	public void testListUpdate() {
 
-		client = new AerospikeClient("localhost", 3000);
+		List aList = new ArrayList();
+		aList.add("test1");
+		aList.add("test2");
+		aList.add(1234);
+		aList.add(123.0d);
+
+		Bin bin1 = new Bin("one", aList);
+		Bin bin2 = new Bin("two", 1.1f);
+		Bin bin3 = new Bin("three", false);
+
+		Key saveKey = new Key(namespace, setName, userKey);
+
+		// save entity manually
+		WritePolicy policy = new WritePolicy();
+		policy.sendKey = true;
+		client.put(policy, saveKey, bin1, bin2, bin3);
+
+		Record result = client.get(policy, saveKey);
+
+		Assert.assertNotNull(result.bins.get("one"));
+		Assert.assertEquals(4, ((List) result.bins.get("one")).size());
+	}
+
+	@Test
+	public void testMapUpdate() {
+
+		Map aMap = new HashMap();
+		aMap.put("1", "test1");
+		aMap.put("2", "test2");
+		aMap.put("3", 1234);
+		aMap.put("4", 123.0d);
+
+		Bin bin1 = new Bin("one", aMap);
+		Bin bin2 = new Bin("two", 1.1f);
+		Bin bin3 = new Bin("three", false);
+
+		Key saveKey = new Key(namespace, setName, userKey);
+
+		// save entity manually
+		WritePolicy policy = new WritePolicy();
+		policy.sendKey = true;
+		client.put(policy, saveKey, bin1, bin2, bin3);
+
+		Record result = client.get(policy, saveKey);
+
+		Assert.assertNotNull(result.bins.get("one"));
+		Assert.assertEquals(4, ((Map) result.bins.get("one")).size());
+	}
+
+	@Test
+	public void entityListMapUpdate() {
 
 		List aList = new ArrayList();
 		aList.add("test1");
@@ -142,20 +189,34 @@ public class UpdaterTest {
 		aList.add(1234);
 		aList.add(123.0d);
 
-//		Bin bin1 = new Bin("one", aList);
-		Bin bin2 = new Bin("two", 1.1f);
-//		Bin bin3 = new Bin("three", false);
+		Map aMap = new HashMap();
+		aMap.put("1", "testX");
+		aMap.put("2", "testY");
+		aMap.put("3", 456);
+		aMap.put("4", 456.0d);
+
+
+		EntityOne entityOne = new EntityOne();
+		entityOne.nine = aList;
+		entityOne.ten = aMap;
 
 		Key saveKey = new Key(namespace, setName, userKey);
 
-		// delete entity by hand
+		// save entity
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
-		client.put(policy, saveKey, bin2);
+		Key savedKey = sfy.update(entityOne).key(saveKey).now();
 
-		Record result = client.get(policy, saveKey);
+		// load entity
+		EntityOne loadedEntity = sfy.load(EntityOne.class).key(savedKey).now();
 
-		System.out.println();
+		// check values
+		List nine = loadedEntity.nine;
+		Map ten = loadedEntity.ten;
+		Assert.assertEquals(4, nine.size());
+		Assert.assertEquals(aList, nine);
+		Assert.assertEquals(4, ten.size());
+		Assert.assertEquals(aMap, ten);
 	}
 
 }

@@ -6,6 +6,7 @@ import com.spikeify.annotations.Record;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Record
 public class EntityOne {
@@ -18,7 +19,12 @@ public class EntityOne {
 	private byte six;
 	public boolean seven;
 	public Date eight;
-	public List<String> nine;
+	public List nine;
+	public Map ten;
+
+	// unmappable class is ignored
+	@Ignore
+	public java.util.Calendar calendar;
 
 	@Ignore
 	public String ignored;

@@ -62,7 +62,9 @@ public class AerospikeClientMock implements IAerospikeClient {
 				} else if (obj.getClass().equals(Date.class)) {
 					bins.put(newBin.name, ((Date) obj).getTime());
 				} else if (List.class.isAssignableFrom(obj.getClass())) {
-					bins.put(newBin.name, (List) obj);
+					bins.put(newBin.name, obj);
+				} else if (Map.class.isAssignableFrom(obj.getClass())) {
+					bins.put(newBin.name, obj);
 				} else {
 					throw new IllegalStateException("Not yet supported type: " + obj.getClass());
 				}
