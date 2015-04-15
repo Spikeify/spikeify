@@ -4,6 +4,7 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
 
 import java.util.*;
@@ -114,7 +115,20 @@ public class Loader<T> {
 		// save rew records into cache - used later for differential updating
 		recordsCache.insert(key, record.bins);
 
+		// set UserKey field
+		switch (key.userKey.getType()){
+			case ParticleType.STRING:
+				mapper.setUserKey(object, key.userKey.toString());
+				break;
+			case ParticleType.INTEGER:
+				mapper.setUserKey(object, key.userKey.toLong());
+				break;
+		}
+
+		// set metafields on the entity: @Namespace, @SetName, @Expiration..
 		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
+
+		// set field values
 		mapper.setFieldValues(object, record.bins);
 
 		return object;
@@ -144,6 +158,16 @@ public class Loader<T> {
 
 				// save record hash into cache - used later for differential updating
 				recordsCache.insert(keysArray[i], record.bins);
+
+				// set UserKey field
+				switch (key.userKey.getType()){
+					case ParticleType.STRING:
+						mapper.setUserKey(object, key.userKey.toString());
+						break;
+					case ParticleType.INTEGER:
+						mapper.setUserKey(object, key.userKey.toLong());
+						break;
+				}
 
 				// set metafields on the entity: @Namespace, @SetName, @Expiration..
 				mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);

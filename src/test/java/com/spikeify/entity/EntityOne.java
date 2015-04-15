@@ -1,15 +1,18 @@
-package com.spikeify;
+package com.spikeify.entity;
 
 import com.spikeify.annotations.Ignore;
 import com.spikeify.annotations.Record;
+import com.spikeify.annotations.UserKey;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 @Record
 public class EntityOne {
+
+	@UserKey
+	public Long userId;
 
 	public int one;
 	public String two;
@@ -22,7 +25,7 @@ public class EntityOne {
 	public List nine;
 	public Map ten;
 
-	// unmappable class is ignored
+	// unmappable class must be ignored
 	@Ignore
 	public java.util.Calendar calendar;
 

@@ -4,6 +4,7 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
@@ -72,6 +73,10 @@ public class LoaderTest {
 
 		EntityOne entity = sfy.load(EntityOne.class).key(userKey1).namespace(namespace).set(setName).get();
 
+		// UserKey value
+		Assert.assertEquals(userKey1, entity.userId);
+
+		// field values
 		Assert.assertEquals(one, entity.one);
 		Assert.assertEquals(two, entity.two);
 		Assert.assertEquals(three, entity.three, 0.1);
@@ -131,6 +136,10 @@ public class LoaderTest {
 		Assert.assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));
 		Assert.assertNotNull(result.get(saveKey2));
+
+		// UserKey value
+		Assert.assertEquals(userKey1, result.get(saveKey1).userId);
+		Assert.assertEquals(userKey2, result.get(saveKey2).userId);
 	}
 
 }

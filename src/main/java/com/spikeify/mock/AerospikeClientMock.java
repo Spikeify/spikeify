@@ -5,6 +5,7 @@ import com.aerospike.client.admin.Privilege;
 import com.aerospike.client.admin.Role;
 import com.aerospike.client.admin.User;
 import com.aerospike.client.cluster.Node;
+import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.large.LargeList;
 import com.aerospike.client.large.LargeMap;
 import com.aerospike.client.large.LargeSet;
@@ -30,6 +31,8 @@ public class AerospikeClientMock implements IAerospikeClient {
 	public static class Rec {
 		public int generation;
 		public int expires;
+		public Long userKeyLong;
+		public String userKeyString;
 		Map<String /**property name**/, Object> bins = new HashMap<>();
 
 		public Map<String, Object> getBins() {
@@ -37,6 +40,7 @@ public class AerospikeClientMock implements IAerospikeClient {
 		}
 
 		private void updateBins(int expires, Bin... newBins) {
+			this.expires = expires;
 			generation++;
 			for (Bin newBin : newBins) {
 
@@ -158,6 +162,16 @@ public class AerospikeClientMock implements IAerospikeClient {
 				}
 				existingRec = new Rec();
 				existingRec.updateBins(0, bins);
+				break;
+		}
+
+		// set UserKey field
+		switch (key.userKey.getType()) {
+			case ParticleType.STRING:
+				existingRec.userKeyString = key.userKey.toString();
+				break;
+			case ParticleType.INTEGER:
+				existingRec.userKeyLong = key.userKey.toLong();
 				break;
 		}
 		set.put(key, existingRec);

@@ -134,13 +134,15 @@ public class Updater<T> {
 		return key;
 	}
 
-	public void putAll() {
+	public Map<T, Key> putAll() {
 
 		collectKeys();
 
 		if (objects.length != keys.size()) {
 			throw new IllegalStateException("Error: with multi-put you need to provide equal number of objects and keys");
 		}
+
+		Map<T, Key> result = new HashMap<>(objects.length);
 
 		for (int i = 0; i < objects.length; i++) {
 
@@ -150,6 +152,8 @@ public class Updater<T> {
 			if (key == null || object == null) {
 				throw new IllegalStateException("Error: with multi-put all objects and keys must NOT be null");
 			}
+
+			result.put(object, key);
 
 			Map<String, Object> props = mapper.getProperties(object);
 			Set<String> changedProps = recordsCache.update(key, props);
@@ -169,6 +173,8 @@ public class Updater<T> {
 
 			synClient.put(policy, key, bins);
 		}
+
+		return result;
 	}
 
 }

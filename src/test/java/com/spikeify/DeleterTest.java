@@ -3,6 +3,7 @@ package com.spikeify;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.Policy;
+import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.Assert;
 import org.junit.Before;

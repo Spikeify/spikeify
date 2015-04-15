@@ -37,7 +37,7 @@ public class ClassMapper<TYPE> {
 		expirationFieldMapper = MapperUtils.getExpirationFieldMapper(clazz);
 		namespaceFieldMapper = MapperUtils.getNamespaceFieldMapper(clazz);
 		setNameFieldMapper = MapperUtils.getSetNameFieldMapper(clazz);
-		userKeyFieldMapper = MapperUtils.getKeyFieldMapper(clazz);
+		userKeyFieldMapper = MapperUtils.getUserKeyFieldMapper(clazz);
 	}
 
 	public Type getType() {
@@ -103,4 +103,29 @@ public class ClassMapper<TYPE> {
 		}
 		return userKeyFieldMapper.getPropertyValue(object);
 	}
+
+	public void setUserKey(Object object, String userKey) {
+		if (userKeyFieldMapper != null) {
+			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
+				throw new IllegalStateException("Key type mismatch: @UserKey field '"+
+						userKeyFieldMapper.field.getDeclaringClass().getName()+"#"+userKeyFieldMapper.field.getName()+
+						"' has type '"+userKeyFieldMapper.field.getType()+"', while key has type 'String'."
+				);
+			}
+			userKeyFieldMapper.setFieldValue(object, userKey);
+		}
+	}
+
+	public void setUserKey(Object object, Long userKey) {
+		if (userKeyFieldMapper != null) {
+			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
+				throw new IllegalStateException("Key type mismatch: @UserKey field '"+
+						userKeyFieldMapper.field.getDeclaringClass().getName()+"#"+userKeyFieldMapper.field.getName()+
+						"' has type '"+userKeyFieldMapper.field.getType()+"', while key has type 'Long'."
+				);
+			}
+			userKeyFieldMapper.setFieldValue(object, userKey);
+		}
+	}
+
 }

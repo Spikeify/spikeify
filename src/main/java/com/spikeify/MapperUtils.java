@@ -16,9 +16,10 @@ public class MapperUtils {
 	private static List<? extends Converter> converters = Arrays.asList(
 			new StringConverter(),
 			new IntegerConverter(),
+			new LongConverter(),
+			new ByteConverter(),
 			new FloatConverter(),
 			new DoubleConverter(),
-			new ByteConverter(),
 			new BooleanConverter(),
 			new DateConverter(),
 			new ShortConverter(),
@@ -118,17 +119,19 @@ public class MapperUtils {
 	 * Ignored fields with: static, final, @Ignore, synthetic modifiers
 	 */
 	private static boolean mappableField(Field field) {
-		return !field.isAnnotationPresent(Ignore.class)
+		return !field.isAnnotationPresent(UserKey.class)
+				&& !field.isAnnotationPresent(Ignore.class)
 				&& (field.getModifiers() & IGNORED_FIELD_MODIFIERS) == 0
 				&& !field.isSynthetic();
 	}
 
-	public static <TYPE> FieldMapper getKeyFieldMapper(Class<TYPE> clazz) {
+	public static <TYPE> FieldMapper getUserKeyFieldMapper(Class<TYPE> clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(UserKey.class) != null) {
 				Class fieldType = field.getType();
 				if (String.class.equals(fieldType) || Long.class.equals(fieldType) || long.class.equals(fieldType)) {
-					return new FieldMapper(null, findConverter(fieldType), field);
+					Converter converter = findConverter(fieldType);
+					return new FieldMapper(null, converter, field);
 				} else {
 					throw new IllegalStateException("Error: field marked with @UserKey must be of type String, Long or long.");
 				}

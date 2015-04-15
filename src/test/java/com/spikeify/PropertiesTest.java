@@ -1,5 +1,6 @@
 package com.spikeify;
 
+import com.spikeify.entity.EntityOne;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -6,6 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
