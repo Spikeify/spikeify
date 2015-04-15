@@ -4,7 +4,6 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.Policy;
 import com.spikeify.mock.AerospikeClientMock;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -45,7 +44,7 @@ public class DeleterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKeyLong)
-				.now();
+				.put();
 
 		Key deleteKey = new Key(namespace, setName, userKeyLong);
 		sfy.delete().key(deleteKey).now();
@@ -76,7 +75,7 @@ public class DeleterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKeyString)
-				.now();
+				.put();
 
 		sfy.delete().namespace(namespace).set(setName).key(userKeyString).now();
 

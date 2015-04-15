@@ -25,7 +25,7 @@ public class LoaderTest {
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
 		client = new AerospikeClientMock();
-		sfy = SpikeifyService.sfy();
+		sfy = SpikeifyService.mock(client);
 	}
 
 	@After
@@ -104,7 +104,7 @@ public class LoaderTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
-				.now();
+				.put();
 
 		EntityOne entity2 = new EntityOne();
 		entity2.one = 123;
@@ -124,7 +124,7 @@ public class LoaderTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey2)
-				.now();
+				.put();
 
 		Map<Key, EntityOne> result = sfy.load(EntityOne.class).key(saveKey1, saveKey2).getAll();
 

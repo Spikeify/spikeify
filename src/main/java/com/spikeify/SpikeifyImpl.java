@@ -1,15 +1,7 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
-import com.aerospike.client.async.AsyncClient;
 import com.aerospike.client.async.IAsyncClient;
-
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.TypeVariable;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
@@ -26,18 +18,29 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private RecordsCache recordsCache = new RecordsCache();
 
 	@Override
-	public  <E> Loader<E> load(Class<E> type) {
+	public <E> Loader<E> load(Class<E> type) {
 		return new Loader<>(type, synClient, asyncClient, classConstructor, recordsCache);
 	}
 
 	@Override
-	public <T> Updater<T> create(T object) {
-		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor, recordsCache, true);
+	public <T> Updater<T> create(T... objects) {
+
+		if (objects == null || objects.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
+		}
+		T object = objects[0];
+		return new Updater<>(object.getClass(), synClient, asyncClient,
+				recordsCache, true, objects);
 	}
 
 	@Override
-	public <T> Updater<T> update(T object) {
-		return new Updater<>(object.getClass(), object, synClient, asyncClient, classConstructor, recordsCache, false);
+	public <T> Updater<T> update(T... objects) {
+		if (objects == null || objects.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
+		}
+		T object = objects[0];
+		return new Updater<>(object.getClass(), synClient, asyncClient,
+				recordsCache, false, objects);
 	}
 
 	public Deleter delete() {

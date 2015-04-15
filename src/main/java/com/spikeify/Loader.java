@@ -6,25 +6,26 @@ import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.BatchPolicy;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Loader<T> {
 
 	protected String namespace;
 	protected String setName;
-	protected String[] stringKeys;
-	protected long[] longKeys;
+	protected List<String> stringKeys = new ArrayList<>();
+	protected List<Long> longKeys = new ArrayList<>();
 	protected List<Key> keys = new ArrayList<>(10);
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected ClassConstructor classConstructor;
-	private RecordsCache recordsCache;
+	protected RecordsCache recordsCache;
 	protected BatchPolicy policy;
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
+
+	protected Loader(Loader<T> loader){
+		//todo
+	}
 
 	public Loader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
 		this.synClient = synClient;
@@ -48,19 +49,17 @@ public class Loader<T> {
 	}
 
 	public Loader<T> key(String... keys) {
-		this.stringKeys = keys;
+		this.stringKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Loader<T> key(long... keys) {
-		this.longKeys = keys;
+	public Loader<T> key(Long... keys) {
+		this.longKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
 	public Loader<T> key(Key... keys) {
-		for (Key key : keys) {
-			this.keys.add(key);
-		}
+		this.keys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
@@ -72,16 +71,15 @@ public class Loader<T> {
 
 	protected void collectKeys() {
 
-		Key key;
-		if (stringKeys != null) {
+		if (!stringKeys.isEmpty()) {
 			for (String stringKey : stringKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), stringKey));
 			}
-		} else if (longKeys != null) {
+		} else if (!longKeys.isEmpty()) {
 			for (long longKey : longKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), longKey));
 			}
-		} else if (keys == null) {
+		} else if (keys.isEmpty()) {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
 	}
@@ -98,11 +96,13 @@ public class Loader<T> {
 		return setName != null ? setName : mapper.getSetName();
 	}
 
+	/**
+	 * Executes a single get command.
+	 * @return The Java object mapped from record
+	 */
 	public T get() {
 
 		collectKeys();
-		String useNamespace = getNamespace();
-		String useSetName = getSetName();
 
 		// this should be a one-key operation
 		// if multiple keys - use the first key
@@ -114,12 +114,16 @@ public class Loader<T> {
 		// save rew records into cache - used later for differential updating
 		recordsCache.insert(key, record.bins);
 
-		mapper.setMetaFieldValues(object, useNamespace, useSetName, record.generation, record.expiration);
+		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 		mapper.setFieldValues(object, record.bins);
 
 		return object;
 	}
 
+	/**
+	 * Executes multiple get commands.
+	 * @return The map of Keys and Java objects mapped from records
+	 */
 	public Map<Key, T> getAll() {
 
 		collectKeys();

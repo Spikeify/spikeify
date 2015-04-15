@@ -1,6 +1,9 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.Bin;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.mock.AerospikeClientMock;
@@ -13,9 +16,10 @@ import java.util.*;
 
 public class UpdaterTest {
 
-	private Long userKey = new Random().nextLong();
+	private Long userKey1 = new Random().nextLong();
+	private Long userKey2 = new Random().nextLong();
 	private String namespace = "test";
-	private String setName = "testSet";
+	private String setName = "newTestSet";
 	private Spikeify sfy;
 	private IAerospikeClient client;
 
@@ -28,7 +32,7 @@ public class UpdaterTest {
 
 	@After
 	public void dbCleanup() {
-		Key deleteKey = new Key(namespace, setName, userKey);
+		Key deleteKey = new Key(namespace, setName, userKey1);
 		sfy.delete().key(deleteKey).now();
 	}
 
@@ -50,10 +54,10 @@ public class UpdaterTest {
 				.update(entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey)
-				.now();
+				.key(userKey1)
+				.put();
 
-		Key loadKey = new Key(namespace, setName, userKey);
+		Key loadKey = new Key(namespace, setName, userKey1);
 
 		Policy policy = new Policy();
 		policy.sendKey = true;
@@ -90,8 +94,8 @@ public class UpdaterTest {
 				.update(entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey)
-				.now();
+				.key(userKey1)
+				.put();
 
 		// delete entity by hand
 		WritePolicy policy = new WritePolicy();
@@ -107,14 +111,14 @@ public class UpdaterTest {
 		sfy.update(entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey)
-				.now();
+				.key(userKey1)
+				.put();
 
 		// reload entity and check that only two properties were updated
 		EntityOne reloaded = sfy.load(EntityOne.class)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey)
+				.key(userKey1)
 				.get();
 
 		Assert.assertEquals(reloaded.one, 100);
@@ -141,7 +145,7 @@ public class UpdaterTest {
 		Bin bin2 = new Bin("two", 1.1f);
 		Bin bin3 = new Bin("three", false);
 
-		Key saveKey = new Key(namespace, setName, userKey);
+		Key saveKey = new Key(namespace, setName, userKey1);
 
 		// save entity manually
 		WritePolicy policy = new WritePolicy();
@@ -167,7 +171,7 @@ public class UpdaterTest {
 		Bin bin2 = new Bin("two", 1.1f);
 		Bin bin3 = new Bin("three", false);
 
-		Key saveKey = new Key(namespace, setName, userKey);
+		Key saveKey = new Key(namespace, setName, userKey1);
 
 		// save entity manually
 		WritePolicy policy = new WritePolicy();
@@ -200,12 +204,12 @@ public class UpdaterTest {
 		entityOne.nine = aList;
 		entityOne.ten = aMap;
 
-		Key saveKey = new Key(namespace, setName, userKey);
+		Key saveKey = new Key(namespace, setName, userKey1);
 
 		// save entity
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
-		Key savedKey = sfy.update(entityOne).key(saveKey).now();
+		Key savedKey = sfy.update(entityOne).key(saveKey).put();
 
 		// load entity
 		EntityOne loadedEntity = sfy.load(EntityOne.class).key(savedKey).get();
@@ -217,6 +221,49 @@ public class UpdaterTest {
 		Assert.assertEquals(aList, nine);
 		Assert.assertEquals(4, ten.size());
 		Assert.assertEquals(aMap, ten);
+	}
+
+	@Test
+	public void multiPut() {
+
+		EntityOne entity1 = new EntityOne();
+		entity1.one = 123;
+		entity1.two = "a test";
+		entity1.three = 123.0d;
+		entity1.four = 123.0f;
+		entity1.setFive((short) 234);
+		entity1.setSix((byte) 100);
+		entity1.seven = true;
+		entity1.eight = new Date(1420070400);
+		entity1.nine = new ArrayList<>();
+		entity1.nine.add("one");
+		entity1.nine.add("two");
+
+		EntityOne entity2 = new EntityOne();
+		entity2.one = 123;
+		entity2.two = "a test";
+		entity2.three = 123.0d;
+		entity2.four = 123.0f;
+		entity2.setFive((short) 234);
+		entity2.setSix((byte) 100);
+		entity2.seven = true;
+		entity2.eight = new Date(1420070400);
+		entity2.nine = new ArrayList<>();
+		entity2.nine.add("one");
+		entity2.nine.add("two");
+
+		// multi-put
+		sfy.update(entity1, entity2).namespace(namespace).set(setName).key(userKey1, userKey2).putAll();
+
+		Key key1 = new Key(namespace, setName, userKey1);
+		Key key2 = new Key(namespace, setName, userKey2);
+
+		// multi-get
+		Map<Key, EntityOne> result = sfy.load(EntityOne.class).key(key1, key2).namespace(namespace).set(setName).getAll();
+
+		Assert.assertEquals(2, result.size());
+		Assert.assertEquals(entity1, result.get(key1));
+		Assert.assertEquals(entity2, result.get(key2));
 	}
 
 }
