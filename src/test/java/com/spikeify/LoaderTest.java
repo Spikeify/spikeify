@@ -1,23 +1,23 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.mock.AerospikeClientMock;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 public class LoaderTest {
 
-	private Long userKey = new Random().nextLong();
+	private Long userKey1 = new Random().nextLong();
+	private Long userKey2 = new Random().nextLong();
+	private String namespace = "test";
+	private String setName = "testSet";
 	private Spikeify sfy;
 	private IAerospikeClient client;
 
@@ -25,11 +25,19 @@ public class LoaderTest {
 	public void dbSetup() {
 		SpikeifyService.globalConfig("localhost", 3000);
 		client = new AerospikeClientMock();
-		sfy = SpikeifyService.mock(client);
+		sfy = SpikeifyService.sfy();
+	}
+
+	@After
+	public void dbCleanup() {
+		Key deleteKey1 = new Key(namespace, setName, userKey1);
+		Key deleteKey2 = new Key(namespace, setName, userKey2);
+		sfy.delete().key(deleteKey1).now();
+		sfy.delete().key(deleteKey2).now();
 	}
 
 	@Test
-	public void loadProperties() {
+	public void loadEntity() {
 
 		int one = 123;
 		String two = "a test";
@@ -59,10 +67,10 @@ public class LoaderTest {
 		String namespace = "test";
 		String setName = "testSet";
 
-		Key key = new Key(namespace, setName, userKey);
+		Key key = new Key(namespace, setName, userKey1);
 		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine);
 
-		EntityOne entity = sfy.load(EntityOne.class).key(userKey).namespace(namespace).set(setName).now();
+		EntityOne entity = sfy.load(EntityOne.class).key(userKey1).namespace(namespace).set(setName).get();
 
 		Assert.assertEquals(one, entity.one);
 		Assert.assertEquals(two, entity.two);
@@ -73,6 +81,56 @@ public class LoaderTest {
 		Assert.assertEquals(seven, entity.seven);
 		Assert.assertEquals(eight, entity.eight);
 		Assert.assertEquals(nine, entity.nine);
+	}
+
+	@Test
+	public void multiGet() {
+
+		EntityOne entity1 = new EntityOne();
+		entity1.one = 123;
+		entity1.two = "a test";
+		entity1.three = 123.0d;
+		entity1.four = 123.0f;
+		entity1.setFive((short) 234);
+		entity1.setSix((byte) 100);
+		entity1.seven = true;
+		entity1.eight = new Date(1420070400);
+		entity1.nine = new ArrayList<>();
+		entity1.nine.add("one");
+		entity1.nine.add("two");
+
+		Key saveKey1 = sfy
+				.update(entity1)
+				.namespace(namespace)
+				.set(setName)
+				.key(userKey1)
+				.now();
+
+		EntityOne entity2 = new EntityOne();
+		entity2.one = 123;
+		entity2.two = "a test";
+		entity2.three = 123.0d;
+		entity2.four = 123.0f;
+		entity2.setFive((short) 234);
+		entity2.setSix((byte) 100);
+		entity2.seven = true;
+		entity2.eight = new Date(1420070400);
+		entity2.nine = new ArrayList<>();
+		entity2.nine.add("one");
+		entity2.nine.add("two");
+
+		Key saveKey2 = sfy
+				.update(entity2)
+				.namespace(namespace)
+				.set(setName)
+				.key(userKey2)
+				.now();
+
+		Map<Key, EntityOne> result = sfy.load(EntityOne.class).key(saveKey1, saveKey2).getAll();
+
+		Assert.assertEquals(2, result.size());
+		Assert.assertNotNull(result.get(saveKey1));
+		Assert.assertNotNull(result.get(saveKey2));
 	}
 
 }

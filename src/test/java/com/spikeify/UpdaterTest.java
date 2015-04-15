@@ -115,7 +115,7 @@ public class UpdaterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey)
-				.now();
+				.get();
 
 		Assert.assertEquals(reloaded.one, 100);
 		Assert.assertEquals(reloaded.two, "new string");
@@ -208,7 +208,7 @@ public class UpdaterTest {
 		Key savedKey = sfy.update(entityOne).key(saveKey).now();
 
 		// load entity
-		EntityOne loadedEntity = sfy.load(EntityOne.class).key(savedKey).now();
+		EntityOne loadedEntity = sfy.load(EntityOne.class).key(savedKey).get();
 
 		// check values
 		List nine = loadedEntity.nine;

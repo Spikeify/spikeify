@@ -1,24 +1,28 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
-import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.Policy;
-import com.aerospike.client.policy.WritePolicy;
+import com.aerospike.client.policy.BatchPolicy;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-public class Loader<T>{
+public class Loader<T> {
 
 	protected String namespace;
 	protected String setName;
-	protected String stringKey;
-	protected Long longKey;
+	protected String[] stringKeys;
+	protected long[] longKeys;
+	protected List<Key> keys = new ArrayList<>(10);
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected ClassConstructor classConstructor;
 	private RecordsCache recordsCache;
-	protected Policy policy;
+	protected BatchPolicy policy;
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
 
@@ -27,7 +31,7 @@ public class Loader<T>{
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
-		this.policy = new Policy();
+		this.policy = new BatchPolicy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
@@ -43,52 +47,43 @@ public class Loader<T>{
 		return this;
 	}
 
-	public Loader<T> key(String key) {
-		this.stringKey = key;
-		this.longKey = null;
+	public Loader<T> key(String... keys) {
+		this.stringKeys = keys;
 		return this;
 	}
 
-	public Loader<T> key(long key) {
-		this.longKey = key;
-		this.stringKey = null;
+	public Loader<T> key(long... keys) {
+		this.longKeys = keys;
 		return this;
 	}
 
-	public Loader<T> key(Key key) {
-		this.namespace = key.namespace;
-		this.setName = key.setName;
-		Value userKey = key.userKey;
-		if (userKey instanceof Value.StringValue) {
-			this.stringKey = ((Value.StringValue) userKey).toString();
-		} else if (userKey instanceof Value.LongValue) {
-			this.longKey = ((Value.LongValue) userKey).toLong();
-		} else {
-			throw  new IllegalStateException("Spikeify only supports Keys created from String and Long.");
+	public Loader<T> key(Key... keys) {
+		for (Key key : keys) {
+			this.keys.add(key);
 		}
 		return this;
 	}
 
-	public Loader<T> policy(Policy policy) {
+	public Loader<T> policy(BatchPolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		return this;
 	}
 
-	protected Key checkKey() {
-
-		String useNamespace = getNamespace();
-		String useSetName = getSetName();
+	protected void collectKeys() {
 
 		Key key;
-		if (stringKey != null) {
-			key = new Key(useNamespace, useSetName, stringKey);
-		} else if (longKey != null) {
-			key = new Key(useNamespace, useSetName, longKey);
-		} else {
+		if (stringKeys != null) {
+			for (String stringKey : stringKeys) {
+				keys.add(new Key(getNamespace(), getSetName(), stringKey));
+			}
+		} else if (longKeys != null) {
+			for (long longKey : longKeys) {
+				keys.add(new Key(getNamespace(), getSetName(), longKey));
+			}
+		} else if (keys == null) {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
-		return key;
 	}
 
 	protected String getNamespace() {
@@ -103,11 +98,15 @@ public class Loader<T>{
 		return setName != null ? setName : mapper.getSetName();
 	}
 
-	public T now() {
+	public T get() {
 
-		Key key = checkKey();
+		collectKeys();
 		String useNamespace = getNamespace();
 		String useSetName = getSetName();
+
+		// this should be a one-key operation
+		// if multiple keys - use the first key
+		Key key = keys.get(0);
 
 		Record record = synClient.get(policy, key);
 		T object = classConstructor.construct(type);
@@ -119,6 +118,40 @@ public class Loader<T>{
 		mapper.setFieldValues(object, record.bins);
 
 		return object;
+	}
+
+	public Map<Key, T> getAll() {
+
+		collectKeys();
+
+		Key[] keysArray = keys.toArray(new Key[keys.size()]);
+		Record[] records = synClient.get(policy, keysArray);
+
+		Map<Key, T> result = new HashMap<>(keys.size());
+
+		Record record;
+		for (int i = 0; i < records.length; i++) {
+			record = records[i];
+			if (record != null) {
+				Key key = keysArray[i];
+
+				// construct the entity object via provided ClassConstructor
+				T object = classConstructor.construct(type);
+
+				// save record hash into cache - used later for differential updating
+				recordsCache.insert(keysArray[i], record.bins);
+
+				// set metafields on the entity: @Namespace, @SetName, @Expiration..
+				mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
+
+				// set field values
+				mapper.setFieldValues(object, record.bins);
+
+				result.put(key, object);
+			}
+		}
+
+		return result;
 	}
 
 }
