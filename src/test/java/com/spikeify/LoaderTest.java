@@ -142,4 +142,17 @@ public class LoaderTest {
 		Assert.assertEquals(userKey2, result.get(saveKey2).userId);
 	}
 
+	@Test
+	public void loadNonExisting(){
+		EntityOne res = sfy.get(EntityOne.class).namespace(namespace).key(0l).now();
+		Assert.assertNull(res);
+	}
+
+	@Test
+	public void loadAllNonExisting(){
+		Map<Key, EntityOne> recs = sfy.getAll(EntityOne.class).namespace(namespace).key(0l, 1l).now();
+		Assert.assertTrue(recs.isEmpty());
+
+	}
+
 }

@@ -1,13 +1,13 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
-import com.aerospike.client.async.AsyncClient;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.RecordExistsAction;
+import com.aerospike.client.policy.WritePolicy;
 
-import java.util.Map;
+import java.util.*;
 
 public class Deleter<T> {
 
@@ -17,10 +17,11 @@ public class Deleter<T> {
 		this.recordsCache = recordsCache;
 	}
 
-	private String namespace;
-	private String setName;
-	private String stringKey;
-	private Long longKey;
+	protected String namespace;
+	protected String setName;
+	protected List<String> stringKeys = new ArrayList<>();
+	protected List<Long> longKeys = new ArrayList<>();
+	protected List<Key> keys = new ArrayList<>(10);
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	private RecordsCache recordsCache;
@@ -35,63 +36,34 @@ public class Deleter<T> {
 		return this;
 	}
 
-	public Deleter<T> key(String key) {
-		this.stringKey = key;
-		this.longKey = null;
+	public Deleter<T> key(String... keys) {
+		this.stringKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Deleter<T> key(long key) {
-		this.longKey = key;
-		this.stringKey = null;
+	public Deleter<T> key(Long... keys) {
+		this.longKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Deleter<T> key(Key key) {
-		this.namespace = key.namespace;
-		this.setName = key.setName;
-		Value userKey = key.userKey;
-		if (userKey instanceof Value.StringValue) {
-			this.stringKey = ((Value.StringValue) userKey).toString();
-		} else if (userKey instanceof Value.LongValue) {
-			this.longKey = ((Value.LongValue) userKey).toLong();
-		} else {
-			throw new IllegalStateException("Spikeify only supports Keys created from String and Long.");
-		}
+	public Deleter<T> key(Key... keys) {
+		this.keys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-//	public Deleter<T> entity(T object) {
-//		ClassMapper<?> mapper = MapperService.getMapper(object.getClass());
-//		this.namespace = mapper.getNamespace();
-//		this.setName = mapper.getSetName();
-//		Object userKey = mapper.getUserKey(object);
-//		if (userKey == null) {
-//			throw new IllegalStateException("Method Deleter.entity(object) requires entities to have");
-//		}
-//		if (userKey instanceof Value.StringValue) {
-//			this.stringKey = ((Value.StringValue) userKey).toString();
-//		} else if (userKey instanceof Value.LongValue) {
-//			this.longKey = ((Value.LongValue) userKey).toLong();
-//		} else {
-//			throw new IllegalStateException("Spikeify only supports Keys created from String and Long.");
-//		}
-//	}
+	protected void collectKeys() {
 
-	protected Key checkKey() {
-
-		String useNamespace = getNamespace();
-		String useSetName = getSetName();
-
-		Key key;
-		if (stringKey != null) {
-			key = new Key(useNamespace, useSetName, stringKey);
-		} else if (longKey != null) {
-			key = new Key(useNamespace, useSetName, longKey);
-		} else {
+		if (!stringKeys.isEmpty()) {
+			for (String stringKey : stringKeys) {
+				keys.add(new Key(getNamespace(), getSetName(), stringKey));
+			}
+		} else if (!longKeys.isEmpty()) {
+			for (long longKey : longKeys) {
+				keys.add(new Key(getNamespace(), getSetName(), longKey));
+			}
+		} else if (keys.isEmpty()) {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
-		return key;
 	}
 
 
@@ -111,10 +83,17 @@ public class Deleter<T> {
 	 *
 	 * @return whether record existed on server before deletion
 	 */
-	public boolean now() {
-		Key key = checkKey();
-		recordsCache.remove(key);
-		return synClient.delete(null, key);
+	public Map<T, Boolean> now() {
+		collectKeys();
+
+		Map<T, Boolean> result = new HashMap<>(keys.size());
+
+		for (Key key : keys) {
+			recordsCache.remove(key);
+//			result.put(null, synClient.delete(null, key)) ;
+		}
+
+		return result;
 	}
 
 }
