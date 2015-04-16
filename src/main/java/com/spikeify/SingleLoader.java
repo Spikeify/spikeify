@@ -8,7 +8,6 @@ import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class SingleLoader<T> {
@@ -109,6 +108,11 @@ public class SingleLoader<T> {
 		Key key = keys.get(0);
 
 		Record record = synClient.get(policy, key);
+
+		if (record == null) {
+			return null;
+		}
+
 		T object = classConstructor.construct(type);
 
 		// save rew records into cache - used later for differential updating
