@@ -26,7 +26,7 @@ public class UpdaterTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000);
+		SpikeifyService.globalConfig("localhost", 3000, "test");
 		client = new AerospikeClientMock();
 		sfy = SpikeifyService.mock(client);
 	}
@@ -51,9 +51,9 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 
+		// we did not provide namespace on purpose - let default kick in
 		Key saveKey = sfy
 				.update(entity)
-				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
 				.now();

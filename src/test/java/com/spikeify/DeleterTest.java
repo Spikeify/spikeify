@@ -23,7 +23,7 @@ public class DeleterTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000);
+		SpikeifyService.globalConfig("localhost", 3000, "test");
 		client = new AerospikeClientMock();
 		sfy = SpikeifyService.mock(client);
 	}
@@ -40,9 +40,9 @@ public class DeleterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 
+		// we did not provide namespace on purpose - let default kick in
 		Key saveKey = sfy
 				.create(entity)
-				.namespace(namespace)
 				.set(setName)
 				.key(userKeyLong)
 				.now();

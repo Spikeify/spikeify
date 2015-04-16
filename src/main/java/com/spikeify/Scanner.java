@@ -10,12 +10,15 @@ public class Scanner<T> {
 	private final IAsyncClient asyncClient;
 	private final ClassConstructor classConstructor;
 	private final RecordsCache recordsCache;
+	private String namespace;
 
-	public Scanner(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
+	public Scanner(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	               RecordsCache recordsCache, String namespace) {
 		this.type = type;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
+		this.namespace = namespace;
 	}
 }

@@ -9,10 +9,11 @@ import java.util.*;
 public class MultiDeleter<T> {
 
 	public MultiDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                    RecordsCache recordsCache, T... objects) {
+	                    RecordsCache recordsCache, String namespace, T... objects) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
+		this.namespace = namespace;
 		this.objects = objects;
 	}
 

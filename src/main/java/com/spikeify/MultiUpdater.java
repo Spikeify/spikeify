@@ -14,11 +14,12 @@ public class MultiUpdater<T> {
 	private final T[] objects;
 
 	public MultiUpdater(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                    RecordsCache recordsCache, boolean create, T... objects) {
+	                    RecordsCache recordsCache, boolean create, String namespace, T... objects) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
+		this.namespace = namespace;
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);

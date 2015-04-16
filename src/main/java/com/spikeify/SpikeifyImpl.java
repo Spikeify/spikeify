@@ -5,26 +5,29 @@ import com.aerospike.client.async.IAsyncClient;
 
 public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
-	public SpikeifyImpl(IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor) {
+	public SpikeifyImpl(IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, String namespace) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
+		this.namespace = namespace;
 	}
 
-	private IAerospikeClient synClient;
-	private IAsyncClient asyncClient;
-	private ClassConstructor classConstructor;
+	private final IAerospikeClient synClient;
+	private final IAsyncClient asyncClient;
+	private final ClassConstructor classConstructor;
+	private final String namespace;
+
 
 	private RecordsCache recordsCache = new RecordsCache();
 
 	@Override
 	public <E> SingleLoader<E> get(Class<E> type) {
-		return new SingleLoader<>(type, synClient, asyncClient, classConstructor, recordsCache);
+		return new SingleLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}
 
 	@Override
 	public <E> MultiLoader<E> getAll(Class<E> type) {
-		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache);
+		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}
 
 	@Override
@@ -34,7 +37,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new IllegalStateException("Error: parameter 'object' must not be null.");
 		}
 		return new SingleUpdater<>(object.getClass(), synClient, asyncClient,
-				recordsCache, true, object);
+				recordsCache, true, namespace, object);
 	}
 
 	@Override
@@ -45,7 +48,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		}
 		T object = objects[0];
 		return new MultiUpdater<T>((Class<T>) object.getClass(), synClient, asyncClient,
-				recordsCache, true, objects);
+				recordsCache, true, namespace,  objects);
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new IllegalStateException("Error: parameter 'object' must not be null.");
 		}
 		return new SingleUpdater<>(object.getClass(), synClient, asyncClient,
-				recordsCache, false, object);
+				recordsCache, false, namespace, object);
 	}
 
 	@Override
@@ -64,25 +67,26 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		}
 		T object = objects[0];
 		return new MultiUpdater<>((Class<T>) object.getClass(), synClient, asyncClient,
-				recordsCache, false, objects);
+				recordsCache, false, namespace, objects);
 	}
 
 	@Override
 	public <T> Scanner<T> query(Class<T> type) {
-		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache);
+		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}
 
 	public <T> MultiDeleter<T> delete() {
-		return new MultiDeleter<>(synClient, asyncClient, recordsCache);
+		return new MultiDeleter<>(synClient, asyncClient, recordsCache, namespace);
 	}
 
 	@Override
 	public <T> MultiDeleter<T> deleteAll() {
-		return new MultiDeleter<>(synClient, asyncClient, recordsCache);
+		return new MultiDeleter<>(synClient, asyncClient, recordsCache, namespace);
 
 	}
 
 	public <R> R transact(Work<R> work) {
 		return null;
 	}
+
 }

@@ -12,11 +12,13 @@ import java.util.List;
 
 public class SingleLoader<T> {
 
-	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
+	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	                    RecordsCache recordsCache, String namespace) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
+		this.namespace = namespace;
 		this.policy = new BatchPolicy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);

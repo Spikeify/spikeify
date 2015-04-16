@@ -25,7 +25,7 @@ public class CreatorTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000);
+		SpikeifyService.globalConfig("localhost", 3000, "test");
 		client = new AerospikeClientMock();
 		sfy = SpikeifyService.mock(client);
 	}
@@ -61,8 +61,8 @@ public class CreatorTest {
 				.now();
 
 		// reload entity and check that only two properties were updated
+		// we did not provide namespace on purpose - let default kick in
 		EntityOne reloaded = sfy.get(EntityOne.class)
-				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
 				.now();

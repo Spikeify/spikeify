@@ -15,11 +15,12 @@ public class SingleUpdater<T> {
 	private final T object;
 
 	public SingleUpdater(Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                     RecordsCache recordsCache, boolean create, T object) {
+	                     RecordsCache recordsCache, boolean create, String namespace, T object) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
+		this.namespace = namespace;
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
