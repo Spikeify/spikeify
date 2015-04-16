@@ -44,7 +44,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
 		}
 		T object = objects[0];
-		return new MultiUpdater<>(object.getClass(), synClient, asyncClient,
+		return new MultiUpdater<T>((Class<T>) object.getClass(), synClient, asyncClient,
 				recordsCache, true, objects);
 	}
 
@@ -63,7 +63,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
 		}
 		T object = objects[0];
-		return new MultiUpdater<>(object.getClass(), synClient, asyncClient,
+		return new MultiUpdater<>((Class<T>) object.getClass(), synClient, asyncClient,
 				recordsCache, false, objects);
 	}
 
@@ -72,8 +72,14 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache);
 	}
 
-	public Deleter delete() {
-		return new Deleter<>(synClient, asyncClient, recordsCache);
+	public <T> MultiDeleter<T> delete() {
+		return new MultiDeleter<>(synClient, asyncClient, recordsCache);
+	}
+
+	@Override
+	public <T> MultiDeleter<T> deleteAll() {
+		return new MultiDeleter<>(synClient, asyncClient, recordsCache);
+
 	}
 
 	public <R> R transact(Work<R> work) {

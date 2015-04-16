@@ -7,7 +7,8 @@ import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 
-import java.util.*;
+import java.util.Map;
+import java.util.Set;
 
 public class SingleUpdater<T> {
 
@@ -27,9 +28,9 @@ public class SingleUpdater<T> {
 
 	protected String namespace;
 	protected String setName;
-	protected List<String> stringKeys = new ArrayList<>();
-	protected List<Long> longKeys = new ArrayList<>();
-	protected List<Key> keys = new ArrayList<>(10);
+	protected String stringKey;
+	protected Long longKey;
+	protected Key key;
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected RecordsCache recordsCache;
@@ -48,17 +49,23 @@ public class SingleUpdater<T> {
 	}
 
 	public SingleUpdater<T> key(String key) {
-		this.stringKeys.add(key);
+		this.stringKey = key;
+		this.longKey = null;
+		this.key = null;
 		return this;
 	}
 
 	public SingleUpdater<T> key(Long key) {
-		this.longKeys.add(key);
+		this.longKey = key;
+		this.stringKey = null;
+		this.key = null;
 		return this;
 	}
 
 	public SingleUpdater<T> key(Key key) {
-		this.keys.add(key);
+		this.key = key;
+		this.stringKey = null;
+		this.longKey = null;
 		return this;
 	}
 
@@ -75,17 +82,25 @@ public class SingleUpdater<T> {
 
 	protected void collectKeys() {
 
-		if (!stringKeys.isEmpty()) {
-			for (String stringKey : stringKeys) {
-				keys.add(new Key(getNamespace(), getSetName(), stringKey));
+		if (stringKey != null) {
+			key = new Key(getNamespace(), getSetName(), stringKey);
+		} else if (longKey != null) {
+			key = new Key(getNamespace(), getSetName(), longKey);
+		} else {
+			Object userKey = mapper.getUserKey(object);
+			if (userKey != null) {
+				if (userKey.getClass() == String.class) {
+					key = new Key(getNamespace(), getSetName(), (String) userKey);
+				} else if (userKey.getClass() == Long.class || userKey.getClass() == long.class) {
+					key = new Key(getNamespace(), getSetName(), (Long) userKey);
+				}
 			}
-		} else if (!longKeys.isEmpty()) {
-			for (long longKey : longKeys) {
-				keys.add(new Key(getNamespace(), getSetName(), longKey));
-			}
-		} else if (keys.isEmpty()) {
+		}
+
+		if (key == null) {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
+
 	}
 
 	protected String getNamespace() {
@@ -102,11 +117,16 @@ public class SingleUpdater<T> {
 
 	public Key now() {
 
+		if (create) {
+			policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+		} else {
+			policy.recordExistsAction = RecordExistsAction.UPDATE;
+		}
+
 		collectKeys();
 
 		// this should be a one-key operation
 		// if multiple keys - use the first key
-		Key key = keys.get(0);
 
 		if (object == null) {
 			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");

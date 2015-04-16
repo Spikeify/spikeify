@@ -107,9 +107,9 @@ public class ClassMapper<TYPE> {
 	public void setUserKey(Object object, String userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
-				throw new IllegalStateException("Key type mismatch: @UserKey field '"+
-						userKeyFieldMapper.field.getDeclaringClass().getName()+"#"+userKeyFieldMapper.field.getName()+
-						"' has type '"+userKeyFieldMapper.field.getType()+"', while key has type 'String'."
+				throw new IllegalStateException("Key type mismatch: @UserKey field '" +
+						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
+						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
 				);
 			}
 			userKeyFieldMapper.setFieldValue(object, userKey);
@@ -119,9 +119,9 @@ public class ClassMapper<TYPE> {
 	public void setUserKey(Object object, Long userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
-				throw new IllegalStateException("Key type mismatch: @UserKey field '"+
-						userKeyFieldMapper.field.getDeclaringClass().getName()+"#"+userKeyFieldMapper.field.getName()+
-						"' has type '"+userKeyFieldMapper.field.getType()+"', while key has type 'Long'."
+				throw new IllegalStateException("Key type mismatch: @UserKey field '" +
+						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
+						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."
 				);
 			}
 			userKeyFieldMapper.setFieldValue(object, userKey);

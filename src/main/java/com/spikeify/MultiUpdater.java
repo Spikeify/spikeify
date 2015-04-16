@@ -13,7 +13,7 @@ public class MultiUpdater<T> {
 
 	private final T[] objects;
 
-	public MultiUpdater(Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiUpdater(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                    RecordsCache recordsCache, boolean create, T... objects) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
@@ -48,17 +48,32 @@ public class MultiUpdater<T> {
 	}
 
 	public MultiUpdater<T> key(String... keys) {
-		this.stringKeys.addAll(Arrays.asList(keys));
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Number of keys does not match number of objects.");
+		}
+		this.stringKeys = Arrays.asList(keys);
+		this.longKeys.clear();
+		this.keys.clear();
 		return this;
 	}
 
 	public MultiUpdater<T> key(Long... keys) {
-		this.longKeys.addAll(Arrays.asList(keys));
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Number of keys does not match number of objects.");
+		}
+		this.longKeys = Arrays.asList(keys);
+		this.stringKeys.clear();
+		this.keys.clear();
 		return this;
 	}
 
 	public MultiUpdater<T> key(Key... keys) {
-		this.keys.addAll(Arrays.asList(keys));
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Number of keys does not match number of objects.");
+		}
+		this.keys = Arrays.asList(keys);
+		this.stringKeys.clear();
+		this.longKeys.clear();
 		return this;
 	}
 
@@ -75,6 +90,7 @@ public class MultiUpdater<T> {
 
 	protected void collectKeys() {
 
+		// check if any Long or String keys were provided
 		if (!stringKeys.isEmpty()) {
 			for (String stringKey : stringKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), stringKey));
@@ -83,8 +99,30 @@ public class MultiUpdater<T> {
 			for (long longKey : longKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), longKey));
 			}
-		} else if (keys.isEmpty()) {
+		} else {
+
+			// check if entities have @UserKey entity
+			keys.clear();
+			for (T object : objects) {
+				Object userKey = mapper.getUserKey(object);
+				if (userKey != null) {
+					if (userKey.getClass() == String.class) {
+						Key objectKey = new Key(getNamespace(), getSetName(), (String) userKey);
+						keys.add(objectKey);
+					} else if (userKey.getClass() == Long.class || userKey.getClass() == long.class) {
+						Key objectKey = new Key(getNamespace(), getSetName(), (Long) userKey);
+						keys.add(objectKey);
+					}
+				}
+			}
+		}
+
+		if (keys.isEmpty()) {
 			throw new IllegalStateException("Error: missing parameter 'key'");
+		}
+		if (keys.size() != objects.length) {
+			throw new IllegalStateException("Error scanning @UserKey annotation on objects: " +
+					"not all provided objects have @UserKey annotation provided on a field.");
 		}
 	}
 
@@ -100,7 +138,7 @@ public class MultiUpdater<T> {
 		return setName != null ? setName : mapper.getSetName();
 	}
 
-	public Map<T, Key> now() {
+	public Map<Key, T> now() {
 
 		collectKeys();
 
@@ -108,7 +146,7 @@ public class MultiUpdater<T> {
 			throw new IllegalStateException("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
-		Map<T, Key> result = new HashMap<>(objects.length);
+		Map<Key, T> result = new HashMap<>(objects.length);
 
 		for (int i = 0; i < objects.length; i++) {
 
@@ -119,7 +157,7 @@ public class MultiUpdater<T> {
 				throw new IllegalStateException("Error: with multi-put all objects and keys must NOT be null");
 			}
 
-			result.put(object, key);
+			result.put(key, object);
 
 			Map<String, Object> props = mapper.getProperties(object);
 			Set<String> changedProps = recordsCache.update(key, props);

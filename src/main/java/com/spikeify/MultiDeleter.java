@@ -2,20 +2,21 @@ package com.spikeify;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
-import com.aerospike.client.Value;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.RecordExistsAction;
-import com.aerospike.client.policy.WritePolicy;
 
 import java.util.*;
 
-public class Deleter<T> {
+public class MultiDeleter<T> {
 
-	public Deleter(IAerospikeClient synClient, IAsyncClient asyncClient, RecordsCache recordsCache) {
+	public MultiDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                    RecordsCache recordsCache, T... objects) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
+		this.objects = objects;
 	}
+
+	private final T[] objects;
 
 	protected String namespace;
 	protected String setName;
@@ -26,27 +27,27 @@ public class Deleter<T> {
 	protected IAsyncClient asyncClient;
 	private RecordsCache recordsCache;
 
-	public Deleter<T> namespace(String namespace) {
+	public MultiDeleter<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public Deleter<T> set(String setName) {
+	public MultiDeleter<T> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public Deleter<T> key(String... keys) {
+	public MultiDeleter<T> key(String... keys) {
 		this.stringKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Deleter<T> key(Long... keys) {
+	public MultiDeleter<T> key(Long... keys) {
 		this.longKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Deleter<T> key(Key... keys) {
+	public MultiDeleter<T> key(Key... keys) {
 		this.keys.addAll(Arrays.asList(keys));
 		return this;
 	}
@@ -65,7 +66,6 @@ public class Deleter<T> {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
 	}
-
 
 	protected String getNamespace() {
 		if (namespace == null) {
@@ -90,7 +90,7 @@ public class Deleter<T> {
 
 		for (Key key : keys) {
 			recordsCache.remove(key);
-//			result.put(null, synClient.delete(null, key)) ;
+			result.put(null, synClient.delete(null, key)) ;
 		}
 
 		return result;

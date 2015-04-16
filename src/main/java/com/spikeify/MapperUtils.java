@@ -1,5 +1,6 @@
 package com.spikeify;
 
+import com.aerospike.client.Key;
 import com.spikeify.annotations.*;
 import com.spikeify.converters.*;
 
@@ -100,7 +101,7 @@ public class MapperUtils {
 		return null;
 	}
 
-	public static FieldMapper getSetNameFieldMapper(Class clazz) {
+	public static FieldMapper<String, String> getSetNameFieldMapper(Class clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(SetName.class) != null) {
 				Class fieldType = field.getType();
@@ -125,7 +126,7 @@ public class MapperUtils {
 				&& !field.isSynthetic();
 	}
 
-	public static <TYPE> FieldMapper getUserKeyFieldMapper(Class<TYPE> clazz) {
+	public static <TYPE> FieldMapper<Key, ?> getUserKeyFieldMapper(Class<TYPE> clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(UserKey.class) != null) {
 				Class fieldType = field.getType();
