@@ -71,7 +71,7 @@ public class LoaderTest {
 		Key key = new Key(namespace, setName, userKey1);
 		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine);
 
-		EntityOne entity = sfy.load(EntityOne.class).key(userKey1).namespace(namespace).set(setName).get();
+		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).set(setName).now();
 
 		// UserKey value
 		Assert.assertEquals(userKey1, entity.userId);
@@ -109,7 +109,7 @@ public class LoaderTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
-				.put();
+				.now();
 
 		EntityOne entity2 = new EntityOne();
 		entity2.one = 123;
@@ -129,9 +129,9 @@ public class LoaderTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey2)
-				.put();
+				.now();
 
-		Map<Key, EntityOne> result = sfy.load(EntityOne.class).key(saveKey1, saveKey2).getAll();
+		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class).key(saveKey1, saveKey2).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));

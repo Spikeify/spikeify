@@ -9,26 +9,9 @@ import com.aerospike.client.policy.BatchPolicy;
 
 import java.util.*;
 
-public class Loader<T> {
+public class MultiLoader<T> {
 
-	protected String namespace;
-	protected String setName;
-	protected List<String> stringKeys = new ArrayList<>();
-	protected List<Long> longKeys = new ArrayList<>();
-	protected List<Key> keys = new ArrayList<>(10);
-	protected IAerospikeClient synClient;
-	protected IAsyncClient asyncClient;
-	protected ClassConstructor classConstructor;
-	protected RecordsCache recordsCache;
-	protected BatchPolicy policy;
-	protected ClassMapper<T> mapper;
-	protected Class<T> type;
-
-	protected Loader(Loader<T> loader){
-		//todo
-	}
-
-	public Loader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
+	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, RecordsCache recordsCache) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
@@ -39,32 +22,45 @@ public class Loader<T> {
 		this.type = type;
 	}
 
-	public Loader<T> namespace(String namespace) {
+	protected String namespace;
+	protected String setName;
+	protected List<String> stringKeys = new ArrayList<>();
+	protected List<Long> longKeys = new ArrayList<>();
+	protected List<Key> keys = new ArrayList<>(10);
+	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asyncClient;
+	protected final ClassConstructor classConstructor;
+	protected final RecordsCache recordsCache;
+	protected BatchPolicy policy;
+	protected ClassMapper<T> mapper;
+	protected Class<T> type;
+
+	public MultiLoader<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public Loader<T> set(String setName) {
+	public MultiLoader<T> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public Loader<T> key(String... keys) {
+	public MultiLoader<T> key(String... keys) {
 		this.stringKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Loader<T> key(Long... keys) {
+	public MultiLoader<T> key(Long... keys) {
 		this.longKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Loader<T> key(Key... keys) {
+	public MultiLoader<T> key(Key... keys) {
 		this.keys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public Loader<T> policy(BatchPolicy policy) {
+	public MultiLoader<T> policy(BatchPolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		return this;
@@ -98,47 +94,11 @@ public class Loader<T> {
 	}
 
 	/**
-	 * Executes a single get command.
-	 * @return The Java object mapped from record
-	 */
-	public T get() {
-
-		collectKeys();
-
-		// this should be a one-key operation
-		// if multiple keys - use the first key
-		Key key = keys.get(0);
-
-		Record record = synClient.get(policy, key);
-		T object = classConstructor.construct(type);
-
-		// save rew records into cache - used later for differential updating
-		recordsCache.insert(key, record.bins);
-
-		// set UserKey field
-		switch (key.userKey.getType()){
-			case ParticleType.STRING:
-				mapper.setUserKey(object, key.userKey.toString());
-				break;
-			case ParticleType.INTEGER:
-				mapper.setUserKey(object, key.userKey.toLong());
-				break;
-		}
-
-		// set metafields on the entity: @Namespace, @SetName, @Expiration..
-		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
-
-		// set field values
-		mapper.setFieldValues(object, record.bins);
-
-		return object;
-	}
-
-	/**
 	 * Executes multiple get commands.
+	 *
 	 * @return The map of Keys and Java objects mapped from records
 	 */
-	public Map<Key, T> getAll() {
+	public Map<Key, T> now() {
 
 		collectKeys();
 
@@ -160,7 +120,7 @@ public class Loader<T> {
 				recordsCache.insert(keysArray[i], record.bins);
 
 				// set UserKey field
-				switch (key.userKey.getType()){
+				switch (key.userKey.getType()) {
 					case ParticleType.STRING:
 						mapper.setUserKey(object, key.userKey.toString());
 						break;
@@ -181,5 +141,4 @@ public class Loader<T> {
 
 		return result;
 	}
-
 }

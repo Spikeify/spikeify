@@ -9,12 +9,12 @@ import com.aerospike.client.policy.WritePolicy;
 
 import java.util.*;
 
-public class Updater<T> {
+public class SingleUpdater<T> {
 
-	private final T[] objects;
+	private final T object;
 
-	public Updater(Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
-	               RecordsCache recordsCache, boolean create, T... objects) {
+	public SingleUpdater(Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
+	                     RecordsCache recordsCache, boolean create, T object) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -22,7 +22,7 @@ public class Updater<T> {
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
-		this.objects = objects;
+		this.object = object;
 	}
 
 	protected String namespace;
@@ -37,32 +37,32 @@ public class Updater<T> {
 	protected WritePolicy policy;
 	protected ClassMapper<T> mapper;
 
-	public Updater<T> namespace(String namespace) {
+	public SingleUpdater<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public Updater<T> set(String setName) {
+	public SingleUpdater<T> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public Updater<T> key(String... keys) {
-		this.stringKeys.addAll(Arrays.asList(keys));
+	public SingleUpdater<T> key(String key) {
+		this.stringKeys.add(key);
 		return this;
 	}
 
-	public Updater<T> key(Long... keys) {
-		this.longKeys.addAll(Arrays.asList(keys));
+	public SingleUpdater<T> key(Long key) {
+		this.longKeys.add(key);
 		return this;
 	}
 
-	public Updater<T> key(Key... keys) {
-		this.keys.addAll(Arrays.asList(keys));
+	public SingleUpdater<T> key(Key key) {
+		this.keys.add(key);
 		return this;
 	}
 
-	public Updater<T> policy(WritePolicy policy) {
+	public SingleUpdater<T> policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		if (create) {
@@ -100,7 +100,7 @@ public class Updater<T> {
 		return setName != null ? setName : mapper.getSetName();
 	}
 
-	public Key put() {
+	public Key now() {
 
 		collectKeys();
 
@@ -108,12 +108,11 @@ public class Updater<T> {
 		// if multiple keys - use the first key
 		Key key = keys.get(0);
 
-		if (objects == null || objects.length == 0) {
+		if (object == null) {
 			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
 		}
-		T object = objects[0];
 
-		Map<String, Object> props = mapper.getProperties(objects[0]);
+		Map<String, Object> props = mapper.getProperties(object);
 		Set<String> changedProps = recordsCache.update(key, props);
 
 		Bin[] bins = new Bin[changedProps.size()];
@@ -133,48 +132,4 @@ public class Updater<T> {
 
 		return key;
 	}
-
-	public Map<T, Key> putAll() {
-
-		collectKeys();
-
-		if (objects.length != keys.size()) {
-			throw new IllegalStateException("Error: with multi-put you need to provide equal number of objects and keys");
-		}
-
-		Map<T, Key> result = new HashMap<>(objects.length);
-
-		for (int i = 0; i < objects.length; i++) {
-
-			T object = objects[i];
-			Key key = keys.get(i);
-
-			if (key == null || object == null) {
-				throw new IllegalStateException("Error: with multi-put all objects and keys must NOT be null");
-			}
-
-			result.put(object, key);
-
-			Map<String, Object> props = mapper.getProperties(object);
-			Set<String> changedProps = recordsCache.update(key, props);
-
-			Bin[] bins = new Bin[changedProps.size()];
-			int position = 0;
-			for (String propName : changedProps) {
-				bins[position++] = new Bin(propName, props.get(propName));
-			}
-
-			Long expiration = mapper.getExpiration(object);
-			if (expiration != null) {
-				// Entities expiration:  Java time in milliseconds
-				// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
-				policy.expiration = (int) (expiration / 1000) - 1262304000; // todo fix Expiration
-			}
-
-			synClient.put(policy, key, bins);
-		}
-
-		return result;
-	}
-
 }

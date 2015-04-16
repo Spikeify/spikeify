@@ -45,7 +45,7 @@ public class DeleterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKeyLong)
-				.put();
+				.now();
 
 		Key deleteKey = new Key(namespace, setName, userKeyLong);
 		sfy.delete().key(deleteKey).now();
@@ -76,7 +76,7 @@ public class DeleterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKeyString)
-				.put();
+				.now();
 
 		sfy.delete().namespace(namespace).set(setName).key(userKeyString).now();
 

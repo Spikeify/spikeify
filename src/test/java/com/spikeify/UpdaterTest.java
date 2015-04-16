@@ -56,7 +56,7 @@ public class UpdaterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
-				.put();
+				.now();
 
 		Key loadKey = new Key(namespace, setName, userKey1);
 
@@ -96,7 +96,7 @@ public class UpdaterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
-				.put();
+				.now();
 
 		// delete entity by hand
 		WritePolicy policy = new WritePolicy();
@@ -113,14 +113,14 @@ public class UpdaterTest {
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
-				.put();
+				.now();
 
 		// reload entity and check that only two properties were updated
-		EntityOne reloaded = sfy.load(EntityOne.class)
+		EntityOne reloaded = sfy.get(EntityOne.class)
 				.namespace(namespace)
 				.set(setName)
 				.key(userKey1)
-				.get();
+				.now();
 
 		Assert.assertEquals(reloaded.one, 100);
 		Assert.assertEquals(reloaded.two, "new string");
@@ -210,10 +210,10 @@ public class UpdaterTest {
 		// save entity
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
-		Key savedKey = sfy.update(entityOne).key(saveKey).put();
+		Key savedKey = sfy.update(entityOne).key(saveKey).now();
 
 		// load entity
-		EntityOne loadedEntity = sfy.load(EntityOne.class).key(savedKey).get();
+		EntityOne loadedEntity = sfy.get(EntityOne.class).key(savedKey).now();
 
 		// check values
 		List nine = loadedEntity.nine;
@@ -254,13 +254,13 @@ public class UpdaterTest {
 		entity2.nine.add("two");
 
 		// multi-put
-		sfy.update(entity1, entity2).namespace(namespace).set(setName).key(userKey1, userKey2).putAll();
+		sfy.updateAll(entity1, entity2).namespace(namespace).set(setName).key(userKey1, userKey2).now();
 
 		Key key1 = new Key(namespace, setName, userKey1);
 		Key key2 = new Key(namespace, setName, userKey2);
 
 		// multi-get
-		Map<Key, EntityOne> result = sfy.load(EntityOne.class).key(key1, key2).namespace(namespace).set(setName).getAll();
+		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class).key(key1, key2).namespace(namespace).set(setName).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertEquals(entity1, result.get(key1));

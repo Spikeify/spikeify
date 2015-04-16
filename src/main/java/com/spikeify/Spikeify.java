@@ -2,13 +2,21 @@ package com.spikeify;
 
 public interface Spikeify {
 
-	<E> Loader<E> load(Class<E> type);
+	<T> SingleLoader<T> get(Class<T> type);
 
-	<T> Updater<T> create(T... object);
+	<T> MultiLoader<T> getAll(Class<T> type);
 
-	<T> Updater<T> update(T... object);
+	<T> SingleUpdater<T> create(T object);
+
+	<T> MultiUpdater<T> createAll(T... object);
+
+	<T> SingleUpdater<T> update(T object);
+
+	<T> MultiUpdater<T> updateAll(T... object);
 
 	<T> Deleter<T> delete();
+
+	<T> Scanner<T> query(Class<T> type);
 
 //	<R> R transact(Work<R> work);
 }
