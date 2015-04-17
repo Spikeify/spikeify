@@ -9,7 +9,11 @@ import java.lang.annotation.Target;
  * Flags a field that holds set name of the Record
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.TYPE, ElementType.FIELD})
 public @interface SetName {
+	/**
+	 * The SetName used for this Class.
+	 */
+	String value() default "";
 }
 

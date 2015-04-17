@@ -1,7 +1,5 @@
 package com.spikeify;
 
-import java.security.Key;
-
 public interface Spikeify {
 
 	<T> SingleLoader<T> get(Class<T> type);
@@ -16,11 +14,17 @@ public interface Spikeify {
 
 	<T> MultiUpdater<T> updateAll(T... object);
 
-	<T> MultiDeleter<T> delete();
+	MultiObjectDeleter delete(Object object);
 
-	<T> MultiDeleter<T> deleteAll();
+	MultiObjectDeleter deleteAll(Object... object);
+
+	MultiKeyDeleter delete();
+
+	MultiKeyDeleter deleteAll();
 
 	<T> Scanner<T> query(Class<T> type);
+
+
 
 //	<R> R transact(Work<R> work);
 }

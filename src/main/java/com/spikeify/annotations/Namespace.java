@@ -9,7 +9,11 @@ import java.lang.annotation.Target;
  * Flags a field that holds namespace of the Record
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Namespace {
+	/**
+	 * The namespace used in the DB.
+	 */
+	String value() default "";
 }
 

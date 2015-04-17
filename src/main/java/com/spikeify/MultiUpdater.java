@@ -100,7 +100,7 @@ public class MultiUpdater<T> {
 			for (long longKey : longKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), longKey));
 			}
-		} else {
+		} else if (keys.isEmpty()) {
 
 			// check if entities have @UserKey entity
 			keys.clear();

@@ -75,14 +75,24 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}
 
-	public <T> MultiDeleter<T> delete() {
-		return new MultiDeleter<>(synClient, asyncClient, recordsCache, namespace);
+
+	public MultiObjectDeleter delete(Object object) {
+		return new MultiObjectDeleter(synClient, asyncClient, recordsCache, namespace, object);
 	}
 
 	@Override
-	public <T> MultiDeleter<T> deleteAll() {
-		return new MultiDeleter<>(synClient, asyncClient, recordsCache, namespace);
+	public MultiObjectDeleter deleteAll(Object... objects) {
+		return new MultiObjectDeleter(synClient, asyncClient, recordsCache, namespace, objects);
+	}
 
+	@Override
+	public MultiKeyDeleter delete() {
+		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace);
+	}
+
+	@Override
+	public MultiKeyDeleter deleteAll() {
+		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace);
 	}
 
 	public <R> R transact(Work<R> work) {
