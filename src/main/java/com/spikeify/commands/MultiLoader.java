@@ -16,7 +16,7 @@ import java.util.*;
 public class MultiLoader<T> {
 
 	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	                   RecordsCache recordsCache, String namespace) {
+	                   RecordsCache recordsCache, String namespace, Key... keys) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
@@ -26,6 +26,35 @@ public class MultiLoader<T> {
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
+		this.keys = Arrays.asList(keys);
+	}
+
+	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	                   RecordsCache recordsCache, String namespace, Long... userKeys) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.classConstructor = classConstructor;
+		this.recordsCache = recordsCache;
+		this.namespace = namespace;
+		this.policy = new BatchPolicy();
+		this.policy.sendKey = true;
+		this.mapper = MapperService.getMapper(type);
+		this.type = type;
+		this.longKeys = Arrays.asList(userKeys);
+	}
+
+	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	                   RecordsCache recordsCache, String namespace, String... userKeys) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.classConstructor = classConstructor;
+		this.recordsCache = recordsCache;
+		this.namespace = namespace;
+		this.policy = new BatchPolicy();
+		this.policy.sendKey = true;
+		this.mapper = MapperService.getMapper(type);
+		this.type = type;
+		this.stringKeys = Arrays.asList(userKeys);
 	}
 
 	protected String namespace;
@@ -48,21 +77,6 @@ public class MultiLoader<T> {
 
 	public MultiLoader<T> set(String setName) {
 		this.setName = setName;
-		return this;
-	}
-
-	public MultiLoader<T> key(String... keys) {
-		this.stringKeys.addAll(Arrays.asList(keys));
-		return this;
-	}
-
-	public MultiLoader<T> key(Long... keys) {
-		this.longKeys.addAll(Arrays.asList(keys));
-		return this;
-	}
-
-	public MultiLoader<T> key(Key... keys) {
-		this.keys.addAll(Arrays.asList(keys));
 		return this;
 	}
 

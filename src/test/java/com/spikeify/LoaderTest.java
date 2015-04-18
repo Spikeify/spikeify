@@ -33,8 +33,8 @@ public class LoaderTest {
 	public void dbCleanup() {
 		Key deleteKey1 = new Key(namespace, setName, userKey1);
 		Key deleteKey2 = new Key(namespace, setName, userKey2);
-		sfy.delete().key(deleteKey1).now();
-		sfy.delete().key(deleteKey2).now();
+		sfy.delete(deleteKey1).now();
+		sfy.delete(deleteKey2).now();
 	}
 
 	@Test
@@ -129,7 +129,7 @@ public class LoaderTest {
 				.set(setName)
 				.now();
 
-		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class).key(saveKey1, saveKey2).now();
+		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));
@@ -148,7 +148,7 @@ public class LoaderTest {
 
 	@Test
 	public void loadAllNonExisting(){
-		Map<Key, EntityOne> recs = sfy.getAll(EntityOne.class).namespace(namespace).key(0l, 1l).now();
+		Map<Key, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
 		Assert.assertTrue(recs.isEmpty());
 
 	}

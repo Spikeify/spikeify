@@ -34,7 +34,7 @@ public class UpdaterTest {
 	@After
 	public void dbCleanup() {
 		Key deleteKey = new Key(namespace, setName, userKey1);
-		sfy.delete().key(deleteKey).now();
+		sfy.delete(deleteKey).now();
 	}
 
 	@Test
@@ -259,7 +259,7 @@ public class UpdaterTest {
 		Key key2 = new Key(namespace, setName, userKey2);
 
 		// multi-get
-		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class).key(key1, key2).namespace(namespace).set(setName).now();
+		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class, key1, key2).namespace(namespace).set(setName).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertEquals(entity1, result.get(key1));

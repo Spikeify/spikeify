@@ -15,11 +15,30 @@ public class SingleKeyDeleter<T> {
 	private String stringKey;
 
 	public SingleKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                        RecordsCache recordsCache, String defaultNamespace) {
+	                        RecordsCache recordsCache, String defaultNamespace, Key key) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
+		this.key = key;
+	}
+
+	public SingleKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                        RecordsCache recordsCache, String defaultNamespace, Long userKey) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.namespace = defaultNamespace;
+		this.longKey = userKey;
+	}
+
+	public SingleKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                        RecordsCache recordsCache, String defaultNamespace, String userKey) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.namespace = defaultNamespace;
+		this.stringKey = userKey;
 	}
 
 	protected String namespace;
@@ -35,27 +54,6 @@ public class SingleKeyDeleter<T> {
 
 	public SingleKeyDeleter<T> set(String setName) {
 		this.setName = setName;
-		return this;
-	}
-
-	public SingleKeyDeleter<T> key(String key) {
-		this.stringKey = key;
-		this.longKey = null;
-		this.key = null;
-		return this;
-	}
-
-	public SingleKeyDeleter<T> key(Long key) {
-		this.longKey = key;
-		this.stringKey = null;
-		this.key = null;
-		return this;
-	}
-
-	public SingleKeyDeleter<T> key(Key key) {
-		this.key = key;
-		this.stringKey = null;
-		this.longKey = null;
 		return this;
 	}
 

@@ -28,8 +28,17 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public <E> MultiLoader<E> getAll(Class<E> type) {
-		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
+	public <E> MultiLoader<E> getAll(Class<E> type, Key... keys) {
+		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
+	}
+
+	@Override
+	public <E> MultiLoader<E> getAll(Class<E> type, Long... keys) {
+		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
+	}
+	@Override
+	public <E> MultiLoader<E> getAll(Class<E> type, String... keys) {
+		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
 	}
 
 	@Override
@@ -118,13 +127,32 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public SingleKeyDeleter delete() {
-		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, namespace);
+	public SingleKeyDeleter delete(Key key) {
+		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, namespace, key);
 	}
 
 	@Override
-	public MultiKeyDeleter deleteAll() {
-		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace);
+	public SingleKeyDeleter delete(Long userKey) {
+		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, namespace, userKey);
+	}
+
+	@Override
+	public SingleKeyDeleter delete(String userKey) {
+		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, namespace, userKey);
+	}
+
+	@Override
+	public MultiKeyDeleter deleteAll(Key... keys) {
+		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace, keys);
+	}
+
+	@Override
+	public MultiKeyDeleter deleteAll(Long... keys) {
+		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace, keys);
+	}
+	@Override
+	public MultiKeyDeleter deleteAll(String... keys) {
+		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace, keys);
 	}
 
 	public <R> R transact(Work<R> work) {

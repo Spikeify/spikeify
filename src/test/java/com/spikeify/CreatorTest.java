@@ -33,7 +33,7 @@ public class CreatorTest {
 	@After
 	public void dbCleanup() {
 		Key deleteKey = new Key(namespace, setName, userKey1);
-		sfy.delete().key(deleteKey).now();
+		sfy.delete(deleteKey).now();
 	}
 
 	@Test
@@ -116,10 +116,9 @@ public class CreatorTest {
 				.now();
 
 		// reload entity and check that only two properties were updated
-		Map<Key, EntityOne> reloaded = sfy.getAll(EntityOne.class)
+		Map<Key, EntityOne> reloaded = sfy.getAll(EntityOne.class, userKey1, userKey2)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1, userKey2)
 				.now();
 
 		Assert.assertEquals(2, saveKeys.size());

@@ -7,7 +7,9 @@ public interface Spikeify {
 
 	<T> SingleLoader<T> get(Class<T> type);
 
-	<T> MultiLoader<T> getAll(Class<T> type);
+	<T> MultiLoader<T> getAll(Class<T> type, Key... keys);
+	<T> MultiLoader<T> getAll(Class<T> type, Long... keys);
+	<T> MultiLoader<T> getAll(Class<T> type, String... keys);
 
 	<T> SingleKeyUpdater<T> create(Key key, T entity);
 
@@ -31,14 +33,21 @@ public interface Spikeify {
 
 	SingleObjectDeleter delete(Object object);
 
+	SingleKeyDeleter delete(Key key);
+
+	SingleKeyDeleter delete(Long userKey);
+
+	SingleKeyDeleter delete(String userKey);
+
 	MultiObjectDeleter deleteAll(Object... object);
 
-	SingleKeyDeleter delete();
+	MultiKeyDeleter deleteAll(Key... keys);
 
-	MultiKeyDeleter deleteAll();
+	MultiKeyDeleter deleteAll(Long... userKeys);
+
+	MultiKeyDeleter deleteAll(String... userKeys);
 
 	<T> Scanner<T> query(Class<T> type);
-
 
 //	<R> R transact(Work<R> work);
 }

@@ -70,7 +70,7 @@ public class DeleterTest {
 				.now();
 
 		Key deleteKey = new Key(namespace, setName, userKeyLong);
-		sfy.delete().key(deleteKey).now();
+		sfy.delete(deleteKey).now();
 
 		Policy policy = new Policy();
 		policy.sendKey = true;
@@ -99,7 +99,7 @@ public class DeleterTest {
 				.set(setName)
 				.now();
 
-		sfy.delete().namespace(namespace).set(setName).key(userKeyString).now();
+		sfy.delete(userKeyString).namespace(namespace).set(setName).now();
 
 		Policy policy = new Policy();
 		policy.sendKey = true;

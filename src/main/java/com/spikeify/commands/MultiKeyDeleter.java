@@ -14,11 +14,30 @@ public class MultiKeyDeleter{
 	private String[] stringKeys;
 
 	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace) {
+	                       RecordsCache recordsCache, String defaultNamespace, Key... keys) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
+		this.keys = Arrays.asList(keys);
+	}
+
+	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, String defaultNamespace, Long... keys) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.namespace = defaultNamespace;
+		this.longKeys = keys;
+	}
+
+	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, String defaultNamespace, String... keys) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.namespace = defaultNamespace;
+		this.stringKeys = keys;
 	}
 
 	protected String namespace;
