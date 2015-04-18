@@ -1,12 +1,13 @@
-package com.spikeify;
+package com.spikeify.commands;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.spikeify.RecordsCache;
 
 import java.util.*;
 
-public class MultiKeyDeleter<T> {
+public class MultiKeyDeleter{
 
 	private List<Key> keys = new ArrayList<>();
 	private Long[] longKeys;
@@ -26,31 +27,31 @@ public class MultiKeyDeleter<T> {
 	protected final IAsyncClient asyncClient;
 	private final RecordsCache recordsCache;
 
-	public MultiKeyDeleter<T> namespace(String namespace) {
+	public MultiKeyDeleter namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public MultiKeyDeleter<T> set(String setName) {
+	public MultiKeyDeleter set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public MultiKeyDeleter<T> key(String... keys) {
+	public MultiKeyDeleter key(String... keys) {
 		this.stringKeys = keys;
 		this.longKeys = null;
 		this.keys.clear();
 		return this;
 	}
 
-	public MultiKeyDeleter<T> key(Long... keys) {
+	public MultiKeyDeleter key(Long... keys) {
 		this.longKeys = keys;
 		this.stringKeys = null;
 		this.keys.clear();
 		return this;
 	}
 
-	public MultiKeyDeleter<T> key(Key... keys) {
+	public MultiKeyDeleter key(Key... keys) {
 		this.keys = Arrays.asList(keys);
 		this.stringKeys = null;
 		this.longKeys = null;

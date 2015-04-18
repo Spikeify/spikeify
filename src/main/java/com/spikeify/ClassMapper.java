@@ -71,7 +71,7 @@ public class ClassMapper<TYPE> {
 		// 1. use @Namespace on a field or
 		// 2. use @Namespace on class or
 		// 3. use default namespace
-		String fieldNamespace = namespaceFieldMapper.getPropertyValue(target);
+		String fieldNamespace = namespaceFieldMapper != null ? namespaceFieldMapper.getPropertyValue(target) : null;
 		metadata.namespace = fieldNamespace != null ? fieldNamespace :
 				(classNamespace != null ? classNamespace : defaultNamespace);
 		// namespace still not available
@@ -85,15 +85,15 @@ public class ClassMapper<TYPE> {
 		// 1. use @SetName on a field or
 		// 2. use @SetName on class or
 		// 3. Use Class simple name
-		String fieldSetName = setNameFieldMapper.getPropertyValue(target);
+		String fieldSetName = setNameFieldMapper != null ? setNameFieldMapper.getPropertyValue(target) : null;
 		metadata.setName = fieldSetName != null ? fieldSetName :
 				(classSetName != null ? classSetName : type.getSimpleName());
 
 		// acquire @Expires
-		metadata.expires = expirationFieldMapper.getPropertyValue(target);
+		metadata.expires = expirationFieldMapper != null ? expirationFieldMapper.getPropertyValue(target) : null;
 
 		// acquire @Generation
-		metadata.generation = generationFieldMapper.getPropertyValue(target);
+		metadata.generation = generationFieldMapper != null ? generationFieldMapper.getPropertyValue(target) : null;
 
 		return metadata;
 	}

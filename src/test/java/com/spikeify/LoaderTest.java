@@ -106,10 +106,9 @@ public class LoaderTest {
 		entity1.nine.add("two");
 
 		Key saveKey1 = sfy
-				.update(entity1)
+				.update(userKey1, entity1)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1)
 				.now();
 
 		EntityOne entity2 = new EntityOne();
@@ -126,10 +125,8 @@ public class LoaderTest {
 		entity2.nine.add("two");
 
 		Key saveKey2 = sfy
-				.update(entity2)
-				.namespace(namespace)
+				.update(userKey2, entity1)
 				.set(setName)
-				.key(userKey2)
 				.now();
 
 		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class).key(saveKey1, saveKey2).now();

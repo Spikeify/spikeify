@@ -8,6 +8,6 @@ public class ObjectMetadata {
 	public String namespace;
 	public String setName;
 
-	public long expires;
-	public int generation;
+	public Long expires;
+	public Integer generation;
 }

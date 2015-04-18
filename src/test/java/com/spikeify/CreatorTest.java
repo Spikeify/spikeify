@@ -52,12 +52,12 @@ public class CreatorTest {
 		entity.nine.add("one");
 		entity.nine.add("two");
 
+		// set Metadata fields
 		entity.userId = userKey1;
+		entity.theSetName = setName;
 
 		Key saveKey = sfy
 				.create(entity)
-				.namespace(namespace)
-				.set(setName)
 				.now();
 
 		// reload entity and check that only two properties were updated
@@ -143,16 +143,14 @@ public class CreatorTest {
 		entity.nine.add("one");
 		entity.nine.add("two");
 
-		sfy.create(entity)
+		sfy.create(userKey1, entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1)
 				.now();
 
-		sfy.create(entity)
+		sfy.create(userKey1, entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1)
 				.now();
 	}
 
@@ -173,10 +171,9 @@ public class CreatorTest {
 		entity.nine.add("two");
 
 		Key saveKey = sfy
-				.create(entity)
+				.create(userKey1, entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1)
 				.now();
 
 		// reload entity and check that only two properties were updated

@@ -1,4 +1,4 @@
-package com.spikeify;
+package com.spikeify.commands;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
@@ -6,14 +6,17 @@ import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
+import com.spikeify.ClassConstructor;
+import com.spikeify.ClassMapper;
+import com.spikeify.MapperService;
+import com.spikeify.RecordsCache;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
-public class SingleLoader<T> {
+public class MultiLoader<T> {
 
-	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	                    RecordsCache recordsCache, String namespace) {
+	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	                   RecordsCache recordsCache, String namespace) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
@@ -38,32 +41,32 @@ public class SingleLoader<T> {
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
 
-	public SingleLoader<T> namespace(String namespace) {
+	public MultiLoader<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public SingleLoader<T> set(String setName) {
+	public MultiLoader<T> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public SingleLoader<T> key(String key) {
-		this.stringKeys.add(key);
+	public MultiLoader<T> key(String... keys) {
+		this.stringKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public SingleLoader<T> key(Long key) {
-		this.longKeys.add(key);
+	public MultiLoader<T> key(Long... keys) {
+		this.longKeys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public SingleLoader<T> key(Key key) {
-		this.keys.add(key);
+	public MultiLoader<T> key(Key... keys) {
+		this.keys.addAll(Arrays.asList(keys));
 		return this;
 	}
 
-	public SingleLoader<T> policy(BatchPolicy policy) {
+	public MultiLoader<T> policy(BatchPolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		return this;
@@ -97,46 +100,51 @@ public class SingleLoader<T> {
 	}
 
 	/**
-	 * Executes a single get command.
+	 * Executes multiple get commands.
 	 *
-	 * @return The Java object mapped from record
+	 * @return The map of Keys and Java objects mapped from records
 	 */
-	public T now() {
+	public Map<Key, T> now() {
 
 		collectKeys();
 
-		// this should be a one-key operation
-		// if multiple keys - use the first key
-		Key key = keys.get(0);
+		Key[] keysArray = keys.toArray(new Key[keys.size()]);
+		Record[] records = synClient.get(policy, keysArray);
 
-		Record record = synClient.get(policy, key);
+		Map<Key, T> result = new HashMap<>(keys.size());
 
-		if (record == null) {
-			return null;
+		Record record;
+		for (int i = 0; i < records.length; i++) {
+			record = records[i];
+			if (record != null) {
+				Key key = keysArray[i];
+
+				// construct the entity object via provided ClassConstructor
+				T object = classConstructor.construct(type);
+
+				// save record hash into cache - used later for differential updating
+				recordsCache.insert(keysArray[i], record.bins);
+
+				// set UserKey field
+				switch (key.userKey.getType()) {
+					case ParticleType.STRING:
+						mapper.setUserKey(object, key.userKey.toString());
+						break;
+					case ParticleType.INTEGER:
+						mapper.setUserKey(object, key.userKey.toLong());
+						break;
+				}
+
+				// set metafields on the entity: @Namespace, @SetName, @Expiration..
+				mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
+
+				// set field values
+				mapper.setFieldValues(object, record.bins);
+
+				result.put(key, object);
+			}
 		}
 
-		T object = classConstructor.construct(type);
-
-		// save rew records into cache - used later for differential updating
-		recordsCache.insert(key, record.bins);
-
-		// set UserKey field
-		switch (key.userKey.getType()) {
-			case ParticleType.STRING:
-				mapper.setUserKey(object, key.userKey.toString());
-				break;
-			case ParticleType.INTEGER:
-				mapper.setUserKey(object, key.userKey.toLong());
-				break;
-		}
-
-		// set metafields on the entity: @Namespace, @SetName, @Expiration..
-		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
-
-		// set field values
-		mapper.setFieldValues(object, record.bins);
-
-		return object;
+		return result;
 	}
-
 }

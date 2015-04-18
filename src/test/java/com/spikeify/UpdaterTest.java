@@ -51,11 +51,11 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 
+		Key key1 = new Key(namespace, setName, userKey1);
+
 		// we did not provide namespace on purpose - let default kick in
 		Key saveKey = sfy
-				.update(entity)
-				.set(setName)
-				.key(userKey1)
+				.update(key1, entity)
 				.now();
 
 		Key loadKey = new Key(namespace, setName, userKey1);
@@ -91,11 +91,11 @@ public class UpdaterTest {
 		entity.nine.add("one");
 		entity.nine.add("two");
 
+
 		Key saveKey = sfy
-				.update(entity)
+				.update(userKey1, entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1)
 				.now();
 
 		// delete entity by hand
@@ -109,10 +109,9 @@ public class UpdaterTest {
 		entity.two = "new string";
 		entity.nine.add("three");
 
-		sfy.update(entity)
+		sfy.update(userKey1, entity)
 				.namespace(namespace)
 				.set(setName)
-				.key(userKey1)
 				.now();
 
 		// reload entity and check that only two properties were updated
@@ -210,7 +209,7 @@ public class UpdaterTest {
 		// save entity
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
-		Key savedKey = sfy.update(entityOne).key(saveKey).now();
+		Key savedKey = sfy.update(saveKey, entityOne).now();
 
 		// load entity
 		EntityOne loadedEntity = sfy.get(EntityOne.class).key(savedKey).now();

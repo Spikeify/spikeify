@@ -2,6 +2,7 @@ package com.spikeify.entity;
 
 import com.spikeify.annotations.Ignore;
 import com.spikeify.annotations.Record;
+import com.spikeify.annotations.SetName;
 import com.spikeify.annotations.UserKey;
 
 import java.util.Date;
@@ -24,6 +25,9 @@ public class EntityOne {
 	public Date eight;
 	public List nine;
 	public Map ten;
+
+	@SetName
+	public String theSetName;
 
 	// unmappable class must be ignored
 	@Ignore
