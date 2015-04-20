@@ -19,7 +19,13 @@ public interface Spikeify {
 
 	<T> SingleObjectUpdater<T> create(T entity);
 
-	<T> MultiUpdater<T> createAll(T... entity);
+	MultiKeyUpdater createAll(Key[] keys, Object[] objects);
+
+	MultiKeyUpdater createAll(Long[] keys, Object[] objects);
+
+	MultiKeyUpdater createAll(String[] keys, Object[] objects);
+
+	MultiObjectUpdater createAll(Object... entity);
 
 	<T> SingleObjectUpdater<T> update(T object);
 
@@ -29,7 +35,7 @@ public interface Spikeify {
 
 	<T> SingleKeyUpdater<T> update(String key, T entity);
 
-	<T> MultiUpdater<T> updateAll(T... object);
+	<T> MultiObjectUpdater<T> updateAll(Object... object);
 
 	SingleObjectDeleter delete(Object object);
 

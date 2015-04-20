@@ -21,15 +21,17 @@ public class TestUtils {
 			"Mauris ipsum Nulla metus metus ullamcorper vel tincidunt sed euismod in nibh Quisque volutpat condimentum velit ").split("\\s+");
 
 
-	public static String randomWord(){
+	public static String randomWord() {
 		return wordBase[random.nextInt(wordBase.length)];
 	}
 
-	public static List<EntityOne> randomEntityOne(int number) {
+
+	public static List<EntityOne> randomEntityOne(int number, String setName) {
 		List<EntityOne> res = new ArrayList<>(number);
 		for (int i = 0; i < number; i++) {
 			EntityOne ent = new EntityOne();
 			ent.userId = new Random().nextLong();
+			ent.theSetName = setName;
 			ent.one = random.nextInt();
 			ent.two = TestUtils.randomWord();
 			ent.three = random.nextDouble();

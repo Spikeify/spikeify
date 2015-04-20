@@ -114,7 +114,7 @@ public class MultiKeyDeleter{
 
 		for (Key key : keys) {
 			recordsCache.remove(key);
-			result.put(null, synClient.delete(null, key));
+			result.put(key, synClient.delete(null, key));
 		}
 
 		return result;

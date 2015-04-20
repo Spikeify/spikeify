@@ -132,7 +132,7 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
-	public void setMetaFieldValues(TYPE object, String namespace, String setName, int generation, long expiration) {
+	public void setMetaFieldValues(Object object, String namespace, String setName, int generation, long expiration) {
 
 		if (generationFieldMapper != null) {
 			generationFieldMapper.setFieldValue(object, generation);
@@ -148,7 +148,7 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
-	public Long getExpiration(TYPE object) {
+	public Long getExpiration(Object object) {
 		if (expirationFieldMapper == null) {
 			return null;
 		}

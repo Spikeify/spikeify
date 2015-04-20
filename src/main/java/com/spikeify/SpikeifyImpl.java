@@ -36,6 +36,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	public <E> MultiLoader<E> getAll(Class<E> type, Long... keys) {
 		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
 	}
+
 	@Override
 	public <E> MultiLoader<E> getAll(Class<E> type, String... keys) {
 		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
@@ -67,13 +68,54 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public <T> MultiUpdater<T> createAll(T... objects) {
+	public MultiKeyUpdater createAll(Key[] keys, Object[] objects) {
+		if (objects == null || objects.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys == null || keys.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Error: array 'objects' must be same length as 'keys' array");
+		}
+		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
+	}
+
+	@Override
+	public MultiKeyUpdater createAll(Long[] keys, Object[] objects) {
+		if (objects == null || objects.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys == null || keys.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Error: array 'objects' must be same length as 'keys' array");
+		}
+		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
+	}
+
+	@Override
+	public MultiKeyUpdater createAll(String[] keys, Object[] objects) {
+		if (objects == null || objects.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys == null || keys.length == 0) {
+			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Error: array 'objects' must be same length as 'keys' array");
+		}
+		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
+	}
+
+	@Override
+	public MultiObjectUpdater createAll(Object... objects) {
 
 		if (objects == null || objects.length == 0) {
 			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
 		}
-		T object = objects[0];
-		return new MultiUpdater<T>((Class<T>) object.getClass(), synClient, asyncClient,
+		return new MultiObjectUpdater(synClient, asyncClient,
 				recordsCache, true, namespace, objects);
 	}
 
@@ -102,12 +144,11 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public <T> MultiUpdater<T> updateAll(T... objects) {
+	public MultiObjectUpdater updateAll(Object... objects) {
 		if (objects == null || objects.length == 0) {
 			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
 		}
-		T object = objects[0];
-		return new MultiUpdater<>((Class<T>) object.getClass(), synClient, asyncClient,
+		return new MultiObjectUpdater<>(synClient, asyncClient,
 				recordsCache, false, namespace, objects);
 	}
 
@@ -144,6 +185,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	public MultiKeyDeleter deleteAll(Long... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace, keys);
 	}
+
 	@Override
 	public MultiKeyDeleter deleteAll(String... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace, keys);

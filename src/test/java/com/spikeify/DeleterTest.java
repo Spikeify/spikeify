@@ -9,9 +9,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class DeleterTest {
@@ -104,7 +103,7 @@ public class DeleterTest {
 	@Test
 	public void deleteObject() {
 
-		EntityOne entity = TestUtils.randomEntityOne(1).get(0);
+		EntityOne entity = TestUtils.randomEntityOne(1, setName).get(0);
 
 		Key saveKey = sfy
 				.create(entity)
@@ -119,6 +118,41 @@ public class DeleterTest {
 
 		// assert record does not exist
 		Assert.assertFalse(exists);
+	}
+
+	@Test
+	public void deleteObjects() {
+		List<EntityOne> entities = TestUtils.randomEntityOne(10, setName);
+		EntityOne[] antArray = entities.toArray(new EntityOne[entities.size()]);
+		Map<Key, EntityOne> res = sfy.createAll(antArray).now();
+
+		for (Key key : res.keySet()) {
+			Assert.assertTrue(client.exists(null, key));
+		}
+
+		EntityOne[] delEntities = res.values().toArray(new EntityOne[res.size()]);
+		Map<Object, Boolean> del = sfy.deleteAll(delEntities).now();
+		for (Map.Entry<Object, Boolean> delEntry : del.entrySet()) {
+			Assert.assertTrue(delEntry.getValue());
+		}
+	}
+
+	@Test
+	public void deleteKeys() {
+		List<EntityOne> entities = TestUtils.randomEntityOne(10, setName);
+		EntityOne[] antArray = entities.toArray(new EntityOne[entities.size()]);
+		Map<Key, EntityOne> res = sfy.createAll(antArray).now();
+
+		for (Key key : res.keySet()) {
+			Assert.assertTrue(client.exists(null, key));
+		}
+
+
+		Map<Key, Boolean> del = sfy.deleteAll(res.keySet().toArray(new Key[res.size()])).now();
+		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {
+			Assert.assertTrue(delEntry.getValue());
+			Assert.assertFalse(client.exists(null, delEntry.getKey()));
+		}
 	}
 
 }

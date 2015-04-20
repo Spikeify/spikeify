@@ -8,16 +8,17 @@ import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.ClassMapper;
 import com.spikeify.MapperService;
+import com.spikeify.ObjectMetadata;
 import com.spikeify.RecordsCache;
 
 import java.util.*;
 
-public class MultiUpdater<T> {
+public class MultiKeyUpdater {
 
-	private final T[] objects;
 
-	public MultiUpdater(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                    RecordsCache recordsCache, boolean create, String namespace, T... objects) {
+	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, boolean create, String namespace,
+	                       Key[] keys, Object[] objects) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -25,10 +26,48 @@ public class MultiUpdater<T> {
 		this.namespace = namespace;
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
-		this.mapper = MapperService.getMapper(type);
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Error: keys and objects arrays must be of the same size");
+		}
+		this.keys = Arrays.asList(keys);
 		this.objects = objects;
 	}
 
+	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, boolean create, String namespace,
+	                       Long[] keys, Object[] objects) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.create = create;
+		this.namespace = namespace;
+		this.policy = new WritePolicy();
+		this.policy.sendKey = true;
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Error: keys and objects arrays must be of the same size");
+		}
+		this.longKeys = Arrays.asList(keys);
+		this.objects = objects;
+	}
+
+	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, boolean create, String namespace,
+	                       String[] keys, Object[] objects) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.create = create;
+		this.namespace = namespace;
+		this.policy = new WritePolicy();
+		this.policy.sendKey = true;
+		if (keys.length != objects.length) {
+			throw new IllegalStateException("Error: keys and objects arrays must be of the same size");
+		}
+		this.stringKeys = Arrays.asList(keys);
+		this.objects = objects;
+	}
+
+	private final Object[] objects;
 	protected String namespace;
 	protected String setName;
 	protected List<String> stringKeys = new ArrayList<>();
@@ -39,19 +78,18 @@ public class MultiUpdater<T> {
 	protected RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy policy;
-	protected ClassMapper<T> mapper;
 
-	public MultiUpdater<T> namespace(String namespace) {
+	public MultiKeyUpdater namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public MultiUpdater<T> set(String setName) {
+	public MultiKeyUpdater set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public MultiUpdater<T> key(String... keys) {
+	public MultiKeyUpdater key(String... keys) {
 		if (keys.length != objects.length) {
 			throw new IllegalStateException("Number of keys does not match number of objects.");
 		}
@@ -61,7 +99,7 @@ public class MultiUpdater<T> {
 		return this;
 	}
 
-	public MultiUpdater<T> key(Long... keys) {
+	public MultiKeyUpdater key(Long... keys) {
 		if (keys.length != objects.length) {
 			throw new IllegalStateException("Number of keys does not match number of objects.");
 		}
@@ -71,7 +109,7 @@ public class MultiUpdater<T> {
 		return this;
 	}
 
-	public MultiUpdater<T> key(Key... keys) {
+	public MultiKeyUpdater key(Key... keys) {
 		if (keys.length != objects.length) {
 			throw new IllegalStateException("Number of keys does not match number of objects.");
 		}
@@ -81,7 +119,7 @@ public class MultiUpdater<T> {
 		return this;
 	}
 
-	public MultiUpdater<T> policy(WritePolicy policy) {
+	public MultiKeyUpdater policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		if (create) {
@@ -94,55 +132,27 @@ public class MultiUpdater<T> {
 
 	protected void collectKeys() {
 
+		if (namespace == null) {
+			throw new IllegalStateException("Namespace not set.");
+		}
+
 		// check if any Long or String keys were provided
 		if (!stringKeys.isEmpty()) {
 			for (String stringKey : stringKeys) {
-				keys.add(new Key(getNamespace(), getSetName(), stringKey));
+				keys.add(new Key(namespace, setName, stringKey));
 			}
 		} else if (!longKeys.isEmpty()) {
 			for (long longKey : longKeys) {
-				keys.add(new Key(getNamespace(), getSetName(), longKey));
-			}
-		} else if (keys.isEmpty()) {
-
-			// check if entities have @UserKey entity
-			keys.clear();
-			for (T object : objects) {
-				Object userKey = mapper.getUserKey(object);
-				if (userKey != null) {
-					if (userKey.getClass() == String.class) {
-						Key objectKey = new Key(getNamespace(), getSetName(), (String) userKey);
-						keys.add(objectKey);
-					} else if (userKey.getClass() == Long.class || userKey.getClass() == long.class) {
-						Key objectKey = new Key(getNamespace(), getSetName(), (Long) userKey);
-						keys.add(objectKey);
-					}
-				}
+				keys.add(new Key(namespace, setName, longKey));
 			}
 		}
 
 		if (keys.isEmpty()) {
 			throw new IllegalStateException("Error: missing parameter 'key'");
 		}
-		if (keys.size() != objects.length) {
-			throw new IllegalStateException("Error scanning @UserKey annotation on objects: " +
-					"not all provided objects have @UserKey annotation provided on a field.");
-		}
 	}
 
-	protected String getNamespace() {
-		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
-		if (useNamespace == null) {
-			throw new IllegalStateException("Namespace not set.");
-		}
-		return useNamespace;
-	}
-
-	protected String getSetName() {
-		return setName != null ? setName : mapper.getSetName();
-	}
-
-	public Map<Key, T> now() {
+	public Map<Key, Object> now() {
 
 		collectKeys();
 
@@ -150,11 +160,11 @@ public class MultiUpdater<T> {
 			throw new IllegalStateException("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
-		Map<Key, T> result = new HashMap<>(objects.length);
+		Map<Key, Object> result = new HashMap<>(objects.length);
 
 		for (int i = 0; i < objects.length; i++) {
 
-			T object = objects[i];
+			Object object = objects[i];
 			Key key = keys.get(i);
 
 			if (key == null || object == null) {
@@ -162,6 +172,8 @@ public class MultiUpdater<T> {
 			}
 
 			result.put(key, object);
+
+			ClassMapper mapper = MapperService.getMapper(object.getClass());
 
 			Map<String, Object> props = mapper.getProperties(object);
 			Set<String> changedProps = recordsCache.update(key, props);

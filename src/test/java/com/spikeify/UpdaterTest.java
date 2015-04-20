@@ -239,6 +239,8 @@ public class UpdaterTest {
 		entity1.nine = new ArrayList<>();
 		entity1.nine.add("one");
 		entity1.nine.add("two");
+		entity1.userId = userKey1;
+		entity1.theSetName = setName;
 
 		EntityOne entity2 = new EntityOne();
 		entity2.one = 123;
@@ -252,9 +254,11 @@ public class UpdaterTest {
 		entity2.nine = new ArrayList<>();
 		entity2.nine.add("one");
 		entity2.nine.add("two");
+		entity2.userId = userKey2;
+		entity2.theSetName = setName;
 
 		// multi-put
-		sfy.updateAll(entity1, entity2).namespace(namespace).set(setName).key(userKey1, userKey2).now();
+		sfy.updateAll(entity1, entity2).now();
 
 		Key key1 = new Key(namespace, setName, userKey1);
 		Key key2 = new Key(namespace, setName, userKey2);

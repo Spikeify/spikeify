@@ -2,19 +2,13 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
-import com.aerospike.client.policy.QueryPolicy;
-import com.aerospike.client.policy.WritePolicy;
 import com.aerospike.client.query.Filter;
 import com.aerospike.client.query.IndexType;
-import com.aerospike.client.query.RecordSet;
-import com.aerospike.client.query.Statement;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import java.util.Map;
 
 public class QueryTest {
 
@@ -48,7 +42,7 @@ public class QueryTest {
 
 		// create records
 		for (int i = 0; i < 100; i++) {
-			EntityOne ent = TestUtils.randomEntityOne(1).get(0);
+			EntityOne ent = TestUtils.randomEntityOne(1, setName).get(0);
 			ent.theSetName = setName;
 			if (i % 10 == 0) {
 				ent.two = "content";
