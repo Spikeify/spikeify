@@ -6,10 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
-import com.spikeify.ClassMapper;
-import com.spikeify.MapperService;
-import com.spikeify.ObjectMetadata;
-import com.spikeify.RecordsCache;
+import com.spikeify.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -76,7 +73,7 @@ public class SingleObjectUpdater<T> {
 		// if multiple keys - use the first key
 
 		if (object == null) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 
 		Key key = collectKey(object);

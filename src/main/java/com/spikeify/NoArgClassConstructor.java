@@ -22,7 +22,7 @@ public class NoArgClassConstructor implements ClassConstructor {
 	}
 
 	/**
-	 * Throw an IllegalStateException if the class does not have a no-arg constructor.
+	 * Throw an SpikeifyError if the class does not have a no-arg constructor.
 	 */
 	public static <T> Constructor<T> getNoArgConstructor(Class<T> clazz) {
 		try {
@@ -31,9 +31,9 @@ public class NoArgClassConstructor implements ClassConstructor {
 			return ctor;
 		} catch (NoSuchMethodException e) {
 			if (clazz.isMemberClass() || clazz.isAnonymousClass() || clazz.isLocalClass())
-				throw new IllegalStateException(clazz.getName() + " must be static and must have a no-arg constructor", e);
+				throw new SpikeifyError(clazz.getName() + " must be static and must have a no-arg constructor", e);
 			else
-				throw new IllegalStateException(clazz.getName() + " must have a no-arg constructor", e);
+				throw new SpikeifyError(clazz.getName() + " must have a no-arg constructor", e);
 		}
 	}
 }

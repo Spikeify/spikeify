@@ -6,10 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
-import com.spikeify.ClassMapper;
-import com.spikeify.MapperService;
-import com.spikeify.ObjectMetadata;
-import com.spikeify.RecordsCache;
+import com.spikeify.*;
 
 import java.util.*;
 
@@ -65,10 +62,10 @@ public class MultiObjectUpdater<T> {
 		}
 
 		if (keys.isEmpty()) {
-			throw new IllegalStateException("Error: missing parameter 'key'");
+			throw new SpikeifyError("Error: missing parameter 'key'");
 		}
 		if (keys.size() != objects.length) {
-			throw new IllegalStateException("Error scanning @UserKey annotation on objects: " +
+			throw new SpikeifyError("Error scanning @UserKey annotation on objects: " +
 					"not all provided objects have @UserKey annotation provided on a field.");
 		}
 
@@ -80,7 +77,7 @@ public class MultiObjectUpdater<T> {
 		List<Key> keys = collectKeys();
 
 		if (objects.length != keys.size()) {
-			throw new IllegalStateException("Error: with multi-put you need to provide equal number of objects and keys");
+			throw new SpikeifyError("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
 		Map<Key, Object> result = new HashMap<>(objects.length);
@@ -91,7 +88,7 @@ public class MultiObjectUpdater<T> {
 			Key key = keys.get(i);
 
 			if (key == null || object == null) {
-				throw new IllegalStateException("Error: with multi-put all objects and keys must NOT be null");
+				throw new SpikeifyError("Error: with multi-put all objects and keys must NOT be null");
 			}
 
 			result.put(key, object);

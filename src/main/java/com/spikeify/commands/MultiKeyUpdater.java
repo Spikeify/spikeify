@@ -6,10 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
-import com.spikeify.ClassMapper;
-import com.spikeify.MapperService;
-import com.spikeify.ObjectMetadata;
-import com.spikeify.RecordsCache;
+import com.spikeify.*;
 
 import java.util.*;
 
@@ -27,7 +24,7 @@ public class MultiKeyUpdater {
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Error: keys and objects arrays must be of the same size");
+			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
 		this.keys = Arrays.asList(keys);
 		this.objects = objects;
@@ -44,7 +41,7 @@ public class MultiKeyUpdater {
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Error: keys and objects arrays must be of the same size");
+			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
 		this.longKeys = Arrays.asList(keys);
 		this.objects = objects;
@@ -61,7 +58,7 @@ public class MultiKeyUpdater {
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Error: keys and objects arrays must be of the same size");
+			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
 		this.stringKeys = Arrays.asList(keys);
 		this.objects = objects;
@@ -91,7 +88,7 @@ public class MultiKeyUpdater {
 
 	public MultiKeyUpdater key(String... keys) {
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Number of keys does not match number of objects.");
+			throw new SpikeifyError("Number of keys does not match number of objects.");
 		}
 		this.stringKeys = Arrays.asList(keys);
 		this.longKeys.clear();
@@ -101,7 +98,7 @@ public class MultiKeyUpdater {
 
 	public MultiKeyUpdater key(Long... keys) {
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Number of keys does not match number of objects.");
+			throw new SpikeifyError("Number of keys does not match number of objects.");
 		}
 		this.longKeys = Arrays.asList(keys);
 		this.stringKeys.clear();
@@ -111,7 +108,7 @@ public class MultiKeyUpdater {
 
 	public MultiKeyUpdater key(Key... keys) {
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Number of keys does not match number of objects.");
+			throw new SpikeifyError("Number of keys does not match number of objects.");
 		}
 		this.keys = Arrays.asList(keys);
 		this.stringKeys.clear();
@@ -133,7 +130,7 @@ public class MultiKeyUpdater {
 	protected void collectKeys() {
 
 		if (namespace == null) {
-			throw new IllegalStateException("Namespace not set.");
+			throw new SpikeifyError("Namespace not set.");
 		}
 
 		// check if any Long or String keys were provided
@@ -148,7 +145,7 @@ public class MultiKeyUpdater {
 		}
 
 		if (keys.isEmpty()) {
-			throw new IllegalStateException("Error: missing parameter 'key'");
+			throw new SpikeifyError("Error: missing parameter 'key'");
 		}
 	}
 
@@ -157,7 +154,7 @@ public class MultiKeyUpdater {
 		collectKeys();
 
 		if (objects.length != keys.size()) {
-			throw new IllegalStateException("Error: with multi-put you need to provide equal number of objects and keys");
+			throw new SpikeifyError("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
 		Map<Key, Object> result = new HashMap<>(objects.length);
@@ -168,7 +165,7 @@ public class MultiKeyUpdater {
 			Key key = keys.get(i);
 
 			if (key == null || object == null) {
-				throw new IllegalStateException("Error: with multi-put all objects and keys must NOT be null");
+				throw new SpikeifyError("Error: with multi-put all objects and keys must NOT be null");
 			}
 
 			result.put(key, object);

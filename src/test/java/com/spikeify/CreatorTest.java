@@ -96,8 +96,6 @@ public class CreatorTest {
 		entity1.nine = new ArrayList<>();
 		entity1.nine.add("one");
 		entity1.nine.add("two");
-		entity1.userId = userKey1;
-		entity1.theSetName = setName;
 
 		EntityOne entity2 = new EntityOne();
 		entity2.one = 123;
@@ -111,11 +109,11 @@ public class CreatorTest {
 		entity2.nine = new ArrayList<>();
 		entity2.nine.add("one");
 		entity2.nine.add("two");
-		entity2.userId = userKey2;
-		entity2.theSetName = setName;
 
-		Map<Key,EntityOne> saveKeys = sfy
-				.createAll(entity1, entity2)
+		Map<Key, Object> saveKeys = sfy
+				.createAll(new Long[]{userKey1, userKey2}, new Object[]{entity1, entity2})
+				.namespace(namespace)
+				.set(setName)
 				.now();
 
 		// reload entity and check that only two properties were updated

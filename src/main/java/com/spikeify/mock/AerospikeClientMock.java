@@ -15,6 +15,7 @@ import com.aerospike.client.query.*;
 import com.aerospike.client.task.ExecuteTask;
 import com.aerospike.client.task.IndexTask;
 import com.aerospike.client.task.RegisterTask;
+import com.spikeify.SpikeifyError;
 
 import java.util.*;
 
@@ -70,7 +71,7 @@ public class AerospikeClientMock implements IAerospikeClient {
 				} else if (Map.class.isAssignableFrom(obj.getClass())) {
 					bins.put(newBin.name, obj);
 				} else {
-					throw new IllegalStateException("Not yet supported type: " + obj.getClass());
+					throw new SpikeifyError("Not yet supported type: " + obj.getClass());
 				}
 
 			}

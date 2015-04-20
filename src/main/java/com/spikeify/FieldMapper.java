@@ -17,7 +17,7 @@ public class FieldMapper<F, P> {
 			this.getter = MethodHandles.lookup().unreflectGetter(field);
 			this.setter = MethodHandles.lookup().unreflectSetter(field);
 		} catch (ReflectiveOperationException e) {
-			throw new IllegalStateException(e);
+			throw new SpikeifyError(e);
 		}
 	}
 
@@ -29,7 +29,7 @@ public class FieldMapper<F, P> {
 			}
 			return converter.fromField(fieldValue);
 		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e); //todo nicer error
+			throw new SpikeifyError(e); //todo nicer error
 		}
 	}
 
@@ -37,7 +37,7 @@ public class FieldMapper<F, P> {
 		try {
 			field.set(targetObject, converter.fromProperty(propertyValue));
 		} catch (IllegalAccessException e) {
-			throw new IllegalStateException(e); //todo nicer error
+			throw new SpikeifyError(e); //todo nicer error
 		}
 	}
 

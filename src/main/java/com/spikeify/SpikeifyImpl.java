@@ -61,7 +61,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	public <T> SingleObjectUpdater<T> create(T object) {
 
 		if (object == null) {
-			throw new IllegalStateException("Error: parameter 'object' must not be null.");
+			throw new SpikeifyError("Error: parameter 'object' must not be null.");
 		}
 		return new SingleObjectUpdater<>(object.getClass(), synClient, asyncClient,
 				recordsCache, true, namespace, object);
@@ -70,13 +70,13 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public MultiKeyUpdater createAll(Key[] keys, Object[] objects) {
 		if (objects == null || objects.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		if (keys == null || keys.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Error: array 'objects' must be same length as 'keys' array");
+			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
 	}
@@ -84,13 +84,13 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public MultiKeyUpdater createAll(Long[] keys, Object[] objects) {
 		if (objects == null || objects.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		if (keys == null || keys.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Error: array 'objects' must be same length as 'keys' array");
+			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
 	}
@@ -98,13 +98,13 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public MultiKeyUpdater createAll(String[] keys, Object[] objects) {
 		if (objects == null || objects.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		if (keys == null || keys.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		if (keys.length != objects.length) {
-			throw new IllegalStateException("Error: array 'objects' must be same length as 'keys' array");
+			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
 	}
@@ -113,7 +113,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	public MultiObjectUpdater createAll(Object... objects) {
 
 		if (objects == null || objects.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array.");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		return new MultiObjectUpdater(synClient, asyncClient,
 				recordsCache, true, namespace, objects);
@@ -122,7 +122,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public <T> SingleObjectUpdater<T> update(T object) {
 		if (object == null) {
-			throw new IllegalStateException("Error: parameter 'object' must not be null.");
+			throw new SpikeifyError("Error: parameter 'object' must not be null.");
 		}
 		return new SingleObjectUpdater<>(object.getClass(), synClient, asyncClient,
 				recordsCache, false, namespace, object);
@@ -146,7 +146,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public MultiObjectUpdater updateAll(Object... objects) {
 		if (objects == null || objects.length == 0) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 		return new MultiObjectUpdater<>(synClient, asyncClient,
 				recordsCache, false, namespace, objects);

@@ -31,7 +31,7 @@ public class SpikeifyService {
 	public static Spikeify sfy() {
 
 		if (synClient == null || asyncClient == null) {
-			throw new IllegalStateException("Missing configuration: you must call SpikeifyService.globalConfig(..) once, before using SpikeifyService.sfy().");
+			throw new SpikeifyError("Missing configuration: you must call SpikeifyService.globalConfig(..) once, before using SpikeifyService.sfy().");
 		}
 
 		return new SpikeifyImpl(synClient, asyncClient, new NoArgClassConstructor(), defaultNamespace);

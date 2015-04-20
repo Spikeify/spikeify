@@ -21,7 +21,6 @@ public class DeleterTest {
 	private String namespace = "test";
 	private String setName = "testSet";
 
-
 	private Spikeify sfy;
 	private IAerospikeClient client;
 
@@ -124,7 +123,7 @@ public class DeleterTest {
 	public void deleteObjects() {
 		List<EntityOne> entities = TestUtils.randomEntityOne(10, setName);
 		EntityOne[] antArray = entities.toArray(new EntityOne[entities.size()]);
-		Map<Key, EntityOne> res = sfy.createAll(antArray).now();
+		Map<Key, Object> res = sfy.createAll(antArray).now();
 
 		for (Key key : res.keySet()) {
 			Assert.assertTrue(client.exists(null, key));
@@ -146,7 +145,6 @@ public class DeleterTest {
 		for (Key key : res.keySet()) {
 			Assert.assertTrue(client.exists(null, key));
 		}
-
 
 		Map<Key, Boolean> del = sfy.deleteAll(res.keySet().toArray(new Key[res.size()])).now();
 		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {

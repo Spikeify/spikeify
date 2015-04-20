@@ -6,10 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
-import com.spikeify.ClassMapper;
-import com.spikeify.MapperService;
-import com.spikeify.ObjectMetadata;
-import com.spikeify.RecordsCache;
+import com.spikeify.*;
 
 import java.util.Map;
 import java.util.Set;
@@ -105,7 +102,7 @@ public class SingleKeyUpdater<T> {
 
 	protected String getNamespace() {
 		if (namespace == null) {
-			throw new IllegalStateException("Namespace not set.");
+			throw new SpikeifyError("Namespace not set.");
 		}
 		return namespace;
 	}
@@ -125,7 +122,7 @@ public class SingleKeyUpdater<T> {
 		collectKeys();
 
 		if (object == null) {
-			throw new IllegalStateException("Error: parameter 'objects' must not be null or empty array");
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 
 		Map<String, Object> props = mapper.getProperties(object);

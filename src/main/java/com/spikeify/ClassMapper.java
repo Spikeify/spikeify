@@ -29,7 +29,7 @@ public class ClassMapper<TYPE> {
 		// @Record annotation os mandatory
 		Record recordAnnotation = clazz.getAnnotation(Record.class);
 		if (recordAnnotation == null) {
-			throw new IllegalStateException("Missing @Record annotation on mapped class " + clazz.getName());
+			throw new SpikeifyError("Missing @Record annotation on mapped class " + clazz.getName());
 		}
 
 		// parse @Namespace class annotation
@@ -59,7 +59,7 @@ public class ClassMapper<TYPE> {
 
 		// acquire UserKey
 		if (userKeyFieldMapper == null) {
-			throw new IllegalStateException("Class " + type.getName() + " is missing a field with @UserKey annotation.");
+			throw new SpikeifyError("Class " + type.getName() + " is missing a field with @UserKey annotation.");
 		}
 		Object userKeyObj = userKeyFieldMapper.getPropertyValue(target);
 		if (userKeyObj instanceof String) {
@@ -67,7 +67,7 @@ public class ClassMapper<TYPE> {
 		} else if (userKeyObj instanceof Long) {
 			metadata.userKeyLong = (Long) userKeyObj;
 		} else {
-			throw new IllegalStateException("@UserKey annotation can only be used on fields of type: String, Long or long." +
+			throw new SpikeifyError("@UserKey annotation can only be used on fields of type: String, Long or long." +
 					" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName());
 		}
 
@@ -80,7 +80,7 @@ public class ClassMapper<TYPE> {
 				(classNamespace != null ? classNamespace : defaultNamespace);
 		// namespace still not available
 		if (metadata.namespace == null) {
-			throw new IllegalStateException("Error: namespace could not be inferred from class/field annotations, " +
+			throw new SpikeifyError("Error: namespace could not be inferred from class/field annotations, " +
 					"for class " + type.getName() +
 					", nor is default namespace available.");
 		}
@@ -165,7 +165,7 @@ public class ClassMapper<TYPE> {
 	public void setUserKey(Object object, String userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
-				throw new IllegalStateException("Key type mismatch: @UserKey field '" +
+				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
 						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
 						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
 				);
@@ -177,7 +177,7 @@ public class ClassMapper<TYPE> {
 	public void setUserKey(Object object, Long userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
-				throw new IllegalStateException("Key type mismatch: @UserKey field '" +
+				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
 						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
 						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."
 				);

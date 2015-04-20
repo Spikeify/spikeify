@@ -4,6 +4,7 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.spikeify.RecordsCache;
+import com.spikeify.SpikeifyError;
 
 import java.util.*;
 
@@ -93,7 +94,7 @@ public class MultiKeyDeleter{
 
 	protected String getNamespace() {
 		if (namespace == null) {
-			throw new IllegalStateException("Namespace not set.");
+			throw new SpikeifyError("Namespace not set.");
 		}
 		return namespace;
 	}

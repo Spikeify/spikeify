@@ -6,10 +6,7 @@ import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
-import com.spikeify.ClassConstructor;
-import com.spikeify.ClassMapper;
-import com.spikeify.MapperService;
-import com.spikeify.RecordsCache;
+import com.spikeify.*;
 
 import java.util.*;
 
@@ -97,14 +94,14 @@ public class MultiLoader<T> {
 				keys.add(new Key(getNamespace(), getSetName(), longKey));
 			}
 		} else if (keys.isEmpty()) {
-			throw new IllegalStateException("Error: missing parameter 'key'");
+			throw new SpikeifyError("Error: missing parameter 'key'");
 		}
 	}
 
 	protected String getNamespace() {
 		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
 		if (useNamespace == null) {
-			throw new IllegalStateException("Namespace not set.");
+			throw new SpikeifyError("Namespace not set.");
 		}
 		return useNamespace;
 	}

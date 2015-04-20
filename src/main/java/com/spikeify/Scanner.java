@@ -89,11 +89,11 @@ public class Scanner<T> {
 		}
 
 		if (setName == null) {
-			throw new IllegalStateException("Error: SetName not defined.");
+			throw new SpikeifyError("Error: SetName not defined.");
 		}
 
 		if (indexName == null) {
-			throw new IllegalStateException("Error: Index name not defined.");
+			throw new SpikeifyError("Error: Index name not defined.");
 		}
 	}
 

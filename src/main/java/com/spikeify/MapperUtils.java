@@ -48,7 +48,7 @@ public class MapperUtils {
 				Converter fieldConverter = findConverter(fieldType);
 
 				if (fieldConverter == null) {
-					throw new IllegalStateException("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
+					throw new SpikeifyError("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
 							"of unsupported type '" + fieldType + "'.");
 				}
 				mappers.add(new FieldMapper(field.getName(), fieldConverter, field));
@@ -66,7 +66,7 @@ public class MapperUtils {
 				if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
 					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
-					throw new IllegalStateException("Error: field marked with @Generation must be of type int or Integer.");
+					throw new SpikeifyError("Error: field marked with @Generation must be of type int or Integer.");
 				}
 			}
 		}
@@ -80,7 +80,7 @@ public class MapperUtils {
 				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
 					return new FieldMapper<>(null, findConverter(fieldType), field);
 				} else {
-					throw new IllegalStateException("Error: field marked with @Expiration must be of type long or Long.");
+					throw new SpikeifyError("Error: field marked with @Expiration must be of type long or Long.");
 				}
 			}
 		}
@@ -94,7 +94,7 @@ public class MapperUtils {
 				if (String.class.equals(fieldType)) {
 					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
-					throw new IllegalStateException("Error: field marked with @Namespace must be of type String.");
+					throw new SpikeifyError("Error: field marked with @Namespace must be of type String.");
 				}
 			}
 		}
@@ -108,7 +108,7 @@ public class MapperUtils {
 				if (String.class.equals(fieldType)) {
 					return new FieldMapper(null, findConverter(fieldType), field);
 				} else {
-					throw new IllegalStateException("Error: field marked with @SetName must be of type String.");
+					throw new SpikeifyError("Error: field marked with @SetName must be of type String.");
 				}
 			}
 		}
@@ -134,7 +134,7 @@ public class MapperUtils {
 					Converter converter = findConverter(fieldType);
 					return new FieldMapper(null, converter, field);
 				} else {
-					throw new IllegalStateException("Error: field marked with @UserKey must be of type String, Long or long.");
+					throw new SpikeifyError("Error: field marked with @UserKey must be of type String, Long or long.");
 				}
 			}
 		}
