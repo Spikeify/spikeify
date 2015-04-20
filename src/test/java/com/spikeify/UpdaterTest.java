@@ -1,9 +1,6 @@
 package com.spikeify;
 
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityOne;
@@ -33,8 +30,12 @@ public class UpdaterTest {
 
 	@After
 	public void dbCleanup() {
-		Key deleteKey = new Key(namespace, setName, userKey1);
-		sfy.delete(deleteKey).now();
+		client.scanAll(null, namespace, setName, new ScanCallback() {
+			@Override
+			public void scanCallback(Key key, Record record) throws AerospikeException {
+				client.delete(null, key);
+			}
+		});
 	}
 
 	@Test

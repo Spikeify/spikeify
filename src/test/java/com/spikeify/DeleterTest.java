@@ -1,10 +1,10 @@
 package com.spikeify;
 
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -33,22 +33,14 @@ public class DeleterTest {
 		sfy = SpikeifyService.mock(client);
 	}
 
-	private List<EntityOne> createEntityOne(int number) {
-		List<EntityOne> res = new ArrayList<>(number);
-		for (int i = 0; i < number; i++) {
-			EntityOne ent = new EntityOne();
-			ent.userId = new Random().nextLong();
-			ent.one = random.nextInt();
-			ent.two = TestUtils.randomWord();
-			ent.three = random.nextDouble();
-			ent.four = random.nextFloat();
-			ent.setFive((short) random.nextInt());
-			ent.setSix((byte) random.nextInt());
-			ent.seven = random.nextBoolean();
-			ent.eight = new Date(random.nextLong());
-			res.add(ent);
-		}
-		return res;
+	@After
+	public void dbCleanup() {
+		client.scanAll(null, namespace, setName, new ScanCallback() {
+			@Override
+			public void scanCallback(Key key, Record record) throws AerospikeException {
+				client.delete(null, key);
+			}
+		});
 	}
 
 	@Test
@@ -112,7 +104,7 @@ public class DeleterTest {
 	@Test
 	public void deleteObject() {
 
-		EntityOne entity = createEntityOne(1).get(0);
+		EntityOne entity = TestUtils.randomEntityOne(1).get(0);
 
 		Key saveKey = sfy
 				.create(entity)

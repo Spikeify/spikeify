@@ -84,4 +84,24 @@ public class EntityOne {
 		result = 31 * result + (ignored != null ? ignored.hashCode() : 0);
 		return result;
 	}
+
+	@Override
+	public String toString() {
+		return "EntityOne{" +
+				"userId=" + userId +
+				", one=" + one +
+				", two='" + two + '\'' +
+				", three=" + three +
+				", four=" + four +
+				", five=" + five +
+				", six=" + six +
+				", seven=" + seven +
+				", eight=" + eight +
+				", nine=" + nine +
+				", ten=" + ten +
+				", theSetName='" + theSetName + '\'' +
+				", calendar=" + calendar +
+				", ignored='" + ignored + '\'' +
+				'}';
+	}
 }

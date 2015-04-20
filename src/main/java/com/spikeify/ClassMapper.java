@@ -13,7 +13,7 @@ public class ClassMapper<TYPE> {
 
 	private final List<FieldMapper> mappers;
 
-	private final Type type;
+	private final Class<TYPE> type;
 	private final String classSetName;
 	private final String classNamespace;
 
@@ -47,6 +47,10 @@ public class ClassMapper<TYPE> {
 		namespaceFieldMapper = MapperUtils.getNamespaceFieldMapper(clazz);
 		setNameFieldMapper = MapperUtils.getSetNameFieldMapper(clazz);
 		userKeyFieldMapper = MapperUtils.getUserKeyFieldMapper(clazz);
+	}
+
+	public Class<TYPE> getType() {
+		return type;
 	}
 
 	public ObjectMetadata getRequiredMetadata(Object target, String defaultNamespace) {

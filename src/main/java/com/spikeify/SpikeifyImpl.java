@@ -111,12 +111,6 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 				recordsCache, false, namespace, objects);
 	}
 
-	@Override
-	public <T> Scanner<T> query(Class<T> type) {
-		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
-	}
-
-
 	public SingleObjectDeleter delete(Object object) {
 		return new SingleObjectDeleter(synClient, asyncClient, recordsCache, namespace, object);
 	}
@@ -153,6 +147,11 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public MultiKeyDeleter deleteAll(String... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, namespace, keys);
+	}
+
+	@Override
+	public <T> Scanner<T> query(Class<T> type) {
+		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}
 
 	public <R> R transact(Work<R> work) {

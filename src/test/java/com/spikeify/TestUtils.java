@@ -1,5 +1,10 @@
 package com.spikeify;
 
+import com.spikeify.entity.EntityOne;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Random;
 
 public class TestUtils {
@@ -18,6 +23,24 @@ public class TestUtils {
 
 	public static String randomWord(){
 		return wordBase[random.nextInt(wordBase.length)];
+	}
+
+	public static List<EntityOne> randomEntityOne(int number) {
+		List<EntityOne> res = new ArrayList<>(number);
+		for (int i = 0; i < number; i++) {
+			EntityOne ent = new EntityOne();
+			ent.userId = new Random().nextLong();
+			ent.one = random.nextInt();
+			ent.two = TestUtils.randomWord();
+			ent.three = random.nextDouble();
+			ent.four = random.nextFloat();
+			ent.setFive((short) random.nextInt());
+			ent.setSix((byte) random.nextInt());
+			ent.seven = random.nextBoolean();
+			ent.eight = new Date(random.nextLong());
+			res.add(ent);
+		}
+		return res;
 	}
 
 }

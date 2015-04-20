@@ -1,8 +1,6 @@
 package com.spikeify;
 
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
@@ -31,10 +29,12 @@ public class LoaderTest {
 
 	@After
 	public void dbCleanup() {
-		Key deleteKey1 = new Key(namespace, setName, userKey1);
-		Key deleteKey2 = new Key(namespace, setName, userKey2);
-		sfy.delete(deleteKey1).now();
-		sfy.delete(deleteKey2).now();
+		client.scanAll(null, namespace, setName, new ScanCallback() {
+			@Override
+			public void scanCallback(Key key, Record record) throws AerospikeException {
+				client.delete(null, key);
+			}
+		});
 	}
 
 	@Test

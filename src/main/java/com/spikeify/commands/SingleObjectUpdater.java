@@ -64,7 +64,6 @@ public class SingleObjectUpdater<T> {
 		}
 	}
 
-
 	public Key now() {
 
 		if (create) {
