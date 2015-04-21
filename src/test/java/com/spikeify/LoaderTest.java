@@ -109,7 +109,7 @@ public class LoaderTest {
 		entity1.nine.add("one");
 		entity1.nine.add("two");
 
-		Key saveKey1 = sfy
+		Long saveKey1 = sfy
 				.update(userKey1, entity1)
 				.namespace(namespace)
 				.set(setName)
@@ -128,12 +128,12 @@ public class LoaderTest {
 		entity2.nine.add("one");
 		entity2.nine.add("two");
 
-		Key saveKey2 = sfy
+		Long saveKey2 = sfy
 				.update(userKey2, entity1)
 				.set(setName)
 				.now();
 
-		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).now();
+		Map<Long,EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).namespace(namespace).set(setName).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));
@@ -152,7 +152,7 @@ public class LoaderTest {
 
 	@Test
 	public void loadAllNonExisting(){
-		Map<Key, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
+		Map<Long, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
 		Assert.assertTrue(recs.isEmpty());
 
 	}

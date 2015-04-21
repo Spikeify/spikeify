@@ -9,17 +9,17 @@ public interface Spikeify {
 
 	<T> SingleLoader<T> get(Class<T> type);
 
-	<T> MultiLoader<T> getAll(Class<T> type, Key... keys);
+	<T> MultiLoader<T, Key> getAll(Class<T> type, Key... keys);
 
-	<T> MultiLoader<T> getAll(Class<T> type, Long... keys);
+	<T> MultiLoader<T, Long> getAll(Class<T> type, Long... keys);
 
-	<T> MultiLoader<T> getAll(Class<T> type, String... keys);
+	<T> MultiLoader<T, String> getAll(Class<T> type, String... keys);
 
-	<T> SingleKeyUpdater<T> create(Key key, T entity);
+	<T> SingleKeyUpdater<T, Key> create(Key key, T entity);
 
-	<T> SingleKeyUpdater<T> create(Long key, T entity);
+	<T> SingleKeyUpdater<T, Long> create(Long key, T entity);
 
-	<T> SingleKeyUpdater<T> create(String key, T entity);
+	<T> SingleKeyUpdater<T, String> create(String key, T entity);
 
 	<T> SingleObjectUpdater<T> create(T entity);
 
@@ -33,13 +33,13 @@ public interface Spikeify {
 
 	<T> SingleObjectUpdater<T> update(T object);
 
-	<T> SingleKeyUpdater<T> update(Key key, T entity);
+	<T> SingleKeyUpdater<T, Key> update(Key key, T entity);
 
-	<T> SingleKeyUpdater<T> update(Long key, T entity);
+	<T> SingleKeyUpdater<T, Long> update(Long key, T entity);
 
-	<T> SingleKeyUpdater<T> update(String key, T entity);
+	<T> SingleKeyUpdater<T, String> update(String key, T entity);
 
-	<T> MultiObjectUpdater<T> updateAll(Object... object);
+	MultiObjectUpdater updateAll(Object... object);
 
 	SingleObjectDeleter delete(Object object);
 

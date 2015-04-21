@@ -53,7 +53,7 @@ public class DeleterTest {
 		entity.seven = true;
 
 		// we did not provide namespace on purpose - let default kick in
-		Key saveKey = sfy
+		Long saveKey = sfy
 				.create(userKeyLong, entity)
 				.set(setName)
 				.now();
@@ -63,7 +63,7 @@ public class DeleterTest {
 
 		Policy policy = new Policy();
 		policy.sendKey = true;
-		boolean exists = client.exists(null, saveKey);
+		boolean exists = client.exists(null, new Key(namespace, setName, saveKey));
 
 		// assert record does not exist
 		Assert.assertFalse(exists);
@@ -82,7 +82,7 @@ public class DeleterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 
-		Key saveKey = sfy
+		String saveKey = sfy
 				.create(userKeyString, entity)
 				.namespace(namespace)
 				.set(setName)
@@ -92,7 +92,7 @@ public class DeleterTest {
 
 		Policy policy = new Policy();
 		policy.sendKey = true;
-		boolean exists = client.exists(null, saveKey);
+		boolean exists = client.exists(null, new Key(namespace, setName, saveKey));
 
 		// assert record does not exist
 		Assert.assertFalse(exists);
@@ -139,7 +139,7 @@ public class DeleterTest {
 	public void deleteKeys() {
 		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(10, setName);
 		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
-		Map<Key, EntityOne> res = sfy.createAll(antArray).now();
+		Map<Key, Object> res = sfy.createAll(antArray).now();
 
 		for (Key key : res.keySet()) {
 			Assert.assertTrue(client.exists(null, key));

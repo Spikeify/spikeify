@@ -117,7 +117,7 @@ public class CreatorTest {
 				.now();
 
 		// reload entity and check that only two properties were updated
-		Map<Key, EntityOne> reloaded = sfy.getAll(EntityOne.class, userKey1, userKey2)
+		Map<Long, EntityOne> reloaded = sfy.getAll(EntityOne.class, userKey1, userKey2)
 				.namespace(namespace)
 				.set(setName)
 				.now();
@@ -170,7 +170,7 @@ public class CreatorTest {
 		entity.nine.add("one");
 		entity.nine.add("two");
 
-		Key saveKey = sfy
+		Long saveKey = sfy
 				.create(userKey1, entity)
 				.namespace(namespace)
 				.set(EntityOne.class.getSimpleName()) // use class name as SetName

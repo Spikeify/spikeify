@@ -10,7 +10,7 @@ import com.spikeify.*;
 
 import java.util.*;
 
-public class MultiObjectUpdater<T> {
+public class MultiObjectUpdater{
 
 	private final Object[] objects;
 
@@ -33,7 +33,7 @@ public class MultiObjectUpdater<T> {
 	protected final boolean create;
 	protected WritePolicy policy;
 
-	public MultiObjectUpdater<T> policy(WritePolicy policy) {
+	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		if (create) {

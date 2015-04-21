@@ -10,10 +10,10 @@ import com.spikeify.*;
 
 import java.util.*;
 
-public class MultiLoader<T> {
+public class MultiLoader<T, K> {
 
 	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	                   RecordsCache recordsCache, String namespace, Key... keys) {
+	                   RecordsCache recordsCache, String namespace, K... keys) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
@@ -23,35 +23,16 @@ public class MultiLoader<T> {
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
-		this.keys = Arrays.asList(keys);
-	}
-
-	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	                   RecordsCache recordsCache, String namespace, Long... userKeys) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
-		this.classConstructor = classConstructor;
-		this.recordsCache = recordsCache;
-		this.namespace = namespace;
-		this.policy = new BatchPolicy();
-		this.policy.sendKey = true;
-		this.mapper = MapperService.getMapper(type);
-		this.type = type;
-		this.longKeys = Arrays.asList(userKeys);
-	}
-
-	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	                   RecordsCache recordsCache, String namespace, String... userKeys) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
-		this.classConstructor = classConstructor;
-		this.recordsCache = recordsCache;
-		this.namespace = namespace;
-		this.policy = new BatchPolicy();
-		this.policy.sendKey = true;
-		this.mapper = MapperService.getMapper(type);
-		this.type = type;
-		this.stringKeys = Arrays.asList(userKeys);
+		if(keys[0].getClass().equals(Key.class)){
+			this.keys = Arrays.asList((Key[]) keys);
+			this.keyType = KeyType.KEY;
+		} else if(keys[0].getClass().equals(Long.class)){
+			this.longKeys = Arrays.asList((Long[]) keys);
+			this.keyType = KeyType.LONG;
+		} else if(keys[0].getClass().equals(String.class)){
+			this.stringKeys = Arrays.asList((String[]) keys);
+			this.keyType = KeyType.STRING;
+		}
 	}
 
 	protected String namespace;
@@ -66,18 +47,19 @@ public class MultiLoader<T> {
 	protected BatchPolicy policy;
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
+	protected KeyType keyType;
 
-	public MultiLoader<T> namespace(String namespace) {
+	public MultiLoader<T, K> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
-	public MultiLoader<T> set(String setName) {
+	public MultiLoader<T, K> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
-	public MultiLoader<T> policy(BatchPolicy policy) {
+	public MultiLoader<T, K> policy(BatchPolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		return this;
@@ -115,14 +97,14 @@ public class MultiLoader<T> {
 	 *
 	 * @return The map of Keys and Java objects mapped from records
 	 */
-	public Map<Key, T> now() {
+	public Map<K, T> now() {
 
 		collectKeys();
 
 		Key[] keysArray = keys.toArray(new Key[keys.size()]);
 		Record[] records = synClient.get(policy, keysArray);
 
-		Map<Key, T> result = new HashMap<>(keys.size());
+		Map<K, T> result = new HashMap<>(keys.size());
 
 		Record record;
 		for (int i = 0; i < records.length; i++) {
@@ -152,7 +134,18 @@ public class MultiLoader<T> {
 				// set field values
 				mapper.setFieldValues(object, record.bins);
 
-				result.put(key, object);
+				switch (keyType){
+					case KEY:
+						result.put((K) key, object);
+						break;
+					case LONG:
+						Long longKey = key.userKey.toLong();
+						result.put((K) longKey, object);
+						break;
+					case STRING:
+						result.put((K) key.userKey.toString(), object);
+						break;
+				}
 			}
 		}
 

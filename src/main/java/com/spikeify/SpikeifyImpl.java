@@ -32,32 +32,32 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public <E> MultiLoader<E> getAll(Class<E> type, Key... keys) {
+	public <E> MultiLoader<E, Key> getAll(Class<E> type, Key... keys) {
 		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
 	}
 
 	@Override
-	public <E> MultiLoader<E> getAll(Class<E> type, Long... keys) {
+	public <E> MultiLoader<E, Long> getAll(Class<E> type, Long... keys) {
 		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
 	}
 
 	@Override
-	public <E> MultiLoader<E> getAll(Class<E> type, String... keys) {
+	public <E> MultiLoader<E, String> getAll(Class<E> type, String... keys) {
 		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace, keys);
 	}
 
 	@Override
-	public <T> SingleKeyUpdater<T> create(Key key, T object) {
+	public <T> SingleKeyUpdater<T, Key> create(Key key, T object) {
 		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, true, namespace, object, key);
 	}
 
 	@Override
-	public <T> SingleKeyUpdater<T> create(Long userKey, T object) {
+	public <T> SingleKeyUpdater<T, Long> create(Long userKey, T object) {
 		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, true, namespace, object, userKey);
 	}
 
 	@Override
-	public <T> SingleKeyUpdater<T> create(String userKey, T object) {
+	public <T> SingleKeyUpdater<T, String> create(String userKey, T object) {
 		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, true, namespace, object, userKey);
 	}
 
@@ -133,17 +133,17 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public <T> SingleKeyUpdater<T> update(Key key, T object) {
+	public <T> SingleKeyUpdater<T, Key> update(Key key, T object) {
 		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, false, namespace, object, key);
 	}
 
 	@Override
-	public <T> SingleKeyUpdater<T> update(Long userKey, T object) {
+	public <T> SingleKeyUpdater<T, Long> update(Long userKey, T object) {
 		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, false, namespace, object, userKey);
 	}
 
 	@Override
-	public <T> SingleKeyUpdater<T> update(String userKey, T object) {
+	public <T> SingleKeyUpdater<T, String> update(String userKey, T object) {
 		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, false, namespace, object, userKey);
 	}
 
@@ -152,7 +152,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (objects == null || objects.length == 0) {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
-		return new MultiObjectUpdater<>(synClient, asyncClient,
+		return new MultiObjectUpdater(synClient, asyncClient,
 				recordsCache, false, namespace, objects);
 	}
 

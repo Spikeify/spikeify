@@ -131,7 +131,7 @@ public class UpdaterTest {
 		entity.nine.add("one");
 		entity.nine.add("two");
 
-		Key saveKey = sfy
+		Long saveKey = sfy
 				.update(userKey1, entity)
 				.namespace(namespace)
 				.set(setName)
@@ -140,7 +140,7 @@ public class UpdaterTest {
 		// delete entity by hand
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
-		boolean deleted = client.delete(policy, saveKey);
+		boolean deleted = client.delete(policy, new Key(namespace, setName, saveKey));
 		Assert.assertTrue(deleted); // was indeed deleted
 
 		// change two properties
