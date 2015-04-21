@@ -23,6 +23,10 @@ public class SpikeifyService {
 	private static IAsyncClient asyncClient;
 	public static String defaultNamespace;
 
+	public static IAerospikeClient getClient(){
+		return synClient;
+	}
+
 	/**
 	 * A Spikeify with default global configuration. It uses no-arg constructors to instantiate classes.
 	 *

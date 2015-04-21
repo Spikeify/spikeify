@@ -19,7 +19,6 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private final ClassConstructor classConstructor;
 	private final String namespace;
 
-
 	private RecordsCache recordsCache = new RecordsCache();
 
 	@Override
