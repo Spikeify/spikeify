@@ -103,7 +103,7 @@ public class ClassMapper<TYPE> {
 	}
 
 	public String getSetName() {
-		return classSetName;
+		return classSetName != null ? classSetName : type.getSimpleName();
 	}
 
 	public String getNamespace() {
