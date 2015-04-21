@@ -173,13 +173,13 @@ public class CreatorTest {
 		Key saveKey = sfy
 				.create(userKey1, entity)
 				.namespace(namespace)
-				.set(setName)
+				.set(EntityOne.class.getSimpleName()) // use class name as SetName
 				.now();
 
 		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
 		EntityOne reloaded = sfy.get(EntityOne.class)
 				.namespace(namespace)
-				.set(setName)
 				.key(userKey1)
 				.now();
 
