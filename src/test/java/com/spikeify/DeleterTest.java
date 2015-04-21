@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -26,8 +25,8 @@ public class DeleterTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000, "test");
-		client = new AerospikeClientMock();
+		SpikeifyService.globalConfig(namespace, 3000, "localhost");
+		client = new AerospikeClientMock(namespace);
 		sfy = SpikeifyService.mock(client);
 	}
 
@@ -102,7 +101,7 @@ public class DeleterTest {
 	@Test
 	public void deleteObject() {
 
-		EntityOne entity = TestUtils.randomEntityOne(1, setName).get(0);
+		EntityOne entity = TestUtils.randomEntityOne(setName);
 
 		Key saveKey = sfy
 				.create(entity)
@@ -121,8 +120,8 @@ public class DeleterTest {
 
 	@Test
 	public void deleteObjects() {
-		List<EntityOne> entities = TestUtils.randomEntityOne(10, setName);
-		EntityOne[] antArray = entities.toArray(new EntityOne[entities.size()]);
+		Map<Long,EntityOne> entities = TestUtils.randomEntityOne(10, setName);
+		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
 		Map<Key, Object> res = sfy.createAll(antArray).now();
 
 		for (Key key : res.keySet()) {
@@ -138,8 +137,8 @@ public class DeleterTest {
 
 	@Test
 	public void deleteKeys() {
-		List<EntityOne> entities = TestUtils.randomEntityOne(10, setName);
-		EntityOne[] antArray = entities.toArray(new EntityOne[entities.size()]);
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(10, setName);
+		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
 		Map<Key, EntityOne> res = sfy.createAll(antArray).now();
 
 		for (Key key : res.keySet()) {

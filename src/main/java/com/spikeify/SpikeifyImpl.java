@@ -22,6 +22,11 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private RecordsCache recordsCache = new RecordsCache();
 
 	@Override
+	public InfoFetcher info() {
+		return new InfoFetcher(synClient);
+	}
+
+	@Override
 	public <E> SingleLoader<E> get(Class<E> type) {
 		return new SingleLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}

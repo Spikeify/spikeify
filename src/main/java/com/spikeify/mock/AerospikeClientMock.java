@@ -27,7 +27,13 @@ public class AerospikeClientMock implements IAerospikeClient {
 	public QueryPolicy queryPolicyDefault = new QueryPolicy();
 	public BatchPolicy batchPolicyDefault = new BatchPolicy();
 
+	public final String defaultNamespace;
+
 	private List<String> nodes = Arrays.asList("node1");
+
+	public AerospikeClientMock(String defaultNamespace) {
+		this.defaultNamespace = defaultNamespace == null ? "<none>" : defaultNamespace;
+	}
 
 	public static class Rec {
 		public int generation;
@@ -128,8 +134,8 @@ public class AerospikeClientMock implements IAerospikeClient {
 	@Override
 	public void put(WritePolicy policy, Key key, Bin... bins) throws AerospikeException {
 		policy = (policy == null) ? writePolicyDefault : policy;
-		String nsName = key.namespace == null ? "<none>" : key.namespace;
-		String setName = key.setName == null ? "<none>" : key.setName;
+		String nsName = key.namespace == null ? defaultNamespace : key.namespace;
+		String setName = key.setName == null ? defaultNamespace : key.setName;
 
 		Map<String, Map<Key, Rec>> namespace = getNamespace(nsName);
 		Map<Key, Rec> set = getSet(setName, namespace);
@@ -196,8 +202,8 @@ public class AerospikeClientMock implements IAerospikeClient {
 
 	@Override
 	public boolean delete(WritePolicy policy, Key key) throws AerospikeException {
-		String nsName = key.namespace == null ? "<none>" : key.namespace;
-		String setName = key.setName == null ? "<none>" : key.setName;
+		String nsName = key.namespace == null ? defaultNamespace : key.namespace;
+		String setName = key.setName == null ? defaultNamespace : key.setName;
 
 		Map<String, Map<Key, Rec>> namespace = getNamespace(nsName);
 		Map<Key, Rec> set = getSet(setName, namespace);
@@ -213,8 +219,8 @@ public class AerospikeClientMock implements IAerospikeClient {
 	@Override
 	public boolean exists(Policy policy, Key key) throws AerospikeException {
 		policy = (policy == null) ? readPolicyDefault : policy;
-		String nsName = key.namespace == null ? "<none>" : key.namespace;
-		String setName = key.setName == null ? "<none>" : key.setName;
+		String nsName = key.namespace == null ? defaultNamespace : key.namespace;
+		String setName = key.setName == null ? defaultNamespace : key.setName;
 
 		Map<String, Map<Key, Rec>> namespace = getNamespace(nsName);
 		Map<Key, Rec> set = getSet(setName, namespace);
@@ -234,8 +240,8 @@ public class AerospikeClientMock implements IAerospikeClient {
 	@Override
 	public Record get(Policy policy, Key key) throws AerospikeException {
 		policy = (policy == null) ? readPolicyDefault : policy;
-		String nsName = key.namespace == null ? "<none>" : key.namespace;
-		String setName = key.setName == null ? "<none>" : key.setName;
+		String nsName = key.namespace == null ? defaultNamespace : key.namespace;
+		String setName = key.setName == null ? defaultNamespace : key.setName;
 
 		Map<String, Map<Key, Rec>> namespace = getNamespace(nsName);
 		Map<Key, Rec> set = getSet(setName, namespace);

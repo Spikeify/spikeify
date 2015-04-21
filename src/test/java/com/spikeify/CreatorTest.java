@@ -24,8 +24,8 @@ public class CreatorTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000, "test");
-		client = new AerospikeClientMock();
+		SpikeifyService.globalConfig(namespace, 3000, "localhost");
+		client = new AerospikeClientMock(namespace);
 		sfy = SpikeifyService.mock(client);
 	}
 

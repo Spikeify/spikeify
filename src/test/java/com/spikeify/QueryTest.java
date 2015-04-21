@@ -22,7 +22,7 @@ public class QueryTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000, namespace);
+		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		client = new AerospikeClient("localhost", 3000);
 		sfy = SpikeifyService.sfy();
 	}
@@ -45,7 +45,7 @@ public class QueryTest {
 
 		// create records
 		for (int i = 0; i < 100; i++) {
-			EntityOne ent = TestUtils.randomEntityOne(1, setName).get(0);
+			EntityOne ent = TestUtils.randomEntityOne(setName);
 			ent.theSetName = setName;
 			if (i % 10 == 0) {
 				ent.two = "content";

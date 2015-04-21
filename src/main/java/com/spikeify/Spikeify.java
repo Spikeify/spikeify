@@ -5,10 +5,14 @@ import com.spikeify.commands.*;
 
 public interface Spikeify {
 
+	InfoFetcher info();
+
 	<T> SingleLoader<T> get(Class<T> type);
 
 	<T> MultiLoader<T> getAll(Class<T> type, Key... keys);
+
 	<T> MultiLoader<T> getAll(Class<T> type, Long... keys);
+
 	<T> MultiLoader<T> getAll(Class<T> type, String... keys);
 
 	<T> SingleKeyUpdater<T> create(Key key, T entity);

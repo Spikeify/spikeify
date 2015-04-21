@@ -22,8 +22,8 @@ public class LoaderTest {
 
 	@Before
 	public void dbSetup() {
-		SpikeifyService.globalConfig("localhost", 3000, "test");
-		client = new AerospikeClientMock();
+		SpikeifyService.globalConfig(namespace, 3000, "localhost");
+		client = new AerospikeClientMock(namespace);
 		sfy = SpikeifyService.mock(client);
 	}
 
@@ -72,7 +72,7 @@ public class LoaderTest {
 		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine);
 
 		// testing default namespace - we did not explicitly provide namespace
-		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).set(setName).now();
+		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).set(setName).now();
 
 		// UserKey value
 		Assert.assertEquals(userKey1, entity.userId);

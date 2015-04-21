@@ -2,9 +2,9 @@ package com.spikeify;
 
 import com.spikeify.entity.EntityOne;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class TestUtils {
@@ -26,8 +26,8 @@ public class TestUtils {
 	}
 
 
-	public static List<EntityOne> randomEntityOne(int number, String setName) {
-		List<EntityOne> res = new ArrayList<>(number);
+	public static Map<Long, EntityOne> randomEntityOne(int number, String setName) {
+		Map<Long, EntityOne> res = new HashMap<>(number);
 		for (int i = 0; i < number; i++) {
 			EntityOne ent = new EntityOne();
 			ent.userId = new Random().nextLong();
@@ -40,9 +40,24 @@ public class TestUtils {
 			ent.setSix((byte) random.nextInt());
 			ent.seven = random.nextBoolean();
 			ent.eight = new Date(random.nextLong());
-			res.add(ent);
+			res.put(ent.userId, ent);
 		}
 		return res;
+	}
+
+	public static EntityOne randomEntityOne(String setName) {
+		EntityOne ent = new EntityOne();
+		ent.userId = new Random().nextLong();
+		ent.theSetName = setName;
+		ent.one = random.nextInt();
+		ent.two = TestUtils.randomWord();
+		ent.three = random.nextDouble();
+		ent.four = random.nextFloat();
+		ent.setFive((short) random.nextInt());
+		ent.setSix((byte) random.nextInt());
+		ent.seven = random.nextBoolean();
+		ent.eight = new Date(random.nextLong());
+		return ent;
 	}
 
 }

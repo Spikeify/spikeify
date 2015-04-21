@@ -55,7 +55,6 @@ public class Scanner<T> {
 
 	/**
 	 * Sets query filters. From {@link com.aerospike.client.query.Statement#setFilters(Filter... filters) Statement.setFilters(..)}
-	 *
 	 * @param filters
 	 * @return
 	 */
