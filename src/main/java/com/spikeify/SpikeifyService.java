@@ -13,9 +13,17 @@ import com.aerospike.client.policy.ClientPolicy;
  */
 public class SpikeifyService {
 
-	public static void globalConfig(String host, int port, String defaultNamespace) {
-		synClient = new AerospikeClient(host, port);
-		asyncClient = new AsyncClient(host, port);
+	public static void globalConfig(String defaultNamespace, int port, String... urls) {
+		Host[] hosts = new Host[urls.length];
+		for (int i = 0; i < hosts.length; i++) {
+			hosts[i] = new Host(urls[i], port);
+		}
+		globalConfig(defaultNamespace, hosts);
+	}
+
+	public static void globalConfig(String defaultNamespace, Host... hosts) {
+		synClient = new AerospikeClient(null, hosts);
+		asyncClient = new AsyncClient(null, hosts);
 		SpikeifyService.defaultNamespace = defaultNamespace;
 	}
 
