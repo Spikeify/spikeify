@@ -3,6 +3,7 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.entity.EntityEnum;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
@@ -51,6 +52,7 @@ public class UpdaterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
+		entity.eleven = EntityEnum.SECOND;
 
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -73,7 +75,44 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.getSix(), record.getByte("six"));
 		Assert.assertEquals(entity.seven, record.getBoolean("seven"));
 		Assert.assertEquals(entity.eight, new Date(record.getLong("eight")));
+		Assert.assertEquals(entity.eleven, EntityEnum.valueOf(record.getString("eleven")));
+	}
 
+	@Test
+	public void saveAndLoadProperties() {
+
+		EntityOne entity = new EntityOne();
+
+		entity.one = 123;
+		entity.two = "a test";
+		entity.three = 123.0d;
+		entity.four = 123.0f;
+		entity.setFive((short) 234);
+		entity.setSix((byte) 100);
+		entity.seven = true;
+		entity.eight = new Date(1420070400);
+		entity.eleven = EntityEnum.SECOND;
+
+		Key key1 = new Key(namespace, setName, userKey1);
+
+		// we did not provide namespace on purpose - let default kick in
+		Key saveKey = sfy
+				.update(key1, entity)
+				.now();
+
+		Key loadKey = new Key(namespace, setName, userKey1);
+
+		EntityOne reloaded = sfy.get(EntityOne.class).key(loadKey).now();
+
+		Assert.assertEquals(entity.one, reloaded.one);
+		Assert.assertEquals(entity.two, reloaded.two);
+		Assert.assertEquals(entity.three, reloaded.three, 0.1);
+		Assert.assertEquals(entity.four, reloaded.four, 0.1);
+		Assert.assertEquals(entity.getFive(), reloaded.getFive());
+		Assert.assertEquals(entity.getSix(), reloaded.getSix());
+		Assert.assertEquals(entity.seven, reloaded.seven);
+		Assert.assertEquals(entity.eight, reloaded.eight);
+		Assert.assertEquals(entity.eleven, reloaded.eleven);
 	}
 
 	@Test
@@ -91,7 +130,6 @@ public class UpdaterTest {
 		entity.nine = new ArrayList<>();
 		entity.nine.add("one");
 		entity.nine.add("two");
-
 
 		Key saveKey = sfy
 				.update(userKey1, entity)

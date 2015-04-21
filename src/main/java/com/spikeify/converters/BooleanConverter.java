@@ -1,8 +1,16 @@
 package com.spikeify.converters;
 
 import com.spikeify.Converter;
+import com.spikeify.ConverterFactory;
 
-public class BooleanConverter implements Converter<Boolean, Long> {
+import java.lang.reflect.Type;
+
+public class BooleanConverter implements Converter<Boolean, Long>, ConverterFactory{
+
+	@Override
+	public Converter init(Type type) {
+		return this;
+	}
 
 	public boolean canConvert(Class type) {
 		return Boolean.class.isAssignableFrom(type) || boolean.class.isAssignableFrom(type);

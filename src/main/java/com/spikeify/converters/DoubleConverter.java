@@ -1,8 +1,16 @@
 package com.spikeify.converters;
 
 import com.spikeify.Converter;
+import com.spikeify.ConverterFactory;
 
-public class DoubleConverter implements Converter<Double, Long> {
+import java.lang.reflect.Type;
+
+public class DoubleConverter implements Converter<Double, Long>, ConverterFactory {
+
+	@Override
+	public Converter init(Type type) {
+		return this;
+	}
 
 	public boolean canConvert(Class type) {
 		return Double.class.isAssignableFrom(type) || double.class.isAssignableFrom(type);

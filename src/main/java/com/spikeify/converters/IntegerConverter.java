@@ -1,8 +1,16 @@
 package com.spikeify.converters;
 
 import com.spikeify.Converter;
+import com.spikeify.ConverterFactory;
 
-public class IntegerConverter implements Converter<Integer, Long> {
+import java.lang.reflect.Type;
+
+public class IntegerConverter implements Converter<Integer, Long> , ConverterFactory {
+
+	@Override
+	public Converter init(Type type) {
+		return this;
+	}
 
 	public boolean canConvert(Class type) {
 		return Integer.class.isAssignableFrom(type) || int.class.isAssignableFrom(type);

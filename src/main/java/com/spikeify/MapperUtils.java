@@ -14,7 +14,7 @@ public class MapperUtils {
 
 	private static final int IGNORED_FIELD_MODIFIERS = Modifier.FINAL | Modifier.STATIC;
 
-	private static List<? extends Converter> converters = Arrays.asList(
+	private static List<? extends ConverterFactory> converters = Arrays.asList(
 			new StringConverter(),
 			new IntegerConverter(),
 			new LongConverter(),
@@ -26,13 +26,14 @@ public class MapperUtils {
 			new ShortConverter(),
 			new ByteArrayConverter(),
 			new ListConverter(),
-			new MapConverter()
+			new MapConverter(),
+			new EnumConverterFactory()
 	);
 
 	public static Converter findConverter(Class fieldType) {
-		for (Converter converter : converters) {
-			if (converter.canConvert(fieldType)) {
-				return converter;
+		for (ConverterFactory converterFactory : converters) {
+			if (converterFactory.canConvert(fieldType)) {
+				return converterFactory.init(fieldType);
 			}
 		}
 		return null;

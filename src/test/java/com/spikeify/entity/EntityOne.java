@@ -25,6 +25,7 @@ public class EntityOne {
 	public Date eight;
 	public List nine;
 	public Map ten;
+	public EntityEnum eleven;
 
 	@SetName
 	public String theSetName;

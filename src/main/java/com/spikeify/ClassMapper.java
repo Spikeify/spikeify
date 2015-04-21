@@ -164,7 +164,7 @@ public class ClassMapper<TYPE> {
 
 	public void setUserKey(Object object, String userKey) {
 		if (userKeyFieldMapper != null) {
-			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
+			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
 						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
 						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
@@ -176,7 +176,7 @@ public class ClassMapper<TYPE> {
 
 	public void setUserKey(Object object, Long userKey) {
 		if (userKeyFieldMapper != null) {
-			if (!userKeyFieldMapper.converter.canConvert(userKey.getClass())) {
+			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
 						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
 						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."

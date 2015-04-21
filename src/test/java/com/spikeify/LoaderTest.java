@@ -2,6 +2,7 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.entity.EntityEnum;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
@@ -51,6 +52,7 @@ public class LoaderTest {
 		List<String> nine = new ArrayList<>();
 		nine.add("one");
 		nine.add("two");
+		EntityEnum eleven = EntityEnum.FIRST;
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -61,6 +63,7 @@ public class LoaderTest {
 		Bin binSeven = new Bin("seven", seven);
 		Bin binEight = new Bin("eight", eight);
 		Bin binNine = new Bin("nine", nine);
+		Bin binEleven = new Bin("eleven", eleven.name());
 
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
@@ -69,7 +72,7 @@ public class LoaderTest {
 		String setName = "testSet";
 
 		Key key = new Key(namespace, setName, userKey1);
-		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine);
+		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine, binEleven);
 
 		// testing default namespace - we did not explicitly provide namespace
 		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).set(setName).now();
@@ -87,6 +90,7 @@ public class LoaderTest {
 		Assert.assertEquals(seven, entity.seven);
 		Assert.assertEquals(eight, entity.eight);
 		Assert.assertEquals(nine, entity.nine);
+		Assert.assertEquals(eleven, entity.eleven);
 	}
 
 	@Test

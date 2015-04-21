@@ -1,8 +1,16 @@
 package com.spikeify.converters;
 
 import com.spikeify.Converter;
+import com.spikeify.ConverterFactory;
 
-public class ByteArrayConverter implements Converter<byte[], byte[]> {
+import java.lang.reflect.Type;
+
+public class ByteArrayConverter implements Converter<byte[], byte[]>, ConverterFactory {
+
+	@Override
+	public Converter init(Type type) {
+		return this;
+	}
 
 	public boolean canConvert(Class type) {
 		return byte[].class.isAssignableFrom(type);
