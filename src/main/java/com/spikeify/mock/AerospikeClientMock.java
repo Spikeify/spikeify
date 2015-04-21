@@ -324,6 +324,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 	}
 
 	@Override
+	public LargeList getLargeList(WritePolicy writePolicy, Key key, String s) {
+		return null;
+	}
+
+	@Override
 	public LargeMap getLargeMap(Policy policy, Key key, String binName, String userModule) {
 		return null;
 	}
