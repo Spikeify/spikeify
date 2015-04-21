@@ -5,12 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.spikeify</groupId>
     <artifactId>core</artifactId>
-    <version>0.1.0.5-alpha</version>
+    <version>0.1.0.6-alpha</version>
     <packaging>jar</packaging>
 
     <name>Spikeify</name>
     <description>Simple ORM for Aerospike</description>
-    <url>https://github.com/PeterKnego/spikeify</url>
+    <url>http://www.spikeify.com</url>
     <inceptionYear>2015</inceptionYear>
 
     <properties>
@@ -26,9 +26,9 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/PeterKnego/spikeify</url>
-        <connection>scm:git:git://github.com/PeterKnego/spikeify.git</connection>
-        <developerConnection>scm:git:git@github.com/PeterKnego/spikeify.git</developerConnection>
+        <url>https://github.com/Spikeify/spikeify</url>
+        <connection>scm:git:git://github.com/Spikeify/spikeify.git</connection>
+        <developerConnection>scm:git:git@github.com/Spikeify/spikeify.git</developerConnection>
     </scm>
 
     <developers>
@@ -37,13 +37,18 @@
             <email>peter@knego.net</email>
             <id>PeterKnego</id>
         </developer>
+        <developer>
+            <name>Dean Gostiša</name>
+            <email>dean@black.si</email>
+            <id>dincek</id>
+        </developer>
     </developers>
 
     <dependencies>
         <dependency>
             <groupId>com.aerospike</groupId>
             <artifactId>aerospike-client</artifactId>
-            <version>3.1.0</version>
+            <version>3.1.1</version>
         </dependency>
 
         <!--Testing stuff bellow-->
