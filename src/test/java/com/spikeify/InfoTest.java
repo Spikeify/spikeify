@@ -3,12 +3,14 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class InfoTest {
 
@@ -46,13 +48,15 @@ public class InfoTest {
 		int count = 1;
 		for (String setName : setNames) {
 			Map<Long, EntityOne> map1 = TestUtils.randomEntityOne(count * 10, setName);
-			EntityOne[] entities = map1.values().toArray(new EntityOne[map1.values().size()]);
-			Long[] keys = map1.keySet().toArray(new Long[map1.keySet().size()]);
-			sfy.createAll(keys, entities).namespace(namespace).now();
+			sfy.createAll(map1.values().toArray()).now();
 			count++;
 		}
 
-		System.out.println(sfy.info().getSets());
+		Set<String> infoSetNames = sfy.info().getSets();
+
+		Assert.assertTrue(infoSetNames.contains(setNames.get(0)));
+		Assert.assertTrue(infoSetNames.contains(setNames.get(1)));
+		Assert.assertTrue(infoSetNames.contains(setNames.get(2)));
 
 	}
 
