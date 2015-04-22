@@ -53,6 +53,9 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 		entity.eleven = EntityEnum.SECOND;
+		entity.unmapped.put("unmap1", 123l);
+		entity.unmapped.put("unmap2", "unmapped string");
+		entity.unmapped.put("unmap3", 3.14d);
 
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -76,6 +79,9 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.seven, record.getBoolean("seven"));
 		Assert.assertEquals(entity.eight, new Date(record.getLong("eight")));
 		Assert.assertEquals(entity.eleven, EntityEnum.valueOf(record.getString("eleven")));
+		Assert.assertEquals(entity.unmapped.get("unmap1"), record.getLong("unmap1"));
+		Assert.assertEquals(entity.unmapped.get("unmap2"), record.getString("unmap2"));
+		Assert.assertEquals(entity.unmapped.get("unmap3"), record.getDouble("unmap3"));
 	}
 
 	@Test
@@ -182,14 +188,13 @@ public class UpdaterTest {
 
 		Bin bin1 = new Bin("one", aList);
 		Bin bin2 = new Bin("two", 1.1f);
-		Bin bin3 = new Bin("three", false);
 
 		Key saveKey = new Key(namespace, setName, userKey1);
 
 		// save entity manually
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
-		client.put(policy, saveKey, bin1, bin2, bin3);
+		client.put(policy, saveKey, bin1);
 
 		Record result = client.get(policy, saveKey);
 

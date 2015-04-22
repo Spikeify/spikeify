@@ -6,9 +6,12 @@ import com.spikeify.converters.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class MapperUtils {
 
@@ -82,6 +85,27 @@ public class MapperUtils {
 					return new FieldMapper<>(null, findConverter(fieldType), field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @Expiration must be of type long or Long.");
+				}
+			}
+		}
+		return null;
+	}
+
+	public static FieldMapper<Map<String, ?>, Long> getAnyFieldMapper(Class clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(AnyProperty.class) != null) {
+				Class fieldType = field.getType();
+				Type fieldTypeParams = field.getGenericType();
+				ParameterizedType paramTypes = null;
+				if (fieldTypeParams instanceof ParameterizedType) {
+					paramTypes = (ParameterizedType) fieldTypeParams;
+				}
+				if (Map.class.isAssignableFrom(fieldType) && paramTypes != null &&
+						paramTypes.getActualTypeArguments()[0].equals(String.class) &&
+						paramTypes.getActualTypeArguments()[1].equals(Object.class)) {
+					return new FieldMapper<>(null, findConverter(fieldType), field);
+				} else {
+					throw new SpikeifyError("Error: field marked with @AnyProperty must be of type long or Long.");
 				}
 			}
 		}

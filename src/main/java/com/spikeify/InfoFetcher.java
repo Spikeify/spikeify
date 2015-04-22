@@ -15,12 +15,24 @@ public class InfoFetcher {
 	protected final IAerospikeClient synClient;
 
 	public static final String CONFIG_SET_NAME = "set_name";
+	public static final String CONFIG_NS_NAME = "ns_name";
 	public static final String CONFIG_SET_PARAM= "sets";
+	public static final String CONFIG_NAMESPACES_PARAM= "namespaces";
 
 	public InfoFetcher(IAerospikeClient synClient) {
 		this.synClient = synClient;
 	}
 
+
+	public Set<String> getNamespaces() {
+		Set<String> nsNames = new HashSet<>();
+		Node[] nodes = synClient.getNodes();
+		for (Node node : nodes) {
+			String nodeNsNames = Info.request(new InfoPolicy(), node, CONFIG_NAMESPACES_PARAM);
+			nsNames.add(nodeNsNames);
+		}
+		return nsNames;
+	}
 
 	public Set<String> getSets() {
 

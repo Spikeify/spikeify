@@ -53,6 +53,9 @@ public class LoaderTest {
 		nine.add("one");
 		nine.add("two");
 		EntityEnum eleven = EntityEnum.FIRST;
+		int unmapped1 = 555;
+		String unmapped2 = "something";
+		Float unmapped3 = 666.6f;
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -64,6 +67,9 @@ public class LoaderTest {
 		Bin binEight = new Bin("eight", eight);
 		Bin binNine = new Bin("nine", nine);
 		Bin binEleven = new Bin("eleven", eleven.name());
+		Bin binUnmapped1 = new Bin("unmapped1", unmapped1);
+		Bin binUnmapped2 = new Bin("unmapped2", unmapped2);
+		Bin binUnmapped3 = new Bin("unmapped3", unmapped3);
 
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
@@ -72,7 +78,8 @@ public class LoaderTest {
 		String setName = "testSet";
 
 		Key key = new Key(namespace, setName, userKey1);
-		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight, binNine, binEleven);
+		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight,
+				binNine, binEleven, binUnmapped1, binUnmapped2, binUnmapped3);
 
 		// testing default namespace - we did not explicitly provide namespace
 		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).set(setName).now();
@@ -91,6 +98,9 @@ public class LoaderTest {
 		Assert.assertEquals(eight, entity.eight);
 		Assert.assertEquals(nine, entity.nine);
 		Assert.assertEquals(eleven, entity.eleven);
+		Assert.assertEquals((long) unmapped1, entity.unmapped.get("unmapped1"));
+		Assert.assertEquals(unmapped2, entity.unmapped.get("unmapped2"));
+		Assert.assertEquals(Double.doubleToLongBits(unmapped3), entity.unmapped.get("unmapped3"));
 	}
 
 	@Test
@@ -133,7 +143,7 @@ public class LoaderTest {
 				.set(setName)
 				.now();
 
-		Map<Long,EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).namespace(namespace).set(setName).now();
+		Map<Long, EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).namespace(namespace).set(setName).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));
@@ -145,13 +155,13 @@ public class LoaderTest {
 	}
 
 	@Test
-	public void loadNonExisting(){
+	public void loadNonExisting() {
 		EntityOne res = sfy.get(EntityOne.class).namespace(namespace).key(0l).now();
 		Assert.assertNull(res);
 	}
 
 	@Test
-	public void loadAllNonExisting(){
+	public void loadAllNonExisting() {
 		Map<Long, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
 		Assert.assertTrue(recs.isEmpty());
 

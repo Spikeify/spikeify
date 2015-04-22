@@ -52,8 +52,10 @@ public class InfoTest {
 			count++;
 		}
 
-		Set<String> infoSetNames = sfy.info().getSets();
+		Set<String> infoNamespaces = sfy.info().getNamespaces();
+		Assert.assertTrue(infoNamespaces.contains("test"));
 
+		Set<String> infoSetNames = sfy.info().getSets();
 		Assert.assertTrue(infoSetNames.contains(setNames.get(0)));
 		Assert.assertTrue(infoSetNames.contains(setNames.get(1)));
 		Assert.assertTrue(infoSetNames.contains(setNames.get(2)));

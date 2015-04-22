@@ -4,7 +4,6 @@ import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.Record;
 import com.spikeify.annotations.SetName;
 
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ public class ClassMapper<TYPE> {
 	private final FieldMapper<String, String> namespaceFieldMapper;
 	private final FieldMapper<String, String> setNameFieldMapper;
 	private final FieldMapper userKeyFieldMapper;
+	private final FieldMapper anyPropertyMapper;
 
 	public ClassMapper(Class<TYPE> clazz) {
 		this.type = clazz;
@@ -47,6 +47,7 @@ public class ClassMapper<TYPE> {
 		namespaceFieldMapper = MapperUtils.getNamespaceFieldMapper(clazz);
 		setNameFieldMapper = MapperUtils.getSetNameFieldMapper(clazz);
 		userKeyFieldMapper = MapperUtils.getUserKeyFieldMapper(clazz);
+		anyPropertyMapper = MapperUtils.getAnyFieldMapper(clazz);
 	}
 
 	public Class<TYPE> getType() {
@@ -119,16 +120,34 @@ public class ClassMapper<TYPE> {
 				props.put(fieldMapper.propName, propertyValue);
 			}
 		}
+
+		// find unmapped properties
+		if (anyPropertyMapper != null) {
+			Map<String, Object> unmappedProperties = (Map<String, Object>) anyPropertyMapper.getPropertyValue(object);
+			for (String propName : unmappedProperties.keySet()) {
+				props.put(propName, unmappedProperties.get(propName));
+			}
+		}
+
 		return props;
 	}
 
 	public void setFieldValues(TYPE object, Map<String, Object> properties) {
 
+		// create a copy
+		Map<String, Object> mappedProps = new HashMap<>(properties);
+
 		for (FieldMapper fieldMapper : mappers) {
-			Object prop = properties.get(fieldMapper.propName);
+			Object prop = mappedProps.get(fieldMapper.propName);
 			if (prop != null) {
+				mappedProps.remove(fieldMapper.propName);
 				fieldMapper.setFieldValue(object, prop);
 			}
+		}
+
+		// at this point mappedProps should only contain unmapped properties
+		if (anyPropertyMapper != null) {
+			anyPropertyMapper.setFieldValue(object, mappedProps);
 		}
 	}
 

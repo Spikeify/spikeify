@@ -30,8 +30,6 @@ public class SingleObjectUpdater<T> {
 
 	protected String defaultNamespace;
 	protected String setName;
-	protected String stringKey;
-	protected Long longKey;
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected RecordsCache recordsCache;
@@ -95,7 +93,6 @@ public class SingleObjectUpdater<T> {
 		}
 
 		synClient.put(policy, key, bins);
-
 		return key;
 	}
 }

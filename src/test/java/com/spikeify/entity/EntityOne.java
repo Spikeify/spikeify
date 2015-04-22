@@ -1,11 +1,9 @@
 package com.spikeify.entity;
 
-import com.spikeify.annotations.Ignore;
-import com.spikeify.annotations.Record;
-import com.spikeify.annotations.SetName;
-import com.spikeify.annotations.UserKey;
+import com.spikeify.annotations.*;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +24,9 @@ public class EntityOne {
 	public List nine;
 	public Map ten;
 	public EntityEnum eleven;
+
+	@AnyProperty
+	public Map<String, Object> unmapped = new HashMap<>();
 
 	@SetName
 	public String theSetName;
