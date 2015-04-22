@@ -15,14 +15,29 @@ public class InfoFetcher {
 	protected final IAerospikeClient synClient;
 
 	public static final String CONFIG_SET_NAME = "set_name";
-	public static final String CONFIG_NS_NAME = "ns_name";
-	public static final String CONFIG_SET_PARAM= "sets";
-	public static final String CONFIG_NAMESPACES_PARAM= "namespaces";
+	public static final String CONFIG_SET_PARAM = "sets";
+	public static final String CONFIG_NAMESPACES_PARAM = "namespaces";
+	public static final String CONFIG_RECORDS_COUNT = "n_objects";
 
 	public InfoFetcher(IAerospikeClient synClient) {
 		this.synClient = synClient;
 	}
 
+	public int getRecordCount(String namespace, String setName) {
+
+		int count = 0;
+
+		Node[] nodes = synClient.getNodes();
+		for (Node node : nodes) {
+			String nodeSets = Info.request(new InfoPolicy(), node, CONFIG_SET_PARAM + "/" + namespace + "/" + setName);
+			String[] set = nodeSets.split(";");
+			for (String setString : set) {
+				Map<String, String> config = parseConfigString(setString);
+				count += Integer.valueOf(config.get(CONFIG_RECORDS_COUNT));
+			}
+		}
+		return count;
+	}
 
 	public Set<String> getNamespaces() {
 		Set<String> nsNames = new HashSet<>();
