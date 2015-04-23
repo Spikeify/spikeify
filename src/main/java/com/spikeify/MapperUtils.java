@@ -30,7 +30,8 @@ public class MapperUtils {
 			new ByteArrayConverter(),
 			new ListConverter(),
 			new MapConverter(),
-			new EnumConverterFactory()
+			new EnumConverterFactory(),
+			new JsonConverterFactory()
 	);
 
 	public static Converter findConverter(Class fieldType) {

@@ -12,7 +12,7 @@ public class EnumConverterFactory implements ConverterFactory {
 	private static Map<Type, EnumConverter> cachedConverters = new ConcurrentHashMap<>();
 
 	@Override
-	public Converter init(Type type) {
+	public Converter init(Class type) {
 		EnumConverter converter = cachedConverters.get(type);
 		if (converter == null) {
 			converter = new EnumConverter(type);

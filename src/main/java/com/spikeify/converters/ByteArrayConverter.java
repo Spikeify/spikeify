@@ -3,12 +3,10 @@ package com.spikeify.converters;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
-import java.lang.reflect.Type;
-
 public class ByteArrayConverter implements Converter<byte[], byte[]>, ConverterFactory {
 
 	@Override
-	public Converter init(Type type) {
+	public Converter init(Class type) {
 		return this;
 	}
 

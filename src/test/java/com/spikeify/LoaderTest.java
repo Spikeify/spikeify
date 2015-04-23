@@ -2,8 +2,11 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.aerospike.client.policy.WritePolicy;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.EntityEnum;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntitySub;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
@@ -57,6 +60,8 @@ public class LoaderTest {
 		String unmapped2 = "something";
 		Float unmapped3 = 666.6f;
 
+		EntitySub sub = new EntitySub(333, "krneki", new Date(1234567l));
+
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
 		Bin binThree = new Bin("three", three);
@@ -71,6 +76,15 @@ public class LoaderTest {
 		Bin binUnmapped2 = new Bin("unmapped2", unmapped2);
 		Bin binUnmapped3 = new Bin("unmapped3", unmapped3);
 
+		// create a Bin containing JSON representation of EntitySub
+		Bin binSub;
+		try {
+			String jsonValue = new ObjectMapper().writeValueAsString(sub);
+			binSub = new Bin("sub", jsonValue);
+		} catch (JsonProcessingException e) {
+			throw new IllegalStateException(e);
+		}
+
 		WritePolicy policy = new WritePolicy();
 		policy.sendKey = true;
 
@@ -79,7 +93,7 @@ public class LoaderTest {
 
 		Key key = new Key(namespace, setName, userKey1);
 		client.put(policy, key, binOne, binTwo, binThree, binFour, binFive, binSix, binSeven, binEight,
-				binNine, binEleven, binUnmapped1, binUnmapped2, binUnmapped3);
+				binNine, binEleven, binUnmapped1, binUnmapped2, binUnmapped3, binSub);
 
 		// testing default namespace - we did not explicitly provide namespace
 		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).set(setName).now();
@@ -101,6 +115,10 @@ public class LoaderTest {
 		Assert.assertEquals((long) unmapped1, entity.unmapped.get("unmapped1"));
 		Assert.assertEquals(unmapped2, entity.unmapped.get("unmapped2"));
 		Assert.assertEquals(Double.doubleToLongBits(unmapped3), entity.unmapped.get("unmapped3"));
+		Assert.assertEquals(sub.first, entity.sub.first);
+		Assert.assertEquals(sub.second, entity.sub.second);
+		Assert.assertNull(entity.sub.date); // JSON ignored field - deserializes to null
+
 	}
 
 	@Test

@@ -3,13 +3,12 @@ package com.spikeify.converters;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
-import java.lang.reflect.Type;
 import java.util.Map;
 
 public class MapConverter implements Converter<Map, Map>, ConverterFactory {
 
 	@Override
-	public Converter init(Type type) {
+	public Converter init(Class type) {
 		return this;
 	}
 

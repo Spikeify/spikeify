@@ -23,15 +23,17 @@ public class MultiLoader<T, K> {
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
-		if(keys[0].getClass().equals(Key.class)){
+		if (keys[0].getClass().equals(Key.class)) {
 			this.keys = Arrays.asList((Key[]) keys);
 			this.keyType = KeyType.KEY;
-		} else if(keys[0].getClass().equals(Long.class)){
+		} else if (keys[0].getClass().equals(Long.class)) {
 			this.longKeys = Arrays.asList((Long[]) keys);
 			this.keyType = KeyType.LONG;
-		} else if(keys[0].getClass().equals(String.class)){
+		} else if (keys[0].getClass().equals(String.class)) {
 			this.stringKeys = Arrays.asList((String[]) keys);
 			this.keyType = KeyType.STRING;
+		} else {
+			throw new IllegalArgumentException("Error: unsupported key type '" + keys[0].getClass() + "'. Supported key types are Key, Long and String.");
 		}
 	}
 
@@ -134,7 +136,7 @@ public class MultiLoader<T, K> {
 				// set field values
 				mapper.setFieldValues(object, record.bins);
 
-				switch (keyType){
+				switch (keyType) {
 					case KEY:
 						result.put((K) key, object);
 						break;

@@ -5,7 +5,7 @@ import com.spikeify.TypeUtils;
 
 import java.lang.reflect.Type;
 
-public class  EnumConverter<E extends Enum<E>> implements Converter<E, String> {
+public class EnumConverter<E extends Enum<E>> implements Converter<E, String> {
 
 	private Class<E> enumClass;
 

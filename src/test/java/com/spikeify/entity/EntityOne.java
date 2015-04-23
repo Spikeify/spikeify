@@ -25,6 +25,9 @@ public class EntityOne {
 	public Map ten;
 	public EntityEnum eleven;
 
+	@AsJson
+	public EntitySub sub;
+
 	@AnyProperty
 	public Map<String, Object> unmapped = new HashMap<>();
 

@@ -3,14 +3,17 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.EntityEnum;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntitySub;
 import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 public class UpdaterTest {
@@ -57,6 +60,9 @@ public class UpdaterTest {
 		entity.unmapped.put("unmap2", "unmapped string");
 		entity.unmapped.put("unmap3", 3.14d);
 
+		EntitySub sub = new EntitySub(333, "krneki", new Date(1234567l));
+		entity.sub = sub;
+
 		Key key1 = new Key(namespace, setName, userKey1);
 
 		// we did not provide namespace on purpose - let default kick in
@@ -82,6 +88,16 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.unmapped.get("unmap1"), record.getLong("unmap1"));
 		Assert.assertEquals(entity.unmapped.get("unmap2"), record.getString("unmap2"));
 		Assert.assertEquals(entity.unmapped.get("unmap3"), record.getDouble("unmap3"));
+
+		EntitySub subReloaded;
+		try {
+			subReloaded = new ObjectMapper().readValue(record.getString("sub"), EntitySub.class);
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
+		}
+		Assert.assertEquals(entity.sub.first, subReloaded.first);
+		Assert.assertEquals(entity.sub.second, subReloaded.second);
+		Assert.assertNull(subReloaded.date); // Json ignored field
 	}
 
 	@Test
@@ -98,6 +114,8 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 		entity.eleven = EntityEnum.SECOND;
+		EntitySub sub = new EntitySub(333, "krneki", new Date(1234567l));
+		entity.sub = sub;
 
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -119,6 +137,9 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.seven, reloaded.seven);
 		Assert.assertEquals(entity.eight, reloaded.eight);
 		Assert.assertEquals(entity.eleven, reloaded.eleven);
+		Assert.assertEquals(entity.sub.first, reloaded.sub.first);
+		Assert.assertEquals(entity.sub.second, reloaded.sub.second);
+		Assert.assertNull(reloaded.sub.date);
 	}
 
 	@Test

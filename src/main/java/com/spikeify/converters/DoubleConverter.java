@@ -3,12 +3,10 @@ package com.spikeify.converters;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
-import java.lang.reflect.Type;
-
 public class DoubleConverter implements Converter<Double, Long>, ConverterFactory {
 
 	@Override
-	public Converter init(Type type) {
+	public Converter init(Class type) {
 		return this;
 	}
 

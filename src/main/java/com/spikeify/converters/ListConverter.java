@@ -3,13 +3,12 @@ package com.spikeify.converters;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
-import java.lang.reflect.Type;
 import java.util.List;
 
-public class ListConverter implements Converter<List, List> , ConverterFactory {
+public class ListConverter implements Converter<List, List>, ConverterFactory {
 
 	@Override
-	public Converter init(Type type) {
+	public Converter init(Class type) {
 		return this;
 	}
 
