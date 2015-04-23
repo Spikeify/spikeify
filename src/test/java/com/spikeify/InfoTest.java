@@ -55,15 +55,10 @@ public class InfoTest {
 		Set<String> infoNamespaces = sfy.info().getNamespaces();
 		Assert.assertTrue(infoNamespaces.contains("test"));
 
-		Set<String> infoSetNames = sfy.info().getSets();
-		Assert.assertTrue(infoSetNames.contains(setNames.get(0)));
-		Assert.assertTrue(infoSetNames.contains(setNames.get(1)));
-		Assert.assertTrue(infoSetNames.contains(setNames.get(2)));
-
-		for (String setName : infoSetNames) {
-			System.out.println(setName+":"+sfy.info().getRecordCount(namespace, setName));
-		}
-
+		Map<String, String> infoSetNames = sfy.info().getSets();
+		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(0)));
+		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(1)));
+		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(2)));
 	}
 
 

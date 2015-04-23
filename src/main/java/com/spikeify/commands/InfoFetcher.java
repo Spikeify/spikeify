@@ -15,6 +15,7 @@ public class InfoFetcher {
 	protected final IAerospikeClient synClient;
 
 	public static final String CONFIG_SET_NAME = "set_name";
+	public static final String CONFIG_NS_NAME = "ns_name";
 	public static final String CONFIG_SET_PARAM = "sets";
 	public static final String CONFIG_NAMESPACES_PARAM = "namespaces";
 	public static final String CONFIG_RECORDS_COUNT = "n_objects";
@@ -49,9 +50,9 @@ public class InfoFetcher {
 		return nsNames;
 	}
 
-	public Set<String> getSets() {
+	public Map<String /** set **/, String /** namespace **/> getSets() {
 
-		Set<String> setNames = new HashSet<>();
+		Map<String, String> setNames = new HashMap();
 
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {
@@ -59,7 +60,7 @@ public class InfoFetcher {
 			String[] set = nodeSets.split(";");
 			for (String setString : set) {
 				Map<String, String> config = parseConfigString(setString);
-				setNames.add(config.get(CONFIG_SET_NAME));
+				setNames.put(config.get(CONFIG_SET_NAME), config.get(CONFIG_NS_NAME));
 			}
 		}
 
