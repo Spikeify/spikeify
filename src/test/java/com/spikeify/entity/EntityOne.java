@@ -2,10 +2,7 @@ package com.spikeify.entity;
 
 import com.spikeify.annotations.*;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Record
 public class EntityOne {
@@ -24,6 +21,7 @@ public class EntityOne {
 	public List nine;
 	public Map ten;
 	public EntityEnum eleven;
+	public Set twelve;
 
 	@AsJson
 	public EntitySub sub;
@@ -70,15 +68,27 @@ public class EntityOne {
 		if (five != entityOne.five) return false;
 		if (six != entityOne.six) return false;
 		if (seven != entityOne.seven) return false;
+		if (userId != null ? !userId.equals(entityOne.userId) : entityOne.userId != null) return false;
 		if (two != null ? !two.equals(entityOne.two) : entityOne.two != null) return false;
+		if (eight != null ? !eight.equals(entityOne.eight) : entityOne.eight != null) return false;
+		if (nine != null ? !nine.equals(entityOne.nine) : entityOne.nine != null) return false;
+		if (ten != null ? !ten.equals(entityOne.ten) : entityOne.ten != null) return false;
+		if (eleven != entityOne.eleven) return false;
+		if (twelve != null ? !twelve.equals(entityOne.twelve) : entityOne.twelve != null) return false;
+		if (sub != null ? !sub.equals(entityOne.sub) : entityOne.sub != null) return false;
+		if (unmapped != null ? !unmapped.equals(entityOne.unmapped) : entityOne.unmapped != null) return false;
+		if (theSetName != null ? !theSetName.equals(entityOne.theSetName) : entityOne.theSetName != null) return false;
+		if (calendar != null ? !calendar.equals(entityOne.calendar) : entityOne.calendar != null) return false;
 		return !(ignored != null ? !ignored.equals(entityOne.ignored) : entityOne.ignored != null);
+
 	}
 
 	@Override
 	public int hashCode() {
 		int result;
 		long temp;
-		result = one;
+		result = userId != null ? userId.hashCode() : 0;
+		result = 31 * result + one;
 		result = 31 * result + (two != null ? two.hashCode() : 0);
 		temp = Double.doubleToLongBits(three);
 		result = 31 * result + (int) (temp ^ (temp >>> 32));
@@ -86,27 +96,16 @@ public class EntityOne {
 		result = 31 * result + (int) five;
 		result = 31 * result + (int) six;
 		result = 31 * result + (seven ? 1 : 0);
+		result = 31 * result + (eight != null ? eight.hashCode() : 0);
+		result = 31 * result + (nine != null ? nine.hashCode() : 0);
+		result = 31 * result + (ten != null ? ten.hashCode() : 0);
+		result = 31 * result + (eleven != null ? eleven.hashCode() : 0);
+		result = 31 * result + (twelve != null ? twelve.hashCode() : 0);
+		result = 31 * result + (sub != null ? sub.hashCode() : 0);
+		result = 31 * result + (unmapped != null ? unmapped.hashCode() : 0);
+		result = 31 * result + (theSetName != null ? theSetName.hashCode() : 0);
+		result = 31 * result + (calendar != null ? calendar.hashCode() : 0);
 		result = 31 * result + (ignored != null ? ignored.hashCode() : 0);
 		return result;
-	}
-
-	@Override
-	public String toString() {
-		return "EntityOne{" +
-				"userId=" + userId +
-				", one=" + one +
-				", two='" + two + '\'' +
-				", three=" + three +
-				", four=" + four +
-				", five=" + five +
-				", six=" + six +
-				", seven=" + seven +
-				", eight=" + eight +
-				", nine=" + nine +
-				", ten=" + ten +
-				", theSetName='" + theSetName + '\'' +
-				", calendar=" + calendar +
-				", ignored='" + ignored + '\'' +
-				'}';
 	}
 }

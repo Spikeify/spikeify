@@ -258,6 +258,12 @@ public class UpdaterTest {
 		aList.add(1234);
 		aList.add(123.0d);
 
+		Set aSet = new HashSet();
+		aSet.add("test1");
+		aSet.add("test2");
+		aSet.add(1234);
+		aSet.add(123.0d);
+
 		Map aMap = new HashMap();
 		aMap.put("1", "testX");
 		aMap.put("2", "testY");
@@ -268,6 +274,7 @@ public class UpdaterTest {
 		EntityOne entityOne = new EntityOne();
 		entityOne.nine = aList;
 		entityOne.ten = aMap;
+		entityOne.twelve = aSet;
 
 		Key saveKey = new Key(namespace, setName, userKey1);
 
@@ -282,10 +289,13 @@ public class UpdaterTest {
 		// check values
 		List nine = loadedEntity.nine;
 		Map ten = loadedEntity.ten;
+		Set twelve = loadedEntity.twelve;
 		Assert.assertEquals(4, nine.size());
 		Assert.assertEquals(aList, nine);
 		Assert.assertEquals(4, ten.size());
 		Assert.assertEquals(aMap, ten);
+		Assert.assertEquals(4, twelve.size());
+		Assert.assertEquals(aSet, twelve);
 	}
 
 	@Test

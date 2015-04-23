@@ -8,10 +8,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class CreatorTest {
 
@@ -169,6 +166,9 @@ public class CreatorTest {
 		entity.nine = new ArrayList<>();
 		entity.nine.add("one");
 		entity.nine.add("two");
+		entity.twelve = new HashSet();
+		entity.twelve.add("one");
+		entity.twelve.add("two");
 
 		Long saveKey = sfy
 				.create(userKey1, entity)
@@ -191,5 +191,6 @@ public class CreatorTest {
 		Assert.assertEquals(reloaded.getSix(), 100);
 		Assert.assertEquals(reloaded.eight.getTime(), 1420070400);
 		Assert.assertEquals(reloaded.nine.size(), 2);
+		Assert.assertEquals(reloaded.twelve.size(), 2);
 	}
 }

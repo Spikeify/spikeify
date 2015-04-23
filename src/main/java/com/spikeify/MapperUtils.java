@@ -28,6 +28,7 @@ public class MapperUtils {
 			new DateConverter(),
 			new ShortConverter(),
 			new ByteArrayConverter(),
+			new SetConverterFactory(),
 			new ListConverter(),
 			new MapConverter(),
 			new EnumConverterFactory(),
