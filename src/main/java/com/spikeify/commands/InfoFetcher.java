@@ -1,4 +1,4 @@
-package com.spikeify;
+package com.spikeify.commands;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Info;

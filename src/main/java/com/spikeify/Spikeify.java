@@ -59,5 +59,12 @@ public interface Spikeify {
 
 	<T> Scanner<T> query(Class<T> type);
 
+	void truncateSet(String namespace, String setName);
+
+	void truncateSet(Class type);
+
+	void truncateNamespace(String namespace);
+
+
 //	<R> R transact(Work<R> work);
 }

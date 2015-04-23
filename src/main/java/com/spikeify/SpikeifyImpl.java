@@ -200,6 +200,30 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
 	}
 
+	@Override
+	public void truncateSet(String namespace, String setName) {
+		Truncater.truncateSet(namespace, setName, synClient);
+	}
+
+	@Override
+	public void truncateSet(Class type) {
+		ClassMapper mapper = MapperService.getMapper(type);
+		String ns = mapper.getNamespace() != null ? mapper.getNamespace() : namespace;
+		if (ns == null) {
+			throw new SpikeifyError("Error: namespace not defined.");
+		}
+		String setName = mapper.getSetName();
+		if (setName == null) {
+			throw new SpikeifyError("Error: @SetName annotation not defined on class " + type.getName());
+		}
+		Truncater.truncateSet(ns, setName, synClient);
+	}
+
+	@Override
+	public void truncateNamespace(String namespace) {
+		Truncater.truncateNamespace(namespace, synClient);
+	}
+
 	public <R> R transact(Work<R> work) {
 		return null;
 	}
