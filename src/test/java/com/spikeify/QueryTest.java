@@ -29,12 +29,7 @@ public class QueryTest {
 
 	@After
 	public void dbCleanup() {
-		client.scanAll(null, namespace, setName, new ScanCallback() {
-			@Override
-			public void scanCallback(Key key, Record record) throws AerospikeException {
-				client.delete(null, key);
-			}
-		});
+		sfy.truncateNamespace(namespace);
 	}
 
 	@Test

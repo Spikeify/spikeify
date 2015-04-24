@@ -27,18 +27,13 @@ public class LoaderTest {
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = new AerospikeClientMock(namespace);
-		sfy = SpikeifyService.mock(client);
+		client = SpikeifyService.getClient();
+		sfy = SpikeifyService.sfy();
 	}
 
 	@After
 	public void dbCleanup() {
-		client.scanAll(null, namespace, setName, new ScanCallback() {
-			@Override
-			public void scanCallback(Key key, Record record) throws AerospikeException {
-				client.delete(null, key);
-			}
-		});
+		sfy.truncateNamespace(namespace);
 	}
 
 	@Test
@@ -69,7 +64,7 @@ public class LoaderTest {
 		Bin binFive = new Bin("five", five);
 		Bin binSix = new Bin("six", six);
 		Bin binSeven = new Bin("seven", seven);
-		Bin binEight = new Bin("eight", eight);
+		Bin binEight = new Bin("eight", eight.getTime());
 		Bin binNine = new Bin("nine", nine);
 		Bin binEleven = new Bin("eleven", eleven.name());
 		Bin binUnmapped1 = new Bin("unmapped1", unmapped1);

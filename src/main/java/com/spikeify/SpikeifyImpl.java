@@ -1,11 +1,22 @@
 package com.spikeify;
 
+import com.aerospike.client.AerospikeException;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.lua.LuaAerospikeLib;
 import com.spikeify.commands.*;
 
+import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
+import java.util.List;
+import java.util.Stack;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
+
+	private static Logger log = Logger.getLogger(SpikeifyImpl.class.getSimpleName());
 
 	public SpikeifyImpl(IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, String namespace) {
 		this.synClient = synClient;
@@ -224,8 +235,51 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		Truncater.truncateNamespace(namespace, synClient);
 	}
 
-	public <R> R transact(Work<R> work) {
-		return null;
-	}
+	@Override
+	public <R> R transact(int limitTries, Work<R> work) {
 
+		// log.info("Transaction_started");
+		int retries = 0;
+		List<String> durations = new ArrayList<>(5);
+		List<String> delays = new ArrayList<>(5);
+		long start = System.currentTimeMillis();
+		while (true) {
+			try {
+				start = System.currentTimeMillis();
+				R result = work.run();
+
+				// log retries
+				if (retries > 0) {
+					log.info("Transaction_retry: count:" + retries + " durations:" + durations.toString() + " delays:" + delays.toString());
+				}
+
+				// success - exit the transact wrapper
+				return work.onSuccess(result);
+			} catch (AerospikeException ex) {
+				if (retries++ < limitTries) {
+					if (log.isLoggable(Level.WARNING)) {
+						log.warning("Optimistic concurrency failure for " + work + " (retrying:" + retries + "): " + ex);
+					}
+
+					if (log.isLoggable(Level.FINEST)) {
+						log.finest("Details of optimistic concurrency failure /n"+ex.getMessage());
+					}
+				} else {
+					return work.onError(ex);  // let the error handler decide what to do with ConcurrentModificationException
+				}
+			} catch (Exception ex) {
+				return work.onError(ex);   // let the error handler decide what to do with exception
+			}
+			try {
+				long taskDuration = System.currentTimeMillis() - start;
+				durations.add(String.valueOf(taskDuration));  // remember the task duration
+				long delay = taskDuration + 100 + (long) (100 * Math.random());
+				delays.add(String.valueOf(delay));  // remember the task duration
+				Thread.sleep(delay); // sleep for random time to give competing thread chance to finish job
+			} catch (InterruptedException e) {
+				log.log(Level.SEVERE, "Thread.sleep() InterruptedException: ", e);
+			}
+		}
+
+	}
 }

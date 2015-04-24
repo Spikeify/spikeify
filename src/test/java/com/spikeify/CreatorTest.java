@@ -23,17 +23,12 @@ public class CreatorTest {
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		client = new AerospikeClientMock(namespace);
-		sfy = SpikeifyService.mock(client);
+		sfy = SpikeifyService.sfy();
 	}
 
 	@After
 	public void dbCleanup() {
-		client.scanAll(null, namespace, setName, new ScanCallback() {
-			@Override
-			public void scanCallback(Key key, Record record) throws AerospikeException {
-				client.delete(null, key);
-			}
-		});
+		sfy.truncateNamespace(namespace);
 	}
 
 	@Test

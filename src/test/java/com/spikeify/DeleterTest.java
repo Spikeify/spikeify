@@ -1,9 +1,9 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.Key;
 import com.aerospike.client.policy.Policy;
 import com.spikeify.entity.EntityOne;
-import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -26,18 +26,13 @@ public class DeleterTest {
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = new AerospikeClientMock(namespace);
-		sfy = SpikeifyService.mock(client);
+		client = SpikeifyService.getClient();
+		sfy = SpikeifyService.sfy();
 	}
 
 	@After
 	public void dbCleanup() {
-		client.scanAll(null, namespace, setName, new ScanCallback() {
-			@Override
-			public void scanCallback(Key key, Record record) throws AerospikeException {
-				client.delete(null, key);
-			}
-		});
+		sfy.truncateNamespace(namespace);
 	}
 
 	@Test

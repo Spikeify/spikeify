@@ -65,6 +65,5 @@ public interface Spikeify {
 
 	void truncateNamespace(String namespace);
 
-
-//	<R> R transact(Work<R> work);
+  <R> R transact(int retries, Work<R> work);
 }

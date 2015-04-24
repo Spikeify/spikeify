@@ -1,7 +1,6 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.*;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;
@@ -13,15 +12,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class InfoTest {
+public class TransactionTest {
 
 	private String namespace = "test";
 	private List<String> setNames = new ArrayList<>();
+	private IAerospikeClient client;
 	private Spikeify sfy;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
+		client = new AerospikeClient("localhost", 3000);
 		sfy = SpikeifyService.sfy();
 	}
 
@@ -52,6 +53,5 @@ public class InfoTest {
 		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(1)));
 		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(2)));
 	}
-
 
 }

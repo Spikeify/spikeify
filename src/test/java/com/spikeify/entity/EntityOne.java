@@ -10,6 +10,9 @@ public class EntityOne {
 	@UserKey
 	public Long userId;
 
+	@SetName
+	public String theSetName;
+
 	public int one;
 	public String two;
 	public double three;
@@ -28,9 +31,6 @@ public class EntityOne {
 
 	@AnyProperty
 	public Map<String, Object> unmapped = new HashMap<>();
-
-	@SetName
-	public String theSetName;
 
 	// unmappable class must be ignored
 	@Ignore
@@ -55,6 +55,7 @@ public class EntityOne {
 		this.six = six;
 	}
 
+	// below: generated equals() & hashCode() methods for easier object comparing
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;
