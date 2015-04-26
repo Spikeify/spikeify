@@ -48,8 +48,18 @@ public class SingleObjectUpdater<T> {
 	protected WritePolicy policy;
 	protected ClassMapper<T> mapper;
 
+
+	/**
+	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
+	 * <br/>Internally the 'sendKey' property of the policy will always be set to true.
+	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
+	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
+	 *  @param policy The policy.
+	 * @return
+	 */
 	public SingleObjectUpdater<T> policy(WritePolicy policy) {
 		this.policy = policy;
+		this.policy.sendKey = true;
 		return this;
 	}
 
@@ -64,6 +74,11 @@ public class SingleObjectUpdater<T> {
 		}
 	}
 
+	/**
+	 * Synchronously executes a single create or update command and returns the key of the record.
+	 *
+	 * @return The key of the record.
+	 */
 	public Key now() {
 
 		if (create) {
