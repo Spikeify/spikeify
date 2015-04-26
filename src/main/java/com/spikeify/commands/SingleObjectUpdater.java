@@ -4,6 +4,7 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
@@ -15,21 +16,22 @@ public class SingleObjectUpdater<T> {
 
 	private final T object;
 
-	public SingleObjectUpdater(Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
+	public SingleObjectUpdater(boolean isTx, Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                           RecordsCache recordsCache, boolean create, String defaultNamespace, T object) {
+		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.defaultNamespace = defaultNamespace;
 		this.policy = new WritePolicy();
-		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.object = object;
 	}
 
 	protected String defaultNamespace;
 	protected String setName;
+	private boolean isTx;
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected RecordsCache recordsCache;
@@ -39,12 +41,6 @@ public class SingleObjectUpdater<T> {
 
 	public SingleObjectUpdater<T> policy(WritePolicy policy) {
 		this.policy = policy;
-		this.policy.sendKey = true;
-		if (create) {
-			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-		} else {
-			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
-		}
 		return this;
 	}
 
@@ -85,11 +81,29 @@ public class SingleObjectUpdater<T> {
 			bins[position++] = new Bin(propName, props.get(propName));
 		}
 
+		this.policy.sendKey = true;
+		if (create) {
+			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+		} else {
+			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
+		}
+
 		Long expiration = mapper.getExpiration(object);
 		if (expiration != null) {
 			// Entities expiration:  Java time in milliseconds
 			// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
-			policy.expiration = (int) (expiration / 1000) - 1262304000;
+//			policy.expiration = (int) (expiration / 1000) - 1262304000;
+		}
+
+		if (isTx) {
+			Integer generation = mapper.getGeneration(object);
+			policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+			if (generation != null) {
+				policy.generation = generation;
+			} else {
+				throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+			}
 		}
 
 		synClient.put(policy, key, bins);

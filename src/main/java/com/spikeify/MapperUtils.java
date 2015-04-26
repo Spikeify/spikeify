@@ -70,7 +70,7 @@ public class MapperUtils {
 			if (field.getAnnotation(Generation.class) != null) {
 				Class fieldType = field.getType();
 				if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
-					return new FieldMapper(null, findConverter(fieldType), field);
+					return new FieldMapper(null, new PassThroughConverter(), field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @Generation must be of type int or Integer.");
 				}
@@ -148,6 +148,11 @@ public class MapperUtils {
 	 */
 	private static boolean mappableField(Field field) {
 		return !field.isAnnotationPresent(UserKey.class)
+				&& !field.isAnnotationPresent(Generation.class)
+				&& !field.isAnnotationPresent(Expiration.class)
+				&& !field.isAnnotationPresent(SetName.class)
+				&& !field.isAnnotationPresent(Namespace.class)
+				&& !field.isAnnotationPresent(AnyProperty.class)
 				&& !field.isAnnotationPresent(Ignore.class)
 				&& (field.getModifiers() & IGNORED_FIELD_MODIFIERS) == 0
 				&& !field.isSynthetic();

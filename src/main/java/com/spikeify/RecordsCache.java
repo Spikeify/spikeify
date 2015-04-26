@@ -13,7 +13,15 @@ import java.util.Set;
  */
 public class RecordsCache {
 
-	private static Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/> propertiesCache = new HashMap<>();
+	private static ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>> cache =
+			new ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>>() {
+				@Override
+				protected Map<Key, Map<String, String>> initialValue() {
+					return new HashMap<>();
+				}
+			};
+
+//	private static Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/> propertiesCache = new HashMap<>();
 
 	/**
 	 * Insert a set of properties linked to a Key
@@ -32,7 +40,7 @@ public class RecordsCache {
 			}
 		}
 
-		propertiesCache.put(key, propertiesKeys);
+		cache.get().put(key, propertiesKeys);
 	}
 
 	/**
@@ -41,7 +49,7 @@ public class RecordsCache {
 	 * @param key
 	 */
 	public void remove(Key key) {
-		propertiesCache.remove(key);
+		cache.get().remove(key);
 	}
 
 	/**
@@ -54,7 +62,7 @@ public class RecordsCache {
 	 */
 	public Set<String> update(Key key, Map<String, Object> newProperties) {
 
-		Map<String, String> existing = propertiesCache.get(key);
+		Map<String, String> existing = cache.get().get(key);
 
 		if (existing != null) {
 			Set<String> changed = new HashSet<>(newProperties.size());

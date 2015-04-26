@@ -7,9 +7,7 @@ package com.spikeify;
  * @param <R>
  */
 public interface Work<R> {
+
 	R run();
 
-	R onSuccess(R result);
-
-	R onError(Exception ex);
 }

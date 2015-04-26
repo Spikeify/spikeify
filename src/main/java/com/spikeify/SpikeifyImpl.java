@@ -4,13 +4,11 @@ import com.aerospike.client.AerospikeException;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.lua.LuaAerospikeLib;
 import com.spikeify.commands.*;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.List;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +29,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private final String namespace;
 
 	private RecordsCache recordsCache = new RecordsCache();
+	private ThreadLocal<Boolean> tlTransaction = new ThreadLocal<>();
 
 	@Override
 	public InfoFetcher info() {
@@ -59,17 +58,17 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	@Override
 	public <T> SingleKeyUpdater<T, Key> create(Key key, T object) {
-		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, true, namespace, object, key);
+		return new SingleKeyUpdater<>(false, synClient, asyncClient, recordsCache, true, namespace, object, key);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Long> create(Long userKey, T object) {
-		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, true, namespace, object, userKey);
+		return new SingleKeyUpdater<>(false, synClient, asyncClient, recordsCache, true, namespace, object, userKey);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, String> create(String userKey, T object) {
-		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, true, namespace, object, userKey);
+		return new SingleKeyUpdater<>(false, synClient, asyncClient, recordsCache, true, namespace, object, userKey);
 	}
 
 	@Override
@@ -78,7 +77,9 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (object == null) {
 			throw new SpikeifyError("Error: parameter 'object' must not be null.");
 		}
-		return new SingleObjectUpdater<>(object.getClass(), synClient, asyncClient,
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+
+		return new SingleObjectUpdater<>(isTx, object.getClass(), synClient, asyncClient,
 				recordsCache, true, namespace, object);
 	}
 
@@ -139,23 +140,27 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (object == null) {
 			throw new SpikeifyError("Error: parameter 'object' must not be null.");
 		}
-		return new SingleObjectUpdater<>(object.getClass(), synClient, asyncClient,
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new SingleObjectUpdater<>(isTx, object.getClass(), synClient, asyncClient,
 				recordsCache, false, namespace, object);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Key> update(Key key, T object) {
-		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, false, namespace, object, key);
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new SingleKeyUpdater<>(isTx, synClient, asyncClient, recordsCache, false, namespace, object, key);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Long> update(Long userKey, T object) {
-		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, false, namespace, object, userKey);
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new SingleKeyUpdater<>(isTx, synClient, asyncClient, recordsCache, false, namespace, object, userKey);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, String> update(String userKey, T object) {
-		return new SingleKeyUpdater<>(synClient, asyncClient, recordsCache, false, namespace, object, userKey);
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new SingleKeyUpdater<>(isTx, synClient, asyncClient, recordsCache, false, namespace, object, userKey);
 	}
 
 	@Override
@@ -239,43 +244,43 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	public <R> R transact(int limitTries, Work<R> work) {
 
 		// log.info("Transaction_started");
+
+		Boolean threadTx = tlTransaction.get();
+
+		// are we already inside a transaction
+		if (Boolean.TRUE.equals(threadTx)) {
+			throw new SpikeifyError("Error: transaction already in progress. Nesting transactions is not supported.");
+		}
+		tlTransaction.set(Boolean.TRUE);
+
 		int retries = 0;
-		List<String> durations = new ArrayList<>(5);
-		List<String> delays = new ArrayList<>(5);
 		long start = System.currentTimeMillis();
 		while (true) {
 			try {
 				start = System.currentTimeMillis();
 				R result = work.run();
 
-				// log retries
-				if (retries > 0) {
-					log.info("Transaction_retry: count:" + retries + " durations:" + durations.toString() + " delays:" + delays.toString());
-				}
+				tlTransaction.remove();
 
 				// success - exit the transact wrapper
-				return work.onSuccess(result);
+				return result;
 			} catch (AerospikeException ex) {
 				if (retries++ < limitTries) {
-					if (log.isLoggable(Level.WARNING)) {
+					if (log.isLoggable(Level.FINEST) && retries >= (limitTries - 3)) {
 						log.warning("Optimistic concurrency failure for " + work + " (retrying:" + retries + "): " + ex);
 					}
-
-					if (log.isLoggable(Level.FINEST)) {
-						log.finest("Details of optimistic concurrency failure /n"+ex.getMessage());
-					}
 				} else {
-					return work.onError(ex);  // let the error handler decide what to do with ConcurrentModificationException
+					if (log.isLoggable(Level.FINEST) ){//&& retries >= (limitTries - 3)) {
+						log.warning("Optimistic concurrency failure for " + work + ": Could not update record.");
+					}
+					tlTransaction.remove();
+					throw new ConcurrentModificationException("Error: too much contention. Record could not be updated.");
 				}
-			} catch (Exception ex) {
-				return work.onError(ex);   // let the error handler decide what to do with exception
+			} catch (Exception ex){
+				log.warning("Error: other exception");
 			}
 			try {
-				long taskDuration = System.currentTimeMillis() - start;
-				durations.add(String.valueOf(taskDuration));  // remember the task duration
-				long delay = taskDuration + 100 + (long) (100 * Math.random());
-				delays.add(String.valueOf(delay));  // remember the task duration
-				Thread.sleep(delay); // sleep for random time to give competing thread chance to finish job
+				Thread.sleep((long) (10 + (Math.random()*10 * retries))); // sleep for random time to give competing thread chance to finish job
 			} catch (InterruptedException e) {
 				log.log(Level.SEVERE, "Thread.sleep() InterruptedException: ", e);
 			}

@@ -13,6 +13,9 @@ public class EntityOne {
 	@SetName
 	public String theSetName;
 
+	@Generation
+	public Integer generation;
+
 	public int one;
 	public String two;
 	public double three;

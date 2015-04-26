@@ -6,10 +6,13 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TestUtils {
 
 	public static Random random = new Random();
+	public static AtomicInteger counter = new AtomicInteger();
+	public static AtomicInteger counter2 = new AtomicInteger();
 
 	private static String[] wordBase = ("Lorem ipsum dolor sit amet consectetur adipiscing elit Integer nec odio Praesent libero " +
 			"Sed cursus ante dapibus diam Sed nisi Nulla quis sem at nibh elementum imperdiet Duis sagittis ipsum Praesent mauris " +

@@ -22,7 +22,6 @@ public class MultiKeyUpdater {
 		this.create = create;
 		this.namespace = namespace;
 		this.policy = new WritePolicy();
-		this.policy.sendKey = true;
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
@@ -39,7 +38,6 @@ public class MultiKeyUpdater {
 		this.create = create;
 		this.namespace = namespace;
 		this.policy = new WritePolicy();
-		this.policy.sendKey = true;
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
@@ -56,7 +54,6 @@ public class MultiKeyUpdater {
 		this.create = create;
 		this.namespace = namespace;
 		this.policy = new WritePolicy();
-		this.policy.sendKey = true;
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
@@ -118,12 +115,6 @@ public class MultiKeyUpdater {
 
 	public MultiKeyUpdater policy(WritePolicy policy) {
 		this.policy = policy;
-		this.policy.sendKey = true;
-		if (create) {
-			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-		} else {
-			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
-		}
 		return this;
 	}
 
@@ -179,6 +170,13 @@ public class MultiKeyUpdater {
 			int position = 0;
 			for (String propName : changedProps) {
 				bins[position++] = new Bin(propName, props.get(propName));
+			}
+
+			this.policy.sendKey = true;
+			if (create) {
+				this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+			} else {
+				this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
 			}
 
 			Long expiration = mapper.getExpiration(object);

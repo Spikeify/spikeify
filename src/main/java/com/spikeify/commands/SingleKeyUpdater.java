@@ -4,18 +4,21 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
 public class SingleKeyUpdater<T, K> {
 
-	public SingleKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	private boolean isTx;
+
+	public SingleKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                        RecordsCache recordsCache, boolean create, String defaultNamespace, T object, K key) {
+		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -24,6 +27,9 @@ public class SingleKeyUpdater<T, K> {
 		this.object = object;
 		this.policy = new WritePolicy();
 		this.policy.sendKey = true;
+		if(isTx){
+			this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+		}
 		this.mapper = MapperService.getMapper((Class<T>)object.getClass());
 		if(key.getClass().equals(Key.class)){
 			this.key = (Key) key;
@@ -67,6 +73,9 @@ public class SingleKeyUpdater<T, K> {
 	public SingleKeyUpdater<T, K> policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
+		if(isTx){
+			this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+		}
 		if (create) {
 			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
 		} else {

@@ -167,21 +167,21 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
-	public Long getExpiration(Object object) {
+	public Long getExpiration(TYPE object) {
 		if (expirationFieldMapper == null) {
 			return null;
 		}
 		return expirationFieldMapper.getPropertyValue(object);
 	}
 
-	public Object getUserKey(Object object) {
-		if (userKeyFieldMapper == null) {
+	public Integer getGeneration(TYPE object) {
+		if (generationFieldMapper == null) {
 			return null;
 		}
-		return userKeyFieldMapper.getPropertyValue(object);
+		return generationFieldMapper.getPropertyValue(object);
 	}
 
-	public void setUserKey(Object object, String userKey) {
+	public void setUserKey(TYPE object, String userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
@@ -204,5 +204,6 @@ public class ClassMapper<TYPE> {
 			userKeyFieldMapper.setFieldValue(object, userKey);
 		}
 	}
+
 
 }
