@@ -6,10 +6,18 @@ import com.aerospike.client.async.IAsyncClient;
 import com.spikeify.MapperService;
 import com.spikeify.ObjectMetadata;
 import com.spikeify.RecordsCache;
+import com.spikeify.Spikeify;
 
+/**
+ * A command chain for deleting object from database.
+ * This class is not intended to be instantiated by user.
+ */
 public class SingleObjectDeleter {
 
-
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Use {@link Spikeify#delete(Object)}  instead.
+	 */
 	public SingleObjectDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
 	                           RecordsCache recordsCache, String defaultNamespace, Object object) {
 		this.synClient = synClient;
@@ -38,7 +46,7 @@ public class SingleObjectDeleter {
 	}
 
 	/**
-	 * Executes the delete command immediately.
+	 * Synchronously executes the delete command.
 	 *
 	 * @return whether record existed on server before deletion
 	 */

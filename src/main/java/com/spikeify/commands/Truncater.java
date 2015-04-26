@@ -1,7 +1,12 @@
 package com.spikeify.commands;
 
 import com.aerospike.client.*;
+import com.spikeify.Spikeify;
 
+/**
+ * Class implementing truncate commands. This class is not intended to be instantiated by user.
+ * Instead use {@link Spikeify#truncateSet(String, String)} or {@link Spikeify#truncateNamespace(String)} methods.
+ */
 public class Truncater {
 
 	public static void truncateSet(String namespace, String setName, final IAerospikeClient client) {

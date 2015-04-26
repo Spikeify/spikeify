@@ -6,12 +6,21 @@ import com.aerospike.client.async.IAsyncClient;
 import com.spikeify.MapperService;
 import com.spikeify.ObjectMetadata;
 import com.spikeify.RecordsCache;
+import com.spikeify.Spikeify;
 
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A command chain for deleting multiple objects from database.
+ * This class is not intended to be instantiated by user.
+ */
 public class MultiObjectDeleter {
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Use {@link Spikeify#deleteAll(Object...)} instead.
+	 */
 	public MultiObjectDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
 	                          RecordsCache recordsCache, String defaultNamespace, Object... objects) {
 		this.synClient = synClient;
@@ -42,9 +51,10 @@ public class MultiObjectDeleter {
 	}
 
 	/**
-	 * Executes the delete command immediately.
+	 * Synchronously executes multiple delete commands.
 	 *
-	 * @return whether record existed on server before deletion
+	 * @return The Map of Key, Boolean pairs. The boolean tells whether object existed in the
+	 * database prior to deletion.
 	 */
 	public Map<Object, Boolean> now() {
 
