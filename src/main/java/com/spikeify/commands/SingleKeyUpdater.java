@@ -4,18 +4,29 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
+import com.spikeify.annotations.Namespace;
+import com.spikeify.annotations.SetName;
 
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A command chain for creating or updating a single object in database.
+ * This class is not intended to be instantiated by user.
+ * @param <T>
+ */
 public class SingleKeyUpdater<T, K> {
 
 	private boolean isTx;
-
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
+	 */
 	public SingleKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                        RecordsCache recordsCache, boolean create, String defaultNamespace, T object, K key) {
 		this.isTx = isTx;
@@ -42,7 +53,7 @@ public class SingleKeyUpdater<T, K> {
 			this.keyType = KeyType.STRING;
 		} else {
 			throw new IllegalArgumentException("Error: unsupported key type. " +
-					"SingleKeyUpdater constructor can only ba called wit K as : Key, Long or String");
+					"SingleKeyUpdater constructor can only ba called with K as : Key, Long or String");
 		}
 	}
 
@@ -60,16 +71,34 @@ public class SingleKeyUpdater<T, K> {
 	protected WritePolicy policy;
 	protected ClassMapper<T> mapper;
 
+	/**
+	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 * @param namespace The namespace.
+	 * @return
+	 */
 	public SingleKeyUpdater<T, K> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
+	/**
+	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 * @param setName The name of the set.
+	 * @return
+	 */
 	public SingleKeyUpdater<T, K> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
+	/**
+	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
+	 * <br/>Internally the 'sendKey' property of the policy will always be set to true.
+	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
+	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
+	 *  @param policy The policy.
+	 * @return
+	 */
 	public SingleKeyUpdater<T, K> policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
@@ -105,6 +134,12 @@ public class SingleKeyUpdater<T, K> {
 		return setName != null ? setName : mapper.getSetName();
 	}
 
+	/**
+	 * Synchronously executes a single create or update command and returns the key of the record.
+	 *
+	 * @return The key of the record. The type of the key returned depends on the way this class is instantiated.
+	 * It can be: {@link Key}, Long or String.
+	 */
 	public K now() {
 
 		if (create) {
