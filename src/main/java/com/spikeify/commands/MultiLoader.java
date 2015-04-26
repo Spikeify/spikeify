@@ -7,11 +7,21 @@ import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
 import com.spikeify.*;
+import com.spikeify.annotations.Namespace;
+import com.spikeify.annotations.SetName;
 
 import java.util.*;
 
+/**
+ * A command chain for getting multiple records from database.
+ * @param <T>
+ * @param <K>
+ */
 public class MultiLoader<T, K> {
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#getAll(Class, Key...)} or similar instead.
+	 */
 	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
 	                   RecordsCache recordsCache, String namespace, K... keys) {
 		this.synClient = synClient;
@@ -51,16 +61,32 @@ public class MultiLoader<T, K> {
 	protected Class<T> type;
 	protected KeyType keyType;
 
+	/**
+	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 * @param namespace The namespace.
+	 * @return
+	 */
 	public MultiLoader<T, K> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
+	/**
+	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 * @param setName The name of the set.
+	 * @return
+	 */
 	public MultiLoader<T, K> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
+	/**
+	 * Sets the {@link BatchPolicy} to be used when getting the record from the database.
+	 * Internally the 'sendKey' property of the policy will always be set to true.
+	 * @param policy The policy.
+	 * @return
+	 */
 	public MultiLoader<T, K> policy(BatchPolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
@@ -95,7 +121,7 @@ public class MultiLoader<T, K> {
 	}
 
 	/**
-	 * Executes multiple get commands.
+	 * Synchronously executes multiple get commands.
 	 *
 	 * @return The map of Keys and Java objects mapped from records
 	 */

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A command chain for loading a single object from database.
+ * A command chain for getting a single object from database.
  * This class is not intended to be instantiated by user.
  * @param <T>
  */
@@ -22,12 +22,6 @@ public class SingleLoader<T> {
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#get(Class)} instead.
-	 * @param type
-	 * @param synClient
-	 * @param asyncClient
-	 * @param classConstructor
-	 * @param recordsCache
-	 * @param namespace
 	 */
 	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
 	                    RecordsCache recordsCache, String namespace) {
