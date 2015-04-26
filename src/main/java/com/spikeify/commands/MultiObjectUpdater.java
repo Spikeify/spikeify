@@ -11,10 +11,18 @@ import com.spikeify.*;
 
 import java.util.*;
 
-public class MultiObjectUpdater{
+/**
+ * A command chain for creating or updating multiple objects in database.
+ * This class is not intended to be instantiated by user.
+ */
+public class MultiObjectUpdater {
 
 	private final Object[] objects;
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Instead use {@link Spikeify#createAll(Object...)} method.
+	 */
 	public MultiObjectUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                          RecordsCache recordsCache, boolean create, String defaultNamespace, Object... objects) {
 		this.isTx = isTx;
@@ -36,6 +44,15 @@ public class MultiObjectUpdater{
 	protected final boolean create;
 	protected WritePolicy policy;
 
+	/**
+	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
+	 * <br/> Internally the 'sendKey' property of the policy will always be set to true.
+	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
+	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
+	 *
+	 * @param policy The policy.
+	 * @return
+	 */
 	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
@@ -110,8 +127,15 @@ public class MultiObjectUpdater{
 			}
 
 			// enable version checking?
-			if(isTx){
-				this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+			if (isTx) {
+				Integer generation = mapper.getGeneration(object);
+				policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+				if (generation != null) {
+					policy.generation = generation;
+				} else {
+					throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+							". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+				}
 			}
 
 			if (create) {

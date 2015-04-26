@@ -12,10 +12,19 @@ import com.spikeify.*;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A command chain for creating or updating a single object in database.
+ * This class is not intended to be instantiated by user.
+ * @param <T>
+ */
 public class SingleObjectUpdater<T> {
 
 	private final T object;
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
+	 */
 	public SingleObjectUpdater(boolean isTx, Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                           RecordsCache recordsCache, boolean create, String defaultNamespace, T object) {
 		this.isTx = isTx;
@@ -81,7 +90,6 @@ public class SingleObjectUpdater<T> {
 			bins[position++] = new Bin(propName, props.get(propName));
 		}
 
-		this.policy.sendKey = true;
 		if (create) {
 			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
 		} else {

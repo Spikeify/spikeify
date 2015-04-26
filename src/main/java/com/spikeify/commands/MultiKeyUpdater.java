@@ -247,7 +247,14 @@ public class MultiKeyUpdater {
 
 			// is version checking necessary
 			if (isTx) {
-				this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+				Integer generation = mapper.getGeneration(object);
+				policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+				if (generation != null) {
+					policy.generation = generation;
+				} else {
+					throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+							". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+				}
 			}
 
 			Long expiration = mapper.getExpiration(object);
