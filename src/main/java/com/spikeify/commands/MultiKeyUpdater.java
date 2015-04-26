@@ -4,6 +4,7 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
@@ -22,9 +23,10 @@ public class MultiKeyUpdater {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Key[], Object[])} (Object...)} method.
 	 */
-	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Key[] keys, Object[] objects) {
+		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -42,9 +44,10 @@ public class MultiKeyUpdater {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Long[], Object[])} (Object...)} method.
 	 */
-	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Long[] keys, Object[] objects) {
+		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -62,9 +65,10 @@ public class MultiKeyUpdater {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(String[], Object[])} (Object...)} or  method.
 	 */
-	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       String[] keys, Object[] objects) {
+		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -84,6 +88,7 @@ public class MultiKeyUpdater {
 	protected List<String> stringKeys = new ArrayList<>();
 	protected List<Long> longKeys = new ArrayList<>();
 	protected List<Key> keys = new ArrayList<>(10);
+	private final boolean isTx;
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected RecordsCache recordsCache;
@@ -92,6 +97,7 @@ public class MultiKeyUpdater {
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 *
 	 * @param namespace The namespace.
 	 * @return
 	 */
@@ -102,6 +108,7 @@ public class MultiKeyUpdater {
 
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 *
 	 * @param setName The name of the set.
 	 * @return
 	 */
@@ -112,6 +119,7 @@ public class MultiKeyUpdater {
 
 	/**
 	 * Sets the keys of the records to be loaded.
+	 *
 	 * @param keys
 	 * @return
 	 */
@@ -127,6 +135,7 @@ public class MultiKeyUpdater {
 
 	/**
 	 * Sets the keys of the records to be loaded.
+	 *
 	 * @param keys
 	 * @return
 	 */
@@ -142,6 +151,7 @@ public class MultiKeyUpdater {
 
 	/**
 	 * Sets the keys of the records to be loaded.
+	 *
 	 * @param keys
 	 * @return
 	 */
@@ -160,7 +170,8 @@ public class MultiKeyUpdater {
 	 * <br/> Internally the 'sendKey' property of the policy will always be set to true.
 	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
 	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
-	 *  @param policy The policy.
+	 *
+	 * @param policy The policy.
 	 * @return
 	 */
 	public MultiKeyUpdater policy(WritePolicy policy) {
@@ -231,7 +242,12 @@ public class MultiKeyUpdater {
 			if (create) {
 				this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
 			} else {
-				this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
+				this.policy.recordExistsAction = RecordExistsAction.UPDATE;
+			}
+
+			// is version checking necessary
+			if (isTx) {
+				this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
 			}
 
 			Long expiration = mapper.getExpiration(object);

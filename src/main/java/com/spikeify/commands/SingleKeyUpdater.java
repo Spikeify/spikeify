@@ -102,14 +102,6 @@ public class SingleKeyUpdater<T, K> {
 	public SingleKeyUpdater<T, K> policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
-		if(isTx){
-			this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
-		}
-		if (create) {
-			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-		} else {
-			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
-		}
 		return this;
 	}
 
@@ -168,6 +160,17 @@ public class SingleKeyUpdater<T, K> {
 			// Entities expiration:  Java time in milliseconds
 			// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
 			policy.expiration = (int) (expiration / 1000) - 1262304000;
+		}
+
+		// is version checking necessary
+		if(isTx){
+			this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+		}
+
+		if (create) {
+			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+		} else {
+			this.policy.recordExistsAction = RecordExistsAction.UPDATE;
 		}
 
 		synClient.put(policy, key, bins);

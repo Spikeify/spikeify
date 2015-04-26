@@ -6,9 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.spikeify.commands.*;
 
-import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -94,7 +92,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
-		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, true, namespace, keys, objects);
 	}
 
 	@Override
@@ -108,7 +107,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
-		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, true, namespace, keys, objects);
 	}
 
 	@Override
@@ -122,7 +122,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
-		return new MultiKeyUpdater(synClient, asyncClient, recordsCache, true, namespace, keys, objects);
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, true, namespace, keys, objects);
 	}
 
 	@Override
@@ -131,7 +132,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (objects == null || objects.length == 0) {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
-		return new MultiObjectUpdater(synClient, asyncClient,
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiObjectUpdater(isTx, synClient, asyncClient,
 				recordsCache, true, namespace, objects);
 	}
 
@@ -168,7 +170,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (objects == null || objects.length == 0) {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
-		return new MultiObjectUpdater(synClient, asyncClient,
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiObjectUpdater(isTx, synClient, asyncClient,
 				recordsCache, false, namespace, objects);
 	}
 
@@ -254,10 +257,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		tlTransaction.set(Boolean.TRUE);
 
 		int retries = 0;
-		long start = System.currentTimeMillis();
 		while (true) {
 			try {
-				start = System.currentTimeMillis();
 				R result = work.run();
 
 				tlTransaction.remove();
@@ -270,17 +271,17 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 						log.warning("Optimistic concurrency failure for " + work + " (retrying:" + retries + "): " + ex);
 					}
 				} else {
-					if (log.isLoggable(Level.FINEST) ){//&& retries >= (limitTries - 3)) {
+					if (log.isLoggable(Level.FINEST)) {//&& retries >= (limitTries - 3)) {
 						log.warning("Optimistic concurrency failure for " + work + ": Could not update record.");
 					}
 					tlTransaction.remove();
 					throw new ConcurrentModificationException("Error: too much contention. Record could not be updated.");
 				}
-			} catch (Exception ex){
+			} catch (Exception ex) {
 				log.warning("Error: other exception");
 			}
 			try {
-				Thread.sleep((long) (10 + (Math.random()*10 * retries))); // sleep for random time to give competing thread chance to finish job
+				Thread.sleep((long) (10 + (Math.random() * 10 * retries))); // sleep for random time to give competing thread chance to finish job
 			} catch (InterruptedException e) {
 				log.log(Level.SEVERE, "Thread.sleep() InterruptedException: ", e);
 			}

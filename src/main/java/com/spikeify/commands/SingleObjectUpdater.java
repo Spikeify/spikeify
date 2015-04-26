@@ -85,7 +85,7 @@ public class SingleObjectUpdater<T> {
 		if (create) {
 			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
 		} else {
-			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
+			this.policy.recordExistsAction = RecordExistsAction.UPDATE;
 		}
 
 		Long expiration = mapper.getExpiration(object);

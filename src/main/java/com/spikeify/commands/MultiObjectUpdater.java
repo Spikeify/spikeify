@@ -4,6 +4,7 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
@@ -14,8 +15,9 @@ public class MultiObjectUpdater{
 
 	private final Object[] objects;
 
-	public MultiObjectUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiObjectUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                          RecordsCache recordsCache, boolean create, String defaultNamespace, Object... objects) {
+		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
@@ -27,6 +29,7 @@ public class MultiObjectUpdater{
 	}
 
 	protected String namespace;
+	private boolean isTx;
 	protected IAerospikeClient synClient;
 	protected IAsyncClient asyncClient;
 	protected RecordsCache recordsCache;
@@ -36,11 +39,6 @@ public class MultiObjectUpdater{
 	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
-		if (create) {
-			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-		} else {
-			this.policy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
-		}
 		return this;
 	}
 
@@ -109,6 +107,17 @@ public class MultiObjectUpdater{
 				// Entities expiration:  Java time in milliseconds
 				// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
 				policy.expiration = (int) (expiration / 1000) - 1262304000; // todo fix Expiration
+			}
+
+			// enable version checking?
+			if(isTx){
+				this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+			}
+
+			if (create) {
+				this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+			} else {
+				this.policy.recordExistsAction = RecordExistsAction.UPDATE;
 			}
 
 			synClient.put(policy, key, bins);
