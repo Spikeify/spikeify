@@ -7,12 +7,28 @@ import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
 import com.spikeify.*;
+import com.spikeify.annotations.Namespace;
+import com.spikeify.annotations.SetName;
 
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A command chain for loading a single object from database.
+ * This class is not intended to be instantiated by user.
+ * @param <T>
+ */
 public class SingleLoader<T> {
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#get(Class)} instead.
+	 * @param type
+	 * @param synClient
+	 * @param asyncClient
+	 * @param classConstructor
+	 * @param recordsCache
+	 * @param namespace
+	 */
 	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
 	                    RecordsCache recordsCache, String namespace) {
 		this.synClient = synClient;
@@ -39,31 +55,62 @@ public class SingleLoader<T> {
 	protected ClassMapper<T> mapper;
 	protected Class<T> type;
 
+	/**
+	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 * @param namespace The namespace.
+	 * @return
+	 */
 	public SingleLoader<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
+	/**
+	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 * @param setName The name of the set.
+	 * @return
+	 */
 	public SingleLoader<T> set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
+	/**
+	 * Sets the key of the record to be loaded.
+	 * @param key
+	 * @return
+	 */
 	public SingleLoader<T> key(String key) {
 		this.stringKeys.add(key);
 		return this;
 	}
 
-	public SingleLoader<T> key(Long key) {
-		this.longKeys.add(key);
+	/**
+	 * Sets the user key of the record to be loaded.
+	 * @param userKey User key of tye Long.
+	 * @return
+	 */
+	public SingleLoader<T> key(Long userKey) {
+		this.longKeys.add(userKey);
 		return this;
 	}
 
-	public SingleLoader<T> key(Key key) {
-		this.keys.add(key);
+	/**
+	 * Sets the user key of the record to be loaded.
+	 * @param userKey User key of tye String.
+	 * @return
+	 */
+	public SingleLoader<T> key(Key userKey) {
+		this.keys.add(userKey);
 		return this;
 	}
 
+	/**
+	 * Sets the {@link BatchPolicy} to be used when getting the record from the database.
+	 * Internally the 'sendKey' property of the policy will always be set to true.
+	 * @param policy The policy.
+	 * @return
+	 */
 	public SingleLoader<T> policy(BatchPolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
@@ -98,7 +145,7 @@ public class SingleLoader<T> {
 	}
 
 	/**
-	 * Executes a single get command.
+	 * Synchronously executes a single get command and returns the java object.
 	 *
 	 * @return The Java object mapped from record
 	 */

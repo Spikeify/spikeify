@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A command chain for fetching various information from database.
+ */
 public class InfoFetcher {
 
 	protected final IAerospikeClient synClient;
@@ -24,6 +27,12 @@ public class InfoFetcher {
 		this.synClient = synClient;
 	}
 
+	/**
+	 * Returns the number of records in given namespace and set.
+	 * @param namespace
+	 * @param setName
+	 * @return
+	 */
 	public int getRecordCount(String namespace, String setName) {
 
 		int count = 0;
@@ -40,6 +49,10 @@ public class InfoFetcher {
 		return count;
 	}
 
+	/**
+	 * Fetches all namespaces available in database..
+	 * @return A set of namespaces
+	 */
 	public Set<String> getNamespaces() {
 		Set<String> nsNames = new HashSet<>();
 		Node[] nodes = synClient.getNodes();
@@ -50,6 +63,10 @@ public class InfoFetcher {
 		return nsNames;
 	}
 
+	/**
+	 * Fetches all Sets available in database.
+	 * @return A map of sets and the namespaces they belong to
+	 */
 	public Map<String /** set **/, String /** namespace **/> getSets() {
 
 		Map<String, String> setNames = new HashMap();
