@@ -7,12 +7,21 @@ import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
+import com.spikeify.annotations.Namespace;
+import com.spikeify.annotations.SetName;
 
 import java.util.*;
 
+/**
+ * A command chain for creating or updating multiple objects in database.
+ * This class is not intended to be instantiated by user.
+ */
 public class MultiKeyUpdater {
 
-
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Instead use {@link Spikeify#createAll(Key[], Object[])} (Object...)} method.
+	 */
 	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Key[] keys, Object[] objects) {
@@ -29,6 +38,10 @@ public class MultiKeyUpdater {
 		this.objects = objects;
 	}
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Instead use {@link Spikeify#createAll(Long[], Object[])} (Object...)} method.
+	 */
 	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Long[] keys, Object[] objects) {
@@ -45,6 +58,10 @@ public class MultiKeyUpdater {
 		this.objects = objects;
 	}
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Instead use {@link Spikeify#createAll(String[], Object[])} (Object...)} or  method.
+	 */
 	public MultiKeyUpdater(IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       String[] keys, Object[] objects) {
@@ -73,16 +90,31 @@ public class MultiKeyUpdater {
 	protected final boolean create;
 	protected WritePolicy policy;
 
+	/**
+	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 * @param namespace The namespace.
+	 * @return
+	 */
 	public MultiKeyUpdater namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
 
+	/**
+	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 * @param setName The name of the set.
+	 * @return
+	 */
 	public MultiKeyUpdater set(String setName) {
 		this.setName = setName;
 		return this;
 	}
 
+	/**
+	 * Sets the keys of the records to be loaded.
+	 * @param keys
+	 * @return
+	 */
 	public MultiKeyUpdater key(String... keys) {
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Number of keys does not match number of objects.");
@@ -93,6 +125,11 @@ public class MultiKeyUpdater {
 		return this;
 	}
 
+	/**
+	 * Sets the keys of the records to be loaded.
+	 * @param keys
+	 * @return
+	 */
 	public MultiKeyUpdater key(Long... keys) {
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Number of keys does not match number of objects.");
@@ -103,6 +140,11 @@ public class MultiKeyUpdater {
 		return this;
 	}
 
+	/**
+	 * Sets the keys of the records to be loaded.
+	 * @param keys
+	 * @return
+	 */
 	public MultiKeyUpdater key(Key... keys) {
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Number of keys does not match number of objects.");
@@ -113,6 +155,14 @@ public class MultiKeyUpdater {
 		return this;
 	}
 
+	/**
+	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
+	 * <br/> Internally the 'sendKey' property of the policy will always be set to true.
+	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
+	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
+	 *  @param policy The policy.
+	 * @return
+	 */
 	public MultiKeyUpdater policy(WritePolicy policy) {
 		this.policy = policy;
 		return this;
@@ -140,6 +190,11 @@ public class MultiKeyUpdater {
 		}
 	}
 
+	/**
+	 * Synchronously executes multiple create or update commands and returns the keys of the records.
+	 *
+	 * @return The Map of Key, object pairs.
+	 */
 	public Map<Key, Object> now() {
 
 		collectKeys();
