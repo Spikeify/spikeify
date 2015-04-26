@@ -37,10 +37,6 @@ public class SingleKeyUpdater<T, K> {
 		this.namespace = defaultNamespace;
 		this.object = object;
 		this.policy = new WritePolicy();
-		this.policy.sendKey = true;
-		if(isTx){
-			this.policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
-		}
 		this.mapper = MapperService.getMapper((Class<T>)object.getClass());
 		if(key.getClass().equals(Key.class)){
 			this.key = (Key) key;
@@ -154,6 +150,9 @@ public class SingleKeyUpdater<T, K> {
 		for (String propName : changedProps) {
 			bins[position++] = new Bin(propName, props.get(propName));
 		}
+
+		// must be set so that user key can be retrieved in queries
+		this.policy.sendKey = true;
 
 		Long expiration = mapper.getExpiration(object);
 		if (expiration != null) {

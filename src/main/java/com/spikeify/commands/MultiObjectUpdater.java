@@ -32,7 +32,6 @@ public class MultiObjectUpdater {
 		this.create = create;
 		this.namespace = defaultNamespace;
 		this.policy = new WritePolicy();
-		this.policy.sendKey = true;
 		this.objects = objects;
 	}
 
@@ -55,7 +54,6 @@ public class MultiObjectUpdater {
 	 */
 	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;
-		this.policy.sendKey = true;
 		return this;
 	}
 
@@ -118,6 +116,9 @@ public class MultiObjectUpdater {
 			for (String propName : changedProps) {
 				bins[position++] = new Bin(propName, props.get(propName));
 			}
+
+			// must be set so that user key can be retrieved in queries
+			this.policy.sendKey = true;
 
 			Long expiration = mapper.getExpiration(object);
 			if (expiration != null) {

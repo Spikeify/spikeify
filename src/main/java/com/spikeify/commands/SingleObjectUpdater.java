@@ -59,7 +59,6 @@ public class SingleObjectUpdater<T> {
 	 */
 	public SingleObjectUpdater<T> policy(WritePolicy policy) {
 		this.policy = policy;
-		this.policy.sendKey = true;
 		return this;
 	}
 
@@ -104,6 +103,9 @@ public class SingleObjectUpdater<T> {
 		for (String propName : changedProps) {
 			bins[position++] = new Bin(propName, props.get(propName));
 		}
+
+		// must be set so that user key can be retrieved in queries
+		this.policy.sendKey = true;
 
 		if (create) {
 			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
