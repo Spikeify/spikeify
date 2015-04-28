@@ -4,7 +4,6 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.BatchPolicy;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
@@ -12,17 +11,20 @@ import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * A command chain for creating or updating a single object in database.
  * This class is not intended to be instantiated by user.
+ *
  * @param <T>
  */
 public class SingleKeyUpdater<T, K> {
 
 	private boolean isTx;
+
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
@@ -37,14 +39,14 @@ public class SingleKeyUpdater<T, K> {
 		this.namespace = defaultNamespace;
 		this.object = object;
 		this.policy = new WritePolicy();
-		this.mapper = MapperService.getMapper((Class<T>)object.getClass());
-		if(key.getClass().equals(Key.class)){
+		this.mapper = MapperService.getMapper((Class<T>) object.getClass());
+		if (key.getClass().equals(Key.class)) {
 			this.key = (Key) key;
 			this.keyType = KeyType.KEY;
-		} else if(key.getClass().equals(Long.class)){
+		} else if (key.getClass().equals(Long.class)) {
 			this.longKey = (Long) key;
 			this.keyType = KeyType.LONG;
-		} else if(key.getClass().equals(String.class)){
+		} else if (key.getClass().equals(String.class)) {
 			this.stringKey = (String) key;
 			this.keyType = KeyType.STRING;
 		} else {
@@ -69,6 +71,7 @@ public class SingleKeyUpdater<T, K> {
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 *
 	 * @param namespace The namespace.
 	 * @return
 	 */
@@ -79,6 +82,7 @@ public class SingleKeyUpdater<T, K> {
 
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 *
 	 * @param setName The name of the set.
 	 * @return
 	 */
@@ -92,7 +96,8 @@ public class SingleKeyUpdater<T, K> {
 	 * <br/>Internally the 'sendKey' property of the policy will always be set to true.
 	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
 	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
-	 *  @param policy The policy.
+	 *
+	 * @param policy The policy.
 	 * @return
 	 */
 	public SingleKeyUpdater<T, K> policy(WritePolicy policy) {
@@ -130,12 +135,6 @@ public class SingleKeyUpdater<T, K> {
 	 */
 	public K now() {
 
-		if (create) {
-			policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-		} else {
-			policy.recordExistsAction = RecordExistsAction.UPDATE;
-		}
-
 		collectKeys();
 
 		if (object == null) {
@@ -148,7 +147,14 @@ public class SingleKeyUpdater<T, K> {
 		Bin[] bins = new Bin[changedProps.size()];
 		int position = 0;
 		for (String propName : changedProps) {
-			bins[position++] = new Bin(propName, props.get(propName));
+			Object value = props.get(propName);
+			if (value instanceof List<?>) {
+				bins[position++] = new Bin(propName, (List) value);
+			} else if (value instanceof Map<?, ?>) {
+				bins[position++] = new Bin(propName, (Map) value);
+			} else {
+				bins[position++] = new Bin(propName, value);
+			}
 		}
 
 		// must be set so that user key can be retrieved in queries
@@ -168,7 +174,7 @@ public class SingleKeyUpdater<T, K> {
 			if (generation != null) {
 				policy.generation = generation;
 			} else {
-				throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
 						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
 			}
 		}
@@ -181,9 +187,9 @@ public class SingleKeyUpdater<T, K> {
 
 		synClient.put(policy, key, bins);
 
-		switch (keyType){
+		switch (keyType) {
 			case KEY:
-				return  (K) key;
+				return (K) key;
 			case LONG:
 				Long longKey = key.userKey.toLong();
 				return (K) longKey;

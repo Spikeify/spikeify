@@ -68,6 +68,7 @@ public class Scanner<T> {
 		collectMetaData();
 
 		Statement statement = new Statement();
+		statement.setIndexName(indexName);
 		statement.setNamespace(namespace);
 		statement.setSetName(setName);
 		statement.setFilters(filters);

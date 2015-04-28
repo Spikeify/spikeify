@@ -250,21 +250,20 @@ public class UpdaterTest {
 		List aList = new ArrayList();
 		aList.add("test1");
 		aList.add("test2");
-		aList.add(1234);
+		aList.add(1234l);
 		aList.add(123.0d);
 
 		Set aSet = new HashSet();
 		aSet.add("test1");
 		aSet.add("test2");
-		aSet.add(1234);
+		aSet.add(1234l);
 		aSet.add(123.0d);
 
 		Map aMap = new HashMap();
 		aMap.put("1", "testX");
 		aMap.put("2", "testY");
-		aMap.put("3", 456);
+		aMap.put("3", 456l);
 		aMap.put("4", 456.0d);
-
 
 		EntityOne entityOne = new EntityOne();
 		entityOne.nine = aList;

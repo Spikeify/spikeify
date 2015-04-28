@@ -3,6 +3,7 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.*;
+import com.spikeify.commands.MultiLoader;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;
@@ -11,6 +12,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class QueryTest {
@@ -23,7 +25,7 @@ public class QueryTest {
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = new AerospikeClient("localhost", 3000);
+		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
 	}
 
@@ -55,8 +57,8 @@ public class QueryTest {
 				.setFilters(Filter.equal("two", "content"))
 				.now();
 
-		while (entities.next()) {
-			Assert.assertEquals("content", entities.getObject().two);
+		for (EntityOne entity : entities) {
+			Assert.assertEquals("content", entity.two);
 		}
 
 		EntitySet<EntityOne> entities2 = sfy.query(EntityOne.class)
@@ -65,14 +67,13 @@ public class QueryTest {
 				.setFilters(Filter.equal("two", "content"))
 				.now();
 
-		while (entities2.next()) {
-			EntityOne entity = entities2.getObject();
-			Assert.assertTrue(0 < entity.one && entity.one < 1000);
+		for (EntityOne entity2 : entities2) {
+			Assert.assertTrue(0 < entity2.one && entity2.one < 1000);
 		}
 	}
 
 	@Test
-	public void testListQuery() {
+	public void testListQueryNative() {
 
 		Random random = new Random();
 
@@ -85,7 +86,7 @@ public class QueryTest {
 		String binLong = "binLong";
 
 		client.createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
-		client.createIndex(new Policy(), namespace, setName, longListIndex, binLong, IndexType.NUMERIC, IndexCollectionType.LIST);
+//		client.createIndex(new Policy(), namespace, setName, longListIndex, binLong, IndexType.NUMERIC, IndexCollectionType.LIST);
 
 		// create records
 		for (int i = 0; i < 100; i++) {
@@ -95,7 +96,7 @@ public class QueryTest {
 
 
 			List<String> listStrings = new ArrayList<>();
-			List<Long> listLongs= new ArrayList<>();
+			List<Long> listLongs = new ArrayList<>();
 
 			// subset of records have predictable bin values - so they can be found by query
 			if (i % 10 == 0) {
@@ -117,18 +118,11 @@ public class QueryTest {
 
 		}
 
-		// does DB need time to sync indexes?
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
 		Statement statement = new Statement();
+		statement.setIndexName(stringListIndex);
 		statement.setNamespace(namespace);
 		statement.setSetName(setName);
-		statement.setIndexName(stringListIndex);
-		statement.setFilters(Filter.equal(binString, "content"));
+		statement.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"));
 
 		RecordSet recSet = client.query(null, statement);
 
@@ -136,10 +130,100 @@ public class QueryTest {
 		while (recSet.next()) {
 			count++;
 			Record record = recSet.getRecord();
-			System.out.println(record);
+			Assert.assertTrue(((List) record.bins.get(binString)).contains("content"));
 		}
 
 		// query should return 10 records
 		Assert.assertEquals(10, count);
+	}
+
+
+	@Test
+	public void testListQuery() {
+
+		Random random = new Random();
+
+		AerospikeClient client = new AerospikeClient("localhost", 3000);
+		String stringListIndex = "index_list_string_2";
+		String binString = "nine";
+
+		client.createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
+
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(100, setName);
+
+		int count = 0;
+		for (EntityOne entity : entities.values()) {
+			entity.nine = new ArrayList<>();
+
+			// subset of records have predictable bin values - so they can be found by query
+			if (count % 10 == 0) {
+				entity.nine.add("content"); // fixed string
+			}
+			entity.nine.add(TestUtils.randomWord());
+			entity.nine.add(TestUtils.randomWord());
+			sfy.create(entity.userId, entity).set(setName).now();
+
+			count++;
+		}
+
+//		MultiLoader<EntityOne, Long> got = sfy.getAll(EntityOne.class, entities.keySet().toArray(new Long[100]));
+//
+//		int gotNum = 0;
+//		for (EntityOne entityOne : entities.values()) {
+//			if (entityOne.nine.contains("content")) {
+//				gotNum++;
+//			}
+//		}
+//		Assert.assertEquals(10, gotNum);
+
+
+//		for (int i = 0; i < 100; i++) {
+//			Key key = new Key(namespace, setName, random.nextLong());
+//			Bin listStringBin;
+//
+//			List<String> listStrings = new ArrayList<>();
+//
+//			// subset of records have predictable bin values - so they can be found by query
+//			if (i % 10 == 0) {
+//				listStrings.add("content"); // fixed string
+//			}
+//
+//			// random strings added to list
+//			listStrings.add(TestUtils.randomWord());
+//			listStrings.add(TestUtils.randomWord());
+//			listStringBin = new Bin(binString, listStrings);
+//
+//			client.put(null, key, listStringBin);
+//
+//		}
+
+//		EntitySet<EntityOne> results = sfy
+//				.query(EntityOne.class)
+//				.setName(setName)
+//				.indexName(stringListIndex)
+//				.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"))
+//				.now();
+//		RecordSet recSet = results.recordSet;
+
+		Statement statement = new Statement();
+		statement.setIndexName(stringListIndex);
+		statement.setNamespace(namespace);
+		statement.setSetName(setName);
+		statement.setFilters(Filter.equal(binString, "content"));
+
+		RecordSet recSet = client.query(null, statement);
+
+		int resultCount = 0;
+//		for (EntityOne result : results) {
+//			resultCount++;
+//		}
+		while (recSet.next()) {
+			Record rec = recSet.getRecord();
+			resultCount++;
+		}
+
+
+		// query should return 10 records
+		Assert.assertEquals(10, resultCount);
 	}
 }

@@ -5,12 +5,17 @@ import com.aerospike.client.Record;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.query.RecordSet;
 
-public class EntitySet<T> {
+import java.util.Iterator;
+
+public class EntitySet<T> implements Iterable<T> {
 
 	private final ClassMapper<T> mapper;
 	private final ClassConstructor classConstructor;
 	private final RecordsCache recordsCache;
-	private final RecordSet recordSet;
+	public final RecordSet recordSet;
+
+	private Boolean hasNext;
+	private T nextRecord;
 
 	protected EntitySet(ClassMapper<T> mapper, ClassConstructor classConstructor,
 	                    RecordsCache recordsCache, RecordSet recordSet) {
@@ -20,8 +25,17 @@ public class EntitySet<T> {
 		this.recordSet = recordSet;
 	}
 
-	public final boolean next() {
-		return recordSet.next();
+
+	public final T next() {
+
+		if (nextRecord == null) {
+			hasNext = null;
+			return getObject();
+		} else {
+			T nextRecordRef = nextRecord;
+			nextRecord = null;
+			return nextRecordRef;
+		}
 	}
 
 	public final void close() {
@@ -32,7 +46,7 @@ public class EntitySet<T> {
 		return recordSet.getKey();
 	}
 
-	public final T getObject() {
+	private final T getObject() {
 
 		Record record = recordSet.getRecord();
 		Key key = recordSet.getKey();
@@ -60,5 +74,41 @@ public class EntitySet<T> {
 		mapper.setFieldValues(object, record.bins);
 
 		return object;
+	}
+
+	@Override
+	public Iterator<T> iterator() {
+		return new Itr();
+	}
+
+	private class Itr implements Iterator<T> {
+
+		@Override
+		public boolean hasNext() {
+			if (hasNext == null) {
+				hasNext = recordSet.next();
+				if(hasNext){
+					nextRecord = getObject();
+				}
+			}
+			return hasNext;
+		}
+
+		@Override
+		public T next() {
+			if (nextRecord == null) {
+				hasNext = null;
+				return getObject();
+			} else {
+				T nextRecordRef = nextRecord;
+				nextRecord = null;
+				return nextRecordRef;
+			}
+		}
+
+		@Override
+		public void remove() {
+			throw new IllegalStateException("Remove operation is not supported.");
+		}
 	}
 }
