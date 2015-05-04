@@ -1,7 +1,10 @@
 # spikeify
-A lightweight Java ORM for Aerospike
+A lightweight Java object mapper for Aerospike.
 
-Spikefy is pre-alpha. Look at tests to see what it can already do. We'll write some docs when we enter alpha stage.
+Spikeify is a thin wrapper around Aerospike's native Java client library. It has the following features:
 
-Also, we are interested in your feedback: all comments/suggestions/issues/bugs are welcome.
+ - It simply maps records to Java objects.
+ - It does not try to abstract or hide a native client library, but rather extend it. All functions of the underlying client lib can be  used concurrently with Spikeify.
+
+Read more about it in the [Wiki](https://github.com/Spikeify/spikeify/wiki).
 
