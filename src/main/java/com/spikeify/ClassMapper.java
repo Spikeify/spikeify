@@ -1,7 +1,6 @@
 package com.spikeify;
 
 import com.spikeify.annotations.Namespace;
-import com.spikeify.annotations.Record;
 import com.spikeify.annotations.SetName;
 
 import java.util.HashMap;
@@ -25,12 +24,6 @@ public class ClassMapper<TYPE> {
 
 	public ClassMapper(Class<TYPE> clazz) {
 		this.type = clazz;
-
-		// @Record annotation os mandatory
-		Record recordAnnotation = clazz.getAnnotation(Record.class);
-		if (recordAnnotation == null) {
-			throw new SpikeifyError("Missing @Record annotation on mapped class " + clazz.getName());
-		}
 
 		// parse @Namespace class annotation
 		Namespace namespaceClassAnnotation = clazz.getAnnotation(Namespace.class);

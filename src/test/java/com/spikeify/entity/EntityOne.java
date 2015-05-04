@@ -4,7 +4,6 @@ import com.spikeify.annotations.*;
 
 import java.util.*;
 
-@Record
 public class EntityOne {
 
 	@UserKey
