@@ -25,23 +25,6 @@ public class EntitySet<T> implements Iterable<T> {
 		this.recordSet = recordSet;
 	}
 
-
-	public final T next() {
-
-		if (nextRecord == null) {
-			hasNext = null;
-			return getObject();
-		} else {
-			T nextRecordRef = nextRecord;
-			nextRecord = null;
-			return nextRecordRef;
-		}
-	}
-
-	public final void close() {
-		recordSet.close();
-	}
-
 	public final Key getKey() {
 		return recordSet.getKey();
 	}
@@ -87,7 +70,7 @@ public class EntitySet<T> implements Iterable<T> {
 		public boolean hasNext() {
 			if (hasNext == null) {
 				hasNext = recordSet.next();
-				if(hasNext){
+				if (hasNext) {
 					nextRecord = getObject();
 				}
 			}
@@ -96,8 +79,8 @@ public class EntitySet<T> implements Iterable<T> {
 
 		@Override
 		public T next() {
+			hasNext = null;
 			if (nextRecord == null) {
-				hasNext = null;
 				return getObject();
 			} else {
 				T nextRecordRef = nextRecord;
