@@ -81,27 +81,21 @@ public class QueryTest {
 		String namespace = "test";
 		String setName = "testSetQuery";
 		String stringListIndex = "index_list_string";
-		String longListIndex = "index_list_long";
 		String binString = "binString";
 		String binLong = "binLong";
 
 		client.createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
-//		client.createIndex(new Policy(), namespace, setName, longListIndex, binLong, IndexType.NUMERIC, IndexCollectionType.LIST);
 
 		// create records
 		for (int i = 0; i < 100; i++) {
-			Key key = new Key("test", "testSetQuery", random.nextLong());
+			Key key = new Key(namespace, setName, random.nextLong());
 			Bin listStringBin;
-			Bin listLongBin;
-
 
 			List<String> listStrings = new ArrayList<>();
-			List<Long> listLongs = new ArrayList<>();
 
 			// subset of records have predictable bin values - so they can be found by query
 			if (i % 10 == 0) {
 				listStrings.add("content"); // fixed string
-				listLongs.add((long) random.nextInt(100));  // predictable value 0-100
 			}
 
 			// random strings added to list
@@ -109,12 +103,7 @@ public class QueryTest {
 			listStrings.add(TestUtils.randomWord());
 			listStringBin = new Bin(binString, listStrings);
 
-			// random Longs added to list
-			listLongs.add(random.nextLong());
-			listLongs.add(random.nextLong());
-			listLongBin = new Bin(binLong, listLongs);
-
-			client.put(null, key, listStringBin, listLongBin);
+			client.put(null, key, listStringBin);
 
 		}
 

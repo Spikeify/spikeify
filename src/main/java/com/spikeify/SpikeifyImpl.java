@@ -1,9 +1,12 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeException;
+import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.RecordExistsAction;
+import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.commands.*;
 
 import java.util.ConcurrentModificationException;
@@ -217,6 +220,14 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public <T> Scanner<T> query(Class<T> type) {
 		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, namespace);
+	}
+
+	@Override
+	public void add(Key key, String binName, int value) {
+		WritePolicy writePolicy = new WritePolicy();
+		writePolicy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
+		Bin bin = new Bin(binName, value);
+		synClient.add(writePolicy, key, bin);
 	}
 
 	@Override

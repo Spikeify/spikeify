@@ -1,7 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.IAerospikeClient;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;

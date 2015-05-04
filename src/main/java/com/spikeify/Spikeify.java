@@ -236,27 +236,37 @@ public interface Spikeify {
 	<T> Scanner<T> query(Class<T> type);
 
 	/**
-	 * Starts a command chain to delete all records with given SetName.
+	 * Adds an integer to a bin. This operation is synchronous and atomic.
+	 * Operation expects that record with given Key already exists, otherwise throws an error.
+	 *
+	 * <br/><br/> For more atomic operations use AerospikeClient directly.
+	 * AerospikeClient can be also accessed via SpikeifyService.getClient().
+	 *
+	 * @param key     A {@link Key} of the record with a Bin to increment.
+	 * @param binName name of the bin to add to.
+	 * @param value   integer value to add to existing bin value.
+	 */
+	void add(Key key, String binName, int value);
+
+	/**
+	 * Delete all records with given SetName.
 	 *
 	 * @param namespace The namespace of the records to delete.
-	 * @param setName The SetName of the records to delete.
-	 * @return the command chain
+	 * @param setName   The SetName of the records to delete.
 	 */
 	void truncateSet(String namespace, String setName);
 
 	/**
-	 * Starts a command chain to delete all records with given SetName.
+	 * Deletes all records with given Namespace and SetName.
 	 *
 	 * @param type The Class of the records to delete. Must contain a @SetName on class definition.
-	 * @return the command chain
 	 */
 	void truncateSet(Class type);
 
 	/**
-	 * Starts a command chain to delete all records with given namespace.
+	 * Deletes all records within given namespace.
 	 *
 	 * @param namespace The namespace of the records to delete.
-	 * @return the command chain
 	 */
 	void truncateNamespace(String namespace);
 
@@ -266,14 +276,15 @@ public interface Spikeify {
 	 * If the version of the record for any update operation mismatches, this update operation is aborted and the whole unit of work is retried.
 	 * Note: this are NOT true (serialized) transactions, because:
 	 * <ol>
-	 *   <li>Does not take into account the read records that changed during transaction.</li>
-	 *   <li>Aborts the transaction on ANY mismatched update operation, but does not rollback update operations that happened beforehand. </li>
+	 * <li>Does not take into account the read records that changed during transaction.</li>
+	 * <li>Aborts the transaction on ANY mismatched update operation, but does not rollback update operations that happened beforehand. </li>
 	 * </ol>
 	 * Best practice: make a series of read operations and then only one update operation.
+	 *
 	 * @param retries Number of retries of transaction operation. A sensible number would be 5.
-	 * @param work An IDEMPOTENT unit of work (series of DB operations) that will be transactionally executed.
-	 *              In case of failure, the whole set of operations will be executed again,
-	 *              hence the need fot this set of operations to be IDEMPOTENT.
+	 * @param work    An IDEMPOTENT unit of work (series of DB operations) that will be transactionally executed.
+	 *                In case of failure, the whole set of operations will be executed again,
+	 *                hence the need fot this set of operations to be IDEMPOTENT.
 	 * @return R The result of the work performed by Work.run() method.
 	 */
 	<R> R transact(int retries, Work<R> work);
