@@ -183,13 +183,14 @@ public class LoaderTest {
 	public void mapEntity() {
 		EntityOne original = TestUtils.randomEntityOne(setName);
 		sfy.create(original).now();
+		Key key = new Key(namespace, original.theSetName, original.userId);
+
 
 		// load via Spikeify
-		EntityOne loaded = sfy.get(EntityOne.class).key(original.userId).now();
+		EntityOne loaded = sfy.get(EntityOne.class).key(key).now();
 		Assert.assertEquals(original, loaded);
 
 		// load natively an map
-		Key key = new Key(namespace, original.theSetName, original.userId);
 		Record loadedRecord = client.get(null, key);
 		EntityOne loadedNative = sfy.map(EntityOne.class, key, loadedRecord);
 		Assert.assertEquals(original, loadedNative);

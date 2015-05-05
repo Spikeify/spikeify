@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class RecordsCache {
 
-	private static ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>> cache =
+	private ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>> cache =
 			new ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>>() {
 				@Override
 				protected Map<Key, Map<String, String>> initialValue() {
