@@ -4,6 +4,8 @@ import com.spikeify.annotations.*;
 
 import java.util.*;
 
+@Namespace("test")
+@SetName("testSet")
 public class EntityOne {
 
 	@UserKey

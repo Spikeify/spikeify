@@ -1,6 +1,7 @@
 package com.spikeify;
 
 import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.spikeify.commands.*;
 
 /**
@@ -247,6 +248,16 @@ public interface Spikeify {
 	 * @param value   integer value to add to existing bin value.
 	 */
 	void add(Key key, String binName, int value);
+
+	/**
+	 * A helper method that directly maps Record to Java object.
+	 *
+	 * @param type A Class to map to.
+	 * @param key Key used to get the Record from DB.
+	 * @param record A Record to be mapped.
+	 * @return Instance of a 'type' with fields mapped to Record bins.
+	 */
+	<T> T map(Class<T> type, Key key, Record record);
 
 	/**
 	 * Delete all records with given SetName.

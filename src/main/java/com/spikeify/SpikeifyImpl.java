@@ -1,10 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeException;
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
+import com.aerospike.client.*;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.commands.*;
@@ -228,6 +226,36 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		writePolicy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
 		Bin bin = new Bin(binName, value);
 		synClient.add(writePolicy, key, bin);
+	}
+
+	@Override
+	public <T> T map(Class<T> type, Key key, Record record) {
+
+		if (record == null) {
+			return null;
+		}
+
+		T object = classConstructor.construct(type);
+
+		ClassMapper<T> mapper = MapperService.getMapper(type);
+
+		// set UserKey field
+		switch (key.userKey.getType()) {
+			case ParticleType.STRING:
+				mapper.setUserKey(object, key.userKey.toString());
+				break;
+			case ParticleType.INTEGER:
+				mapper.setUserKey(object, key.userKey.toLong());
+				break;
+		}
+
+		// set metafields on the entity: @Namespace, @SetName, @Expiration..
+		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
+
+		// set field values
+		mapper.setFieldValues(object, record.bins);
+
+		return object;
 	}
 
 	@Override

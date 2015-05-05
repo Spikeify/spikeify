@@ -59,6 +59,10 @@ public class EntitySet<T> implements Iterable<T> {
 		return object;
 	}
 
+	public final void close() {
+		recordSet.close();
+	}
+
 	@Override
 	public Iterator<T> iterator() {
 		return new Itr();

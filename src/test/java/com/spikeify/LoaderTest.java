@@ -177,7 +177,23 @@ public class LoaderTest {
 	public void loadAllNonExisting() {
 		Map<Long, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
 		Assert.assertTrue(recs.isEmpty());
+	}
 
+	@Test
+	public void mapEntity() {
+		EntityOne original = TestUtils.randomEntityOne(setName);
+		sfy.create(original).now();
+
+		// load via Spikeify
+		EntityOne loaded = sfy.get(EntityOne.class).key(original.userId).now();
+		Assert.assertEquals(original, loaded);
+
+		// load natively an map
+		Key key = new Key(namespace, original.theSetName, original.userId);
+		Record loadedRecord = client.get(null, key);
+		EntityOne loadedNative = sfy.map(EntityOne.class, key, loadedRecord);
+		Assert.assertEquals(original, loadedNative);
+		Assert.assertEquals(loaded, loadedNative);
 	}
 
 }

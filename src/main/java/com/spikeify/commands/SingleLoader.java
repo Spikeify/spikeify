@@ -159,7 +159,7 @@ public class SingleLoader<T> {
 
 		T object = classConstructor.construct(type);
 
-		// save rew records into cache - used later for differential updating
+		// save raw records into cache - used later for differential updating
 		recordsCache.insert(key, record.bins);
 
 		// set UserKey field
