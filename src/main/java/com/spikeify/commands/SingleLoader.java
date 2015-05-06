@@ -52,7 +52,6 @@ public class SingleLoader<T> {
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
 	 * @param namespace The namespace.
-	 * @return
 	 */
 	public SingleLoader<T> namespace(String namespace) {
 		this.namespace = namespace;
@@ -62,7 +61,6 @@ public class SingleLoader<T> {
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 * @param setName The name of the set.
-	 * @return
 	 */
 	public SingleLoader<T> set(String setName) {
 		this.setName = setName;
@@ -72,7 +70,6 @@ public class SingleLoader<T> {
 	/**
 	 * Sets the key of the record to be loaded.
 	 * @param key
-	 * @return
 	 */
 	public SingleLoader<T> key(String key) {
 		this.stringKeys.add(key);
@@ -82,7 +79,6 @@ public class SingleLoader<T> {
 	/**
 	 * Sets the user key of the record to be loaded.
 	 * @param userKey User key of tye Long.
-	 * @return
 	 */
 	public SingleLoader<T> key(Long userKey) {
 		this.longKeys.add(userKey);
@@ -92,7 +88,6 @@ public class SingleLoader<T> {
 	/**
 	 * Sets the user key of the record to be loaded.
 	 * @param userKey User key of tye String.
-	 * @return
 	 */
 	public SingleLoader<T> key(Key userKey) {
 		this.keys.add(userKey);
@@ -103,7 +98,6 @@ public class SingleLoader<T> {
 	 * Sets the {@link BatchPolicy} to be used when getting the record from the database.
 	 * Internally the 'sendKey' property of the policy will always be set to true.
 	 * @param policy The policy.
-	 * @return
 	 */
 	public SingleLoader<T> policy(BatchPolicy policy) {
 		this.policy = policy;

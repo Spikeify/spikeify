@@ -73,7 +73,6 @@ public class SingleKeyUpdater<T, K> {
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
 	 *
 	 * @param namespace The namespace.
-	 * @return
 	 */
 	public SingleKeyUpdater<T, K> namespace(String namespace) {
 		this.namespace = namespace;
@@ -84,7 +83,6 @@ public class SingleKeyUpdater<T, K> {
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 *
 	 * @param setName The name of the set.
-	 * @return
 	 */
 	public SingleKeyUpdater<T, K> set(String setName) {
 		this.setName = setName;
@@ -98,7 +96,6 @@ public class SingleKeyUpdater<T, K> {
 	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
 	 *
 	 * @param policy The policy.
-	 * @return
 	 */
 	public SingleKeyUpdater<T, K> policy(WritePolicy policy) {
 		this.policy = policy;

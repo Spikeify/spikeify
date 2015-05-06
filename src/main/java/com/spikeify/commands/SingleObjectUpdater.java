@@ -55,7 +55,6 @@ public class SingleObjectUpdater<T> {
 	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
 	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
 	 *  @param policy The policy.
-	 * @return
 	 */
 	public SingleObjectUpdater<T> policy(WritePolicy policy) {
 		this.policy = policy;

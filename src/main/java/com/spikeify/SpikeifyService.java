@@ -52,7 +52,7 @@ public class SpikeifyService {
 	/**
 	 * A Spikeify that uses a mock AerospikeClient
 	 *
-	 * @return Spikeify instance
+	 * @return A mock Spikeify instance
 	 */
 	public static Spikeify mock(IAerospikeClient client) {
 		return new SpikeifyImpl(client, null, new NoArgClassConstructor(), defaultNamespace);
@@ -63,7 +63,7 @@ public class SpikeifyService {
 	 * @param namespace
 	 * @param port
 	 * @param hosts
-	 * @return
+	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, int port, String... hosts) {
 		Host[] hostsH = new Host[hosts.length];
@@ -77,7 +77,7 @@ public class SpikeifyService {
 	 * Creates a new instance of Spikeify with given parameters.
 	 * @param namespace
 	 * @param hosts
-	 * @return
+	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, Host... hosts) {
 		return new SpikeifyImpl<>(new AerospikeClient(new ClientPolicy(), hosts), new AsyncClient(new AsyncClientPolicy(), hosts), new NoArgClassConstructor(), namespace);

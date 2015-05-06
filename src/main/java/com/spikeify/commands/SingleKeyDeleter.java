@@ -70,7 +70,6 @@ public class SingleKeyDeleter<T> {
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
 	 * @param namespace The namespace.
-	 * @return
 	 */
 	public SingleKeyDeleter<T> namespace(String namespace) {
 		this.namespace = namespace;
@@ -80,7 +79,6 @@ public class SingleKeyDeleter<T> {
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 * @param setName The name of the set.
-	 * @return
 	 */
 	public SingleKeyDeleter<T> set(String setName) {
 		this.setName = setName;

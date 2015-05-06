@@ -55,8 +55,8 @@ public class Scanner<T> {
 
 	/**
 	 * Sets query filters. From {@link com.aerospike.client.query.Statement#setFilters(Filter... filters) Statement.setFilters(..)}
-	 * @param filters
-	 * @return
+	 * @param filters An array of filters
+	 * @return This command chain
 	 */
 	public Scanner<T> setFilters(Filter... filters) {
 		this.filters = filters;

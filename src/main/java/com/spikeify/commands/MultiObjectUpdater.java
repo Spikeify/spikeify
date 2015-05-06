@@ -50,7 +50,6 @@ public class MultiObjectUpdater {
 	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
 	 *
 	 * @param policy The policy.
-	 * @return
 	 */
 	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;

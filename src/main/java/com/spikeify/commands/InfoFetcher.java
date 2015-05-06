@@ -31,7 +31,7 @@ public class InfoFetcher {
 	 * Returns the number of records in given namespace and set.
 	 * @param namespace
 	 * @param setName
-	 * @return
+	 * @return number of records in given namespace and set
 	 */
 	public int getRecordCount(String namespace, String setName) {
 
