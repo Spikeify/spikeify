@@ -110,7 +110,7 @@ public class MultiKeyUpdater {
 	 *
 	 * @param setName The name of the set.
 	 */
-	public MultiKeyUpdater set(String setName) {
+	public MultiKeyUpdater setName(String setName) {
 		this.setName = setName;
 		return this;
 	}

@@ -91,7 +91,7 @@ public class LoaderTest {
 				binNine, binEleven, binUnmapped1, binUnmapped2, binUnmapped3, binSub);
 
 		// testing default namespace - we did not explicitly provide namespace
-		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).set(setName).now();
+		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).setName(setName).now();
 
 		// UserKey value
 		Assert.assertEquals(userKey1, entity.userId);
@@ -135,7 +135,7 @@ public class LoaderTest {
 		Long saveKey1 = sfy
 				.update(userKey1, entity1)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		EntityOne entity2 = new EntityOne();
@@ -153,10 +153,10 @@ public class LoaderTest {
 
 		Long saveKey2 = sfy
 				.update(userKey2, entity1)
-				.set(setName)
+				.setName(setName)
 				.now();
 
-		Map<Long, EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).namespace(namespace).set(setName).now();
+		Map<Long, EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).namespace(namespace).setName(setName).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));

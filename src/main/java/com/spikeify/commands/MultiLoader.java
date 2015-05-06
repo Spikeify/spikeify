@@ -74,7 +74,7 @@ public class MultiLoader<T, K> {
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 * @param setName The name of the set.
 	 */
-	public MultiLoader<T, K> set(String setName) {
+	public MultiLoader<T, K> setName(String setName) {
 		this.setName = setName;
 		return this;
 	}

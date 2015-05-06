@@ -78,7 +78,7 @@ public class MultiKeyDeleter{
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 * @param setName The name of the set.
 	 */
-	public MultiKeyDeleter set(String setName) {
+	public MultiKeyDeleter setName(String setName) {
 		this.setName = setName;
 		return this;
 	}

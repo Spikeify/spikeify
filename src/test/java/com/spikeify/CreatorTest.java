@@ -58,7 +58,7 @@ public class CreatorTest {
 		// reload entity and check that only two properties were updated
 		// we did not provide namespace on purpose - let default kick in
 		EntityOne reloaded = sfy.get(EntityOne.class)
-				.set(setName)
+				.setName(setName)
 				.key(userKey1)
 				.now();
 
@@ -105,13 +105,13 @@ public class CreatorTest {
 		Map<Key, Object> saveKeys = sfy
 				.createAll(new Long[]{userKey1, userKey2}, new Object[]{entity1, entity2})
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		// reload entity and check that only two properties were updated
 		Map<Long, EntityOne> reloaded = sfy.getAll(EntityOne.class, userKey1, userKey2)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		Assert.assertEquals(2, saveKeys.size());
@@ -137,12 +137,12 @@ public class CreatorTest {
 
 		sfy.create(userKey1, entity)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		sfy.create(userKey1, entity)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 	}
 
@@ -168,7 +168,7 @@ public class CreatorTest {
 		Long saveKey = sfy
 				.create(userKey1, entity)
 				.namespace(namespace)
-				.set(EntityOne.class.getSimpleName()) // use class name as SetName
+				.setName(EntityOne.class.getSimpleName()) // use class name as SetName
 				.now();
 
 		// reload entity and check that only two properties were updated

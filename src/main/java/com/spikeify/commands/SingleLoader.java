@@ -62,7 +62,7 @@ public class SingleLoader<T> {
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 * @param setName The name of the set.
 	 */
-	public SingleLoader<T> set(String setName) {
+	public SingleLoader<T> setName(String setName) {
 		this.setName = setName;
 		return this;
 	}

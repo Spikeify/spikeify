@@ -84,7 +84,7 @@ public class SingleKeyUpdater<T, K> {
 	 *
 	 * @param setName The name of the set.
 	 */
-	public SingleKeyUpdater<T, K> set(String setName) {
+	public SingleKeyUpdater<T, K> setName(String setName) {
 		this.setName = setName;
 		return this;
 	}

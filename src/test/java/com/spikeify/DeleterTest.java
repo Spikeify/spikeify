@@ -50,7 +50,7 @@ public class DeleterTest {
 		// we did not provide namespace on purpose - let default kick in
 		Long saveKey = sfy
 				.create(userKeyLong, entity)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		Key deleteKey = new Key(namespace, setName, userKeyLong);
@@ -80,10 +80,10 @@ public class DeleterTest {
 		String saveKey = sfy
 				.create(userKeyString, entity)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
-		sfy.delete(userKeyString).namespace(namespace).set(setName).now();
+		sfy.delete(userKeyString).namespace(namespace).setName(setName).now();
 
 		Policy policy = new Policy();
 		policy.sendKey = true;

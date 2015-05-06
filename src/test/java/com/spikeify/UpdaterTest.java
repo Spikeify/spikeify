@@ -156,7 +156,7 @@ public class UpdaterTest {
 		Long saveKey = sfy
 				.update(userKey1, entity)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		// delete entity by hand
@@ -172,13 +172,13 @@ public class UpdaterTest {
 
 		sfy.update(userKey1, entity)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.now();
 
 		// reload entity and check that only two properties were updated
 		EntityOne reloaded = sfy.get(EntityOne.class)
 				.namespace(namespace)
-				.set(setName)
+				.setName(setName)
 				.key(userKey1)
 				.now();
 
@@ -332,7 +332,7 @@ public class UpdaterTest {
 		Key key2 = new Key(namespace, setName, userKey2);
 
 		// multi-get
-		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class, key1, key2).namespace(namespace).set(setName).now();
+		Map<Key, EntityOne> result = sfy.getAll(EntityOne.class, key1, key2).namespace(namespace).setName(setName).now();
 
 		Assert.assertEquals(2, result.size());
 		Assert.assertEquals(entity1, result.get(key1));

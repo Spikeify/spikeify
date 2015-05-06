@@ -80,7 +80,7 @@ public class SingleKeyDeleter<T> {
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 * @param setName The name of the set.
 	 */
-	public SingleKeyDeleter<T> set(String setName) {
+	public SingleKeyDeleter<T> setName(String setName) {
 		this.setName = setName;
 		return this;
 	}
