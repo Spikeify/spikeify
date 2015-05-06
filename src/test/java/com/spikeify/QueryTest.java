@@ -49,7 +49,7 @@ public class QueryTest {
 			sfy.create(ent).now();
 		}
 
-		EntitySet<EntityOne> entities = sfy.query(EntityOne.class)
+		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
 				.indexName(setName + "_index")
 				.setName(setName)
 				.setFilters(Filter.equal("two", "content"))
@@ -63,7 +63,7 @@ public class QueryTest {
 		Assert.assertEquals(10, count);
 
 
-		EntitySet<EntityOne> entities2 = sfy.query(EntityOne.class)
+		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
 				.indexName(setName + "_index")
 				.setName(setName)
 				.setFilters(Filter.equal("two", "content"))

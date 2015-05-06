@@ -7,7 +7,7 @@ import com.aerospike.client.query.RecordSet;
 
 import java.util.Iterator;
 
-public class EntitySet<T> implements Iterable<T> {
+public class ResultSet<T> implements Iterable<T> {
 
 	private final ClassMapper<T> mapper;
 	private final ClassConstructor classConstructor;
@@ -17,7 +17,7 @@ public class EntitySet<T> implements Iterable<T> {
 	private Boolean hasNext;
 	private T nextRecord;
 
-	protected EntitySet(ClassMapper<T> mapper, ClassConstructor classConstructor,
+	protected ResultSet(ClassMapper<T> mapper, ClassConstructor classConstructor,
 	                    RecordsCache recordsCache, RecordSet recordSet) {
 		this.mapper = mapper;
 		this.classConstructor = classConstructor;

@@ -260,6 +260,14 @@ public interface Spikeify {
 	<T> T map(Class<T> type, Key key, Record record);
 
 	/**
+	 * A helper method that gets the Key of the Record that the annotated object maps to.
+	 *
+	 * @param object An annotated object containing at least @UserKey annotation.
+	 * @return Key of the Record that given object maps to.
+	 */
+	<T> Key key(T object);
+
+	/**
 	 * Delete all records with given SetName.
 	 *
 	 * @param namespace The namespace of the records to delete.

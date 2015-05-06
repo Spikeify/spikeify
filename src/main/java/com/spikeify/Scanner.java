@@ -63,7 +63,7 @@ public class Scanner<T> {
 		return this;
 	}
 
-	public EntitySet<T> now() {
+	public ResultSet<T> now() {
 
 		collectMetaData();
 
@@ -75,7 +75,7 @@ public class Scanner<T> {
 
 		RecordSet recordSet = synClient.query(policy, statement);
 
-		return new EntitySet<>(mapper, classConstructor, recordsCache, recordSet);
+		return new ResultSet<>(mapper, classConstructor, recordsCache, recordSet);
 	}
 
 	protected void collectMetaData() {
