@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 public class QueryTest {
@@ -129,6 +130,48 @@ public class QueryTest {
 
 		// query should return 10 records
 		Assert.assertEquals(10, count);
+	}
+
+	@Test
+	public void testListQuery() {
+
+		String stringListIndex = "index_list_string_2";
+		String binString = "nine";
+
+		client.createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
+
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(1000, setName);
+
+		int count = 0;
+		for (EntityOne entity : entities.values()) {
+			entity.nine = new ArrayList<>();
+
+			// subset of records have predictable bin values - so they can be found by query
+			if (count % 20 == 0) {
+				entity.nine.add("content"); // fixed string
+			}
+			entity.nine.add(TestUtils.randomWord());
+			entity.nine.add(TestUtils.randomWord());
+			sfy.create(entity.userId, entity).setName(setName).now();
+
+			count++;
+		}
+
+		ResultSet<EntityOne> results = sfy
+				.query(EntityOne.class)
+				.setName(setName)
+				.indexName("krneki")
+				.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"))
+				.now();
+
+
+		int resultCount = 0;
+		for (EntityOne result : results) {
+			resultCount++;
+		}
+
+		// query should return 10 records
+		Assert.assertEquals(50, resultCount);
 	}
 
 }

@@ -23,7 +23,7 @@ public class EntityOne {
 	private byte six;
 	public boolean seven;
 	public Date eight;
-	public List nine;
+	public List<String> nine;
 	public Map ten;
 	public EntityEnum eleven;
 	public Set twelve;
