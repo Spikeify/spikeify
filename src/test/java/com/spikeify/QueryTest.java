@@ -152,7 +152,11 @@ public class QueryTest {
 			}
 			entity.nine.add(TestUtils.randomWord());
 			entity.nine.add(TestUtils.randomWord());
-			sfy.create(entity.userId, entity).setName(setName).now();
+			if (count % 3 == 0) {
+				sfy.create(entity).now();
+			} else {
+				sfy.create(entity.userId, entity).setName(setName).now();
+			}
 
 			count++;
 		}

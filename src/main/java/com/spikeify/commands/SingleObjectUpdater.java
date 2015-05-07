@@ -9,6 +9,7 @@ import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -100,7 +101,14 @@ public class SingleObjectUpdater<T> {
 		Bin[] bins = new Bin[changedProps.size()];
 		int position = 0;
 		for (String propName : changedProps) {
-			bins[position++] = new Bin(propName, props.get(propName));
+			Object value = props.get(propName);
+			if (value instanceof List<?>) {
+				bins[position++] = new Bin(propName, (List) value);
+			} else if (value instanceof Map<?, ?>) {
+				bins[position++] = new Bin(propName, (Map) value);
+			} else {
+				bins[position++] = new Bin(propName, value);
+			}
 		}
 
 		// must be set so that user key can be retrieved in queries
