@@ -199,4 +199,7 @@ public class ClassMapper<TYPE> {
 	}
 
 
+	public String getBinName(String fieldName) {
+		return fieldName;
+	}
 }

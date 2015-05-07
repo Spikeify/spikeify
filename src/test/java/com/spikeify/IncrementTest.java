@@ -38,11 +38,11 @@ public class IncrementTest {
 	public void testEntityIncrement() {
 
 		// create record
-		EntityOne ent = TestUtils.randomEntityOne(setName);
+		final EntityOne ent = TestUtils.randomEntityOne(setName);
 		ent.one = 0;
 		final Key key = sfy.create(ent).now();
 
-		ExecutorService executor = Executors.newFixedThreadPool(5, Executors.defaultThreadFactory());
+		ExecutorService executor = Executors.newFixedThreadPool(20, Executors.defaultThreadFactory());
 		List<Future> futures = new ArrayList<>();
 
 		int increaseCount = 100;
@@ -54,7 +54,7 @@ public class IncrementTest {
 				@Override
 				public void run() {
 					for (int i = 0; i < innerIncrease; i++) {
-						sfy.add(key, "one", 1);  // increment field 'one' by +1
+						sfy.command(EntityOne.class).setName(setName).key(ent.userId).add("one", 1).now();  // decrement field 'one' by -1
 					}
 				}
 			});

@@ -221,12 +221,10 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public void add(Key key, String binName, int value) {
-		WritePolicy writePolicy = new WritePolicy();
-		writePolicy.recordExistsAction = RecordExistsAction.UPDATE_ONLY;
-		Bin bin = new Bin(binName, value);
-		synClient.add(writePolicy, key, bin);
+	public SingleKeyCommander command(Class type) {
+		return new SingleKeyCommander(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace);
 	}
+
 
 	@Override
 	public <T> T map(Class<T> type, Key key, Record record) {

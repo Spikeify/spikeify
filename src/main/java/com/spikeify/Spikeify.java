@@ -237,23 +237,17 @@ public interface Spikeify {
 	<T> Scanner<T> query(Class<T> type);
 
 	/**
-	 * Adds an integer to a bin. This operation is synchronous and atomic.
-	 * Operation expects that record with given Key already exists, otherwise throws an error.
+	 * Starts a command chain to execute a series of atomic commands on a single Record.
 	 *
-	 * <br/><br/> For more atomic operations use AerospikeClient directly.
-	 * AerospikeClient can be also accessed via SpikeifyService.getClient().
-	 *
-	 * @param key     A {@link Key} of the record with a Bin to increment.
-	 * @param binName name of the bin to add to.
-	 * @param value   integer value to add to existing bin value.
+	 * @param type The mapped class, used to derive namespace & setName.
 	 */
-	void add(Key key, String binName, int value);
+	<T> SingleKeyCommander<T> command(Class<T> type);
 
 	/**
 	 * A helper method that directly maps Record to Java object.
 	 *
-	 * @param type A Class to map to.
-	 * @param key Key used to get the Record from DB.
+	 * @param type   A Class to map to.
+	 * @param key    Key used to get the Record from DB.
 	 * @param record A Record to be mapped.
 	 * @return Instance of a 'type' with fields mapped to Record bins.
 	 */
