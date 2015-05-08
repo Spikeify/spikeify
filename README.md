@@ -7,5 +7,10 @@ Spikeify is a thin wrapper around Aerospike's native Java client library. It has
  - Has a simple command-chain API for quick one-line access to most functionality.
  - Does not try to abstract or hide a native client library, but rather extend it. All functions of the underlying client lib can be  used concurrently with Spikeify.
 
-Read more about it in the [Wiki](https://github.com/Spikeify/spikeify/wiki).
+Read more about it in the [Basic Usage](https://github.com/Spikeify/spikeify/wiki/Basic-Usage).
 
+Status: Spikeify is currently in Alpha, which means that API can still change. We plan to freeze the API and enter beta by the end of May '15.
+
+What works: object-record mapping, basic synchronous commands (get, create, update, delete, query, add/append/prepend) and transactions are working.
+
+What is not available yet: async operations, automatic index creation, custom field serializers, expiration field mapping queries on fload/double values...
