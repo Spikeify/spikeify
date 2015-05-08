@@ -4,9 +4,7 @@ import com.aerospike.client.*;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spikeify.entity.EntityEnum;
-import com.spikeify.entity.EntityOne;
-import com.spikeify.entity.EntitySub;
+import com.spikeify.entity.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -196,4 +194,18 @@ public class LoaderTest {
 		Assert.assertEquals(loaded, loadedNative);
 	}
 
+
+	@Test(expected = SpikeifyError.class)
+	public void mapTooLongFieldName() {
+		EntityTooLongFieldName ent = new EntityTooLongFieldName();
+		ent.thisIsAFieldWithATooLongName = "something";
+		sfy.create(123l, ent).now();
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void mapTooLongBinName() {
+		EntityTooLongBinName ent = new EntityTooLongBinName();
+		ent.thisIsAFieldWithATooLongName = "something";
+		sfy.create(123l, ent).now();
+	}
 }
