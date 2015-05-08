@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.spikeify</groupId>
     <artifactId>core</artifactId>
-    <version>0.1-alpha-3</version>
+    <version>0.1-alpha-7</version>
     <packaging>jar</packaging>
 
     <name>Spikeify</name>
@@ -93,8 +93,9 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.3</version>
                 <configuration>
                     <encoding>UTF-8</encoding>
                     <source>1.7</source>
@@ -107,12 +108,12 @@
                 <version>1.6.5</version>
                 <extensions>true</extensions>
                 <configuration>
-                    <!-- for production deployment
+                    <!-- for production deployment -->
                     <serverId>ossrh</serverId>
                     <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    -->
+                    <!-- end for production deployment -->
                     <!-- for local deployment -->
-                    <serverId>local_deployment</serverId>
+                    <!-- <serverId>local_deployment</serverId> -->
                     <!-- end of for local deployment -->
                     <autoReleaseAfterClose>true</autoReleaseAfterClose>
                 </configuration>
@@ -133,7 +134,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.2</version>
+                <version>2.10.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>

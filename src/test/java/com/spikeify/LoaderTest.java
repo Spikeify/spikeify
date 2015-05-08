@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.EntityEnum;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.entity.EntitySub;
-import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

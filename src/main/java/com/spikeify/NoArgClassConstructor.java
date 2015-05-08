@@ -26,7 +26,7 @@ public class NoArgClassConstructor implements ClassConstructor {
 	 */
 	public static <T> Constructor<T> getNoArgConstructor(Class<T> clazz) {
 		try {
-			Constructor<T> ctor = clazz.getDeclaredConstructor(new Class[0]);
+			Constructor<T> ctor = clazz.getDeclaredConstructor();
 			ctor.setAccessible(true);
 			return ctor;
 		} catch (NoSuchMethodException e) {

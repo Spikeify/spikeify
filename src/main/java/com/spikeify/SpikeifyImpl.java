@@ -3,8 +3,6 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.command.ParticleType;
-import com.aerospike.client.policy.RecordExistsAction;
-import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.commands.*;
 
 import java.util.ConcurrentModificationException;

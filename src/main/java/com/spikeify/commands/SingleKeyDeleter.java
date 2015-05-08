@@ -9,9 +9,6 @@ import com.spikeify.SpikeifyError;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * A command chain for deleting object from database.
  * This class is not intended to be instantiated by user.

@@ -29,7 +29,7 @@ public class AerospikeClientMock implements IAerospikeClient {
 
 	public final String defaultNamespace;
 
-	private List<String> nodes = Arrays.asList("node1");
+	private List<String> nodes = Collections.singletonList("node1");
 
 	public AerospikeClientMock(String defaultNamespace) {
 		this.defaultNamespace = defaultNamespace == null ? "<none>" : defaultNamespace;
