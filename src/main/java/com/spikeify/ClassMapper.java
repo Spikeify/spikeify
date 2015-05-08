@@ -3,6 +3,7 @@ package com.spikeify;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +23,7 @@ public class ClassMapper<TYPE> {
 	private final FieldMapper userKeyFieldMapper;
 	private final FieldMapper anyPropertyMapper;
 
-	public ClassMapper(Class<TYPE> clazz) {
+	public ClassMapper(Class<TYPE> clazz) {List<FieldMapper> fieldMappers;
 		this.type = clazz;
 
 		// parse @Namespace class annotation
@@ -33,7 +34,12 @@ public class ClassMapper<TYPE> {
 		SetName setNameAnnotation = clazz.getAnnotation(SetName.class);
 		classSetName = setNameAnnotation != null ? setNameAnnotation.value() : null;
 
-		mappers = MapperUtils.getFieldMappers(clazz);
+		fieldMappers = MapperUtils.getFieldMappers(clazz);
+		if (fieldMappers == null) {
+			fieldMappers = new ArrayList<>();
+		}
+		fieldMappers.addAll(MapperUtils.getJsonMappers(clazz));
+		mappers = fieldMappers;
 
 		generationFieldMapper = MapperUtils.getGenerationFieldMapper(clazz);
 		expirationFieldMapper = MapperUtils.getExpirationFieldMapper(clazz);

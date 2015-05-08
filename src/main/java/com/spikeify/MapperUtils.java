@@ -31,8 +31,9 @@ public class MapperUtils {
 			new SetConverterFactory(),
 			new ListConverter(),
 			new MapConverter(),
-			new EnumConverterFactory(),
-			new JsonConverterFactory()
+			new EnumConverterFactory()
+//			,
+//			new JsonConverterFactory()
 	);
 
 	public static Converter findConverter(Class fieldType) {
@@ -63,6 +64,20 @@ public class MapperUtils {
 		}
 
 		return mappers;
+	}
+
+	public static List<FieldMapper> getJsonMappers(Class clazz) {
+		List<FieldMapper> jsonMappers = new ArrayList<FieldMapper>();
+
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(AsJson.class) != null) {
+				Class fieldType = field.getType();
+				jsonMappers.add(new FieldMapper(field.getName(), new JsonConverter(fieldType), field));
+			}
+
+		}
+
+		return jsonMappers;
 	}
 
 	public static FieldMapper getGenerationFieldMapper(Class clazz) {
@@ -153,6 +168,7 @@ public class MapperUtils {
 				&& !field.isAnnotationPresent(SetName.class)
 				&& !field.isAnnotationPresent(Namespace.class)
 				&& !field.isAnnotationPresent(AnyProperty.class)
+				&& !field.isAnnotationPresent(AsJson.class)
 				&& !field.isAnnotationPresent(Ignore.class)
 				&& (field.getModifiers() & IGNORED_FIELD_MODIFIERS) == 0
 				&& !field.isSynthetic();
@@ -172,4 +188,5 @@ public class MapperUtils {
 		}
 		return null;
 	}
+
 }
