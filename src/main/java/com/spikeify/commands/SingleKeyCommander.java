@@ -17,6 +17,7 @@ import java.util.List;
  * A command chain to execute a series of atomic commands on a single Record.
  * This class is not intended to be instantiated by user.
  */
+@SuppressWarnings({"SameParameterValue", "WeakerAccess"})
 public class SingleKeyCommander<T> {
 
 	/**
@@ -43,19 +44,19 @@ public class SingleKeyCommander<T> {
 	protected String stringKey;
 	protected Long longKey;
 	protected Key key;
-	protected Class<T> type;
-	protected IAerospikeClient synClient;
-	protected IAsyncClient asyncClient;
-	protected ClassConstructor classConstructor;
-	protected RecordsCache recordsCache;
+	protected final Class<T> type;
+	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asyncClient;
+	protected final ClassConstructor classConstructor;
+	protected final RecordsCache recordsCache;
 	protected WritePolicy policy;
-	protected ClassMapper<T> mapper;
-	protected List<Operation> operations = new ArrayList<>();
+	protected final ClassMapper<T> mapper;
+	protected final List<Operation> operations = new ArrayList<>();
 
 	/**
 	 * Sets the key of the record to be updated.
 	 *
-	 * @param userKey
+	 * @param userKey A user key of the record to be updated.
 	 */
 	public SingleKeyCommander key(String userKey) {
 		this.stringKey = userKey;
@@ -67,7 +68,7 @@ public class SingleKeyCommander<T> {
 	/**
 	 * Sets the key of the record to be updated.
 	 *
-	 * @param userKey
+	 * @param userKey A user key of the record to be updated.
 	 */
 	public SingleKeyCommander key(Long userKey) {
 		this.longKey = userKey;
@@ -79,7 +80,7 @@ public class SingleKeyCommander<T> {
 	/**
 	 * Sets the key of the record to be updated.
 	 *
-	 * @param key
+	 * @param key A Key of the record to be updated.
 	 */
 	public SingleKeyCommander key(Key key) {
 		this.key = key;

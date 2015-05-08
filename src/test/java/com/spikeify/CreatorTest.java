@@ -2,7 +2,6 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.spikeify.entity.EntityOne;
-import com.spikeify.mock.AerospikeClientMock;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,19 +9,18 @@ import org.junit.Test;
 
 import java.util.*;
 
+@SuppressWarnings({"unchecked", "UnusedAssignment"})
 public class CreatorTest {
 
-	private Long userKey1 = new Random().nextLong();
-	private Long userKey2 = new Random().nextLong();
-	private String namespace = "test";
-	private String setName = "newTestSet";
+	private final Long userKey1 = new Random().nextLong();
+	private final Long userKey2 = new Random().nextLong();
+	private final String namespace = "test";
+	private final String setName = "newTestSet";
 	private Spikeify sfy;
-	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = new AerospikeClientMock(namespace);
 		sfy = SpikeifyService.sfy();
 	}
 
@@ -31,6 +29,7 @@ public class CreatorTest {
 		sfy.truncateNamespace(namespace);
 	}
 
+	@SuppressWarnings("UnusedAssignment")
 	@Test
 	public void simpleCreate() {
 

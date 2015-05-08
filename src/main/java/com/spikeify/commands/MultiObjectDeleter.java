@@ -15,6 +15,7 @@ import java.util.Map;
  * A command chain for deleting multiple objects from database.
  * This class is not intended to be instantiated by user.
  */
+@SuppressWarnings("WeakerAccess")
 public class MultiObjectDeleter {
 
 	/**
@@ -32,9 +33,9 @@ public class MultiObjectDeleter {
 		}
 	}
 
-	protected Map<Object, Key> data = new HashMap<>(10);
+	protected final Map<Object, Key> data = new HashMap<>(10);
 
-	private String defaultNamespace;
+	private final String defaultNamespace;
 	protected final IAerospikeClient synClient;
 	protected final IAsyncClient asyncClient;
 	private final RecordsCache recordsCache;

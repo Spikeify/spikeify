@@ -4,6 +4,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class FieldMapper<F, P> {
 
 	public FieldMapper(String propName, Converter<F, P> converter, Field field) {
@@ -41,9 +42,9 @@ public class FieldMapper<F, P> {
 		}
 	}
 
-	public String propName;
+	public final String propName;
 	//	public Class<P> propType;
-	public Converter<F, P> converter;
+	public final Converter<F, P> converter;
 
 	//	public Class<F> fieldType;
 	public Field field;

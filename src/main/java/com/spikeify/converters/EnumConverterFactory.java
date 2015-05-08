@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class EnumConverterFactory implements ConverterFactory {
 
-	private static Map<Type, EnumConverter> cachedConverters = new ConcurrentHashMap<>();
+	private static final Map<Type, EnumConverter> cachedConverters = new ConcurrentHashMap<>();
 
 	@Override
 	public Converter init(Class type) {

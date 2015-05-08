@@ -7,6 +7,7 @@ import com.spikeify.commands.*;
 /**
  * This is the main class of Spikeify. All command chains start from this class.
  */
+@SuppressWarnings("SameParameterValue")
 public interface Spikeify {
 
 	/**
@@ -300,5 +301,6 @@ public interface Spikeify {
 	 *                hence the need fot this set of operations to be IDEMPOTENT.
 	 * @return R The result of the work performed by Work.run() method.
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	<R> R transact(int retries, Work<R> work);
 }

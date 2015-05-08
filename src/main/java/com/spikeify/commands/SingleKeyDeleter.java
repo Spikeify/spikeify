@@ -14,6 +14,7 @@ import com.spikeify.annotations.SetName;
  * This class is not intended to be instantiated by user.
  * @param <T>
  */
+@SuppressWarnings("WeakerAccess")
 public class SingleKeyDeleter<T> {
 
 	/**
@@ -108,6 +109,7 @@ public class SingleKeyDeleter<T> {
 	 *
 	 * @return whether record existed on server before deletion
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	public boolean now() {
 
 		collectKeys();

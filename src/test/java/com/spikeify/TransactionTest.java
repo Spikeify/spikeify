@@ -17,8 +17,8 @@ import java.util.concurrent.*;
 public class TransactionTest {
 
 	private final Random random = new Random();
-	private String namespace = "test";
-	private String setName = "txSet";
+	private final String namespace = "test";
+	private final String setName = "txSet";
 	private Spikeify sfy;
 	private IAerospikeClient client;
 

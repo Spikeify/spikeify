@@ -17,12 +17,14 @@ import java.util.*;
  * A command chain for creating or updating multiple objects in database.
  * This class is not intended to be instantiated by user.
  */
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiKeyUpdater {
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Key[], Object[])} (Object...)} method.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Key[] keys, Object[] objects) {
@@ -44,6 +46,7 @@ public class MultiKeyUpdater {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Long[], Object[])} (Object...)} method.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Long[] keys, Object[] objects) {
@@ -65,6 +68,7 @@ public class MultiKeyUpdater {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(String[], Object[])} (Object...)} or  method.
 	 */
+	@SuppressWarnings("SameParameterValue")
 	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       String[] keys, Object[] objects) {
@@ -89,9 +93,9 @@ public class MultiKeyUpdater {
 	protected List<Long> longKeys = new ArrayList<>();
 	protected List<Key> keys = new ArrayList<>(10);
 	private final boolean isTx;
-	protected IAerospikeClient synClient;
-	protected IAsyncClient asyncClient;
-	protected RecordsCache recordsCache;
+	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asyncClient;
+	protected final RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy policy;
 

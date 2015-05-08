@@ -13,7 +13,7 @@ import java.util.Set;
  */
 public class RecordsCache {
 
-	private ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>> cache =
+	private final ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>> cache =
 			new ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>>() {
 				@Override
 				protected Map<Key, Map<String, String>> initialValue() {
@@ -26,8 +26,8 @@ public class RecordsCache {
 	/**
 	 * Insert a set of properties linked to a Key
 	 *
-	 * @param key
-	 * @param properties
+	 * @param key The Key
+	 * @param properties Object properties
 	 */
 	public void insert(Key key, Map<String, Object> properties) {
 
@@ -46,7 +46,7 @@ public class RecordsCache {
 	/**
 	 * Remove a set of properties linked to a Key
 	 *
-	 * @param key
+	 * @param key The Key
 	 */
 	public void remove(Key key) {
 		cache.get().remove(key);
@@ -56,8 +56,8 @@ public class RecordsCache {
 	 * Updates a set of possibly existing properties.
 	 * Returns changes between new and existing property sets.
 	 *
-	 * @param key
-	 * @param newProperties
+	 * @param key The Key
+	 * @param newProperties New object properties
 	 * @return Changed properties.
 	 */
 	public Set<String> update(Key key, Map<String, Object> newProperties) {

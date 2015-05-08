@@ -13,6 +13,7 @@ import java.util.Set;
 /**
  * A command chain for fetching various information from database.
  */
+@SuppressWarnings("WeakerAccess")
 public class InfoFetcher {
 
 	protected final IAerospikeClient synClient;
@@ -29,8 +30,8 @@ public class InfoFetcher {
 
 	/**
 	 * Returns the number of records in given namespace and set.
-	 * @param namespace
-	 * @param setName
+	 * @param namespace The namespace.
+	 * @param setName The name of the set.
 	 * @return number of records in given namespace and set
 	 */
 	public int getRecordCount(String namespace, String setName) {
@@ -69,7 +70,7 @@ public class InfoFetcher {
 	 */
 	public Map<String /** set **/, String /** namespace **/> getSets() {
 
-		Map<String, String> setNames = new HashMap();
+		Map<String, String> setNames = new HashMap<>();
 
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {

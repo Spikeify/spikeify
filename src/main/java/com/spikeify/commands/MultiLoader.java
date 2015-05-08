@@ -17,6 +17,7 @@ import java.util.*;
  * @param <T>
  * @param <K>
  */
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiLoader<T, K> {
 
 	/**
@@ -57,8 +58,8 @@ public class MultiLoader<T, K> {
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 	protected BatchPolicy policy;
-	protected ClassMapper<T> mapper;
-	protected Class<T> type;
+	protected final ClassMapper<T> mapper;
+	protected final Class<T> type;
 	protected KeyType keyType;
 
 	/**
@@ -153,7 +154,7 @@ public class MultiLoader<T, K> {
 						break;
 				}
 
-				// set metafields on the entity: @Namespace, @SetName, @Expiration..
+				// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
 				mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 				// set field values

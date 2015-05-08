@@ -15,6 +15,7 @@ import java.util.*;
  * A command chain for deleting multiple objects from database.
  * This class is not intended to be instantiated by user.
  */
+@SuppressWarnings("WeakerAccess")
 public class MultiKeyDeleter{
 
 	/**
@@ -86,7 +87,7 @@ public class MultiKeyDeleter{
 	/**
 	 * Sets the keys of the records to be loaded.
 	 *
-	 * @param keys
+	 * @param keys Array of keys
 	 */
 	public MultiKeyDeleter key(String... keys) {
 		this.stringKeys = keys;
@@ -98,7 +99,7 @@ public class MultiKeyDeleter{
 	/**
 	 * Sets the keys of the records to be loaded.
 	 *
-	 * @param keys
+	 * @param keys Array of keys
 	 */
 	public MultiKeyDeleter key(Long... keys) {
 		this.longKeys = keys;
@@ -110,7 +111,7 @@ public class MultiKeyDeleter{
 	/**
 	 * Sets the keys of the records to be loaded.
 	 *
-	 * @param keys
+	 * @param keys Array of keys
 	 */
 	public MultiKeyDeleter key(Key... keys) {
 		this.keys = Arrays.asList(keys);

@@ -15,6 +15,7 @@ import java.util.*;
  * A command chain for creating or updating multiple objects in database.
  * This class is not intended to be instantiated by user.
  */
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiObjectUpdater {
 
 	private final Object[] objects;
@@ -35,11 +36,11 @@ public class MultiObjectUpdater {
 		this.objects = objects;
 	}
 
-	protected String namespace;
-	private boolean isTx;
-	protected IAerospikeClient synClient;
-	protected IAsyncClient asyncClient;
-	protected RecordsCache recordsCache;
+	protected final String namespace;
+	private final boolean isTx;
+	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asyncClient;
+	protected final RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy policy;
 

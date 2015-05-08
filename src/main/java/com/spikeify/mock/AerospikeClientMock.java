@@ -19,28 +19,30 @@ import com.spikeify.SpikeifyError;
 
 import java.util.*;
 
+@SuppressWarnings({"WeakerAccess", "UnusedAssignment"})
 public class AerospikeClientMock implements IAerospikeClient {
 
-	public Policy readPolicyDefault = new Policy();
-	public WritePolicy writePolicyDefault = new WritePolicy();
+	public final Policy readPolicyDefault = new Policy();
+	public final WritePolicy writePolicyDefault = new WritePolicy();
 	public ScanPolicy scanPolicyDefault = new ScanPolicy();
 	public QueryPolicy queryPolicyDefault = new QueryPolicy();
 	public BatchPolicy batchPolicyDefault = new BatchPolicy();
 
 	public final String defaultNamespace;
 
-	private List<String> nodes = Collections.singletonList("node1");
+	private final List<String> nodes = Collections.singletonList("node1");
 
 	public AerospikeClientMock(String defaultNamespace) {
 		this.defaultNamespace = defaultNamespace == null ? "<none>" : defaultNamespace;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	public static class Rec {
 		public int generation;
 		public int expires;
 		public Long userKeyLong;
 		public String userKeyString;
-		Map<String /**property name**/, Object> bins = new HashMap<>();
+		final Map<String /**property name**/, Object> bins = new HashMap<>();
 
 		public Map<String, Object> getBins() {
 			return bins;

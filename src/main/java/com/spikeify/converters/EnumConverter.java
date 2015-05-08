@@ -5,9 +5,10 @@ import com.spikeify.TypeUtils;
 
 import java.lang.reflect.Type;
 
+@SuppressWarnings("unchecked")
 public class EnumConverter<E extends Enum<E>> implements Converter<E, String> {
 
-	private Class<E> enumClass;
+	private final Class<E> enumClass;
 
 	public EnumConverter(Type type) {
 		enumClass = (Class<E>) TypeUtils.erase(type);

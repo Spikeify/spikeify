@@ -9,10 +9,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public class SetConverter<T> implements Converter<Set<T>, List<T>> {
 
-	private Class<? extends Set> setType;
-	private Constructor<? extends Set> noArgConstructor;
+	private final Class<? extends Set> setType;
+	private final Constructor<? extends Set> noArgConstructor;
 
 	public SetConverter(Class<? extends Set> setType) {
 		if(setType.equals(Set.class)){
@@ -28,7 +29,7 @@ public class SetConverter<T> implements Converter<Set<T>, List<T>> {
 	}
 
 	public Set<T> fromProperty(List<T> list) {
-		Set set = null;
+		Set set;
 		try {
 			set = noArgConstructor.newInstance();
 		} catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {

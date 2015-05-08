@@ -16,7 +16,7 @@ public class JsonConverter implements Converter<Object, String> {
 		}
 	};
 
-	private Class type;
+	private final Class type;
 
 	public JsonConverter(Class type) {
 		this.type = type;

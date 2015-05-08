@@ -16,8 +16,8 @@ import java.util.Random;
 
 public class QueryTest {
 
-	private String namespace = "test";
-	private String setName = "testSetQuery";
+	private final String namespace = "test";
+	private final String setName = "testSetQuery";
 	private Spikeify sfy;
 	private IAerospikeClient client;
 
@@ -36,8 +36,7 @@ public class QueryTest {
 	@Test
 	public void testEntityQuery() {
 
-		client.createIndex(new Policy(), namespace, setName, setName + "_index", "second", IndexType.STRING);
-		client.createIndex(new Policy(), namespace, setName, setName + "_index_long", "one", IndexType.NUMERIC);
+		client.createIndex(new Policy(), namespace, setName, setName + "_index", "two", IndexType.STRING);
 
 		// create records
 		for (int i = 0; i < 100; i++) {
@@ -53,7 +52,7 @@ public class QueryTest {
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
 				.indexName(setName + "_index")
 				.setName(setName)
-				.setFilters(Filter.equal("second", "content")) // explicitly set bin name via @BinName annotation
+				.setFilters(Filter.equal("two", "content"))
 				.now();
 
 		int count = 0;
@@ -67,7 +66,7 @@ public class QueryTest {
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
 				.indexName(setName + "_index")
 				.setName(setName)
-				.setFilters(Filter.equal("second", "content")) // explicitly set bin name via @BinName annotation
+				.setFilters(Filter.equal("two", "content"))
 				.now();
 
 		int count2 = 0;
@@ -164,7 +163,7 @@ public class QueryTest {
 		ResultSet<EntityOne> results = sfy
 				.query(EntityOne.class)
 				.setName(setName)
-				.indexName("krneki")
+				.indexName(stringListIndex)
 				.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"))
 				.now();
 

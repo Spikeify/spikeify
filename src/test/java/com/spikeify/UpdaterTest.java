@@ -15,12 +15,13 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.*;
 
+@SuppressWarnings({"unchecked", "UnusedAssignment"})
 public class UpdaterTest {
 
-	private Long userKey1 = new Random().nextLong();
-	private Long userKey2 = new Random().nextLong();
-	private String namespace = "test";
-	private String setName = "newTestSet";
+	private final Long userKey1 = new Random().nextLong();
+	private final Long userKey2 = new Random().nextLong();
+	private final String namespace = "test";
+	private final String setName = "newTestSet";
 	private Spikeify sfy;
 	private IAerospikeClient client;
 
@@ -54,8 +55,7 @@ public class UpdaterTest {
 		entity.unmapped.put("unmap2", "unmapped string");
 		entity.unmapped.put("unmap3", 3.14d);
 
-		EntitySub sub = new EntitySub(333, "krneki", new Date(1234567l));
-		entity.sub = sub;
+		entity.sub = new EntitySub(333, "something", new Date(1234567l));
 
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -108,8 +108,7 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 		entity.eleven = EntityEnum.SECOND;
-		EntitySub sub = new EntitySub(333, "krneki", new Date(1234567l));
-		entity.sub = sub;
+		entity.sub = new EntitySub(333, "something", new Date(1234567l));
 
 		Key key1 = new Key(namespace, setName, userKey1);
 

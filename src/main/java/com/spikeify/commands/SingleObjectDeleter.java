@@ -12,6 +12,7 @@ import com.spikeify.Spikeify;
  * A command chain for deleting object from database.
  * This class is not intended to be instantiated by user.
  */
+@SuppressWarnings("WeakerAccess")
 public class SingleObjectDeleter {
 
 	/**
@@ -29,7 +30,7 @@ public class SingleObjectDeleter {
 
 	private final Object object;
 
-	private String defaultNamespace;
+	private final String defaultNamespace;
 	protected final IAerospikeClient synClient;
 	protected final IAsyncClient asyncClient;
 	private final RecordsCache recordsCache;

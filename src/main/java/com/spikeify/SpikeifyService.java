@@ -11,6 +11,7 @@ import com.aerospike.client.policy.ClientPolicy;
 /**
  * This is a helper service that provides a Spikeify instance with a default single-cluster configuration.
  */
+@SuppressWarnings({"SameParameterValue", "WeakerAccess"})
 public class SpikeifyService {
 
 	public static void globalConfig(String defaultNamespace, int port, String... urls) {
@@ -60,9 +61,9 @@ public class SpikeifyService {
 
 	/**
 	 * Creates a new instance of Spikeify with given parameters.
-	 * @param namespace
-	 * @param port
-	 * @param hosts
+	 * @param namespace Default namespace
+	 * @param port Default port
+	 * @param hosts Aerospike server hosts
 	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, int port, String... hosts) {
@@ -75,8 +76,8 @@ public class SpikeifyService {
 
 	/**
 	 * Creates a new instance of Spikeify with given parameters.
-	 * @param namespace
-	 * @param hosts
+	 * @param namespace Default namespace
+	 * @param hosts Aerospike server hosts
 	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, Host... hosts) {

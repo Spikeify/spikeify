@@ -21,9 +21,10 @@ import java.util.Set;
  *
  * @param <T>
  */
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class SingleKeyUpdater<T, K> {
 
-	private boolean isTx;
+	private final boolean isTx;
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -55,19 +56,19 @@ public class SingleKeyUpdater<T, K> {
 		}
 	}
 
-	private T object;
+	private final T object;
 	protected KeyType keyType;
 	protected String namespace;
 	protected String setName;
 	protected String stringKey;
 	protected Long longKey;
 	protected Key key;
-	protected IAerospikeClient synClient;
-	protected IAsyncClient asyncClient;
-	protected RecordsCache recordsCache;
+	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asyncClient;
+	protected final RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy policy;
-	protected ClassMapper<T> mapper;
+	protected final ClassMapper<T> mapper;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
@@ -130,6 +131,7 @@ public class SingleKeyUpdater<T, K> {
 	 * @return The key of the record. The type of the key returned depends on the way this class is instantiated.
 	 * It can be: {@link Key}, Long or String.
 	 */
+	@SuppressWarnings("ConstantConditions")
 	public K now() {
 
 		collectKeys();

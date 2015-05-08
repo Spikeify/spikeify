@@ -18,6 +18,7 @@ import java.util.List;
  * This class is not intended to be instantiated by user.
  * @param <T>
  */
+@SuppressWarnings("WeakerAccess")
 public class SingleLoader<T> {
 
 	/**
@@ -38,16 +39,16 @@ public class SingleLoader<T> {
 
 	protected String namespace;
 	protected String setName;
-	protected List<String> stringKeys = new ArrayList<>();
-	protected List<Long> longKeys = new ArrayList<>();
-	protected List<Key> keys = new ArrayList<>(10);
+	protected final List<String> stringKeys = new ArrayList<>();
+	protected final List<Long> longKeys = new ArrayList<>();
+	protected final List<Key> keys = new ArrayList<>(10);
 	protected final IAerospikeClient synClient;
 	protected final IAsyncClient asyncClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 	protected BatchPolicy policy;
-	protected ClassMapper<T> mapper;
-	protected Class<T> type;
+	protected final ClassMapper<T> mapper;
+	protected final Class<T> type;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
@@ -69,10 +70,10 @@ public class SingleLoader<T> {
 
 	/**
 	 * Sets the key of the record to be loaded.
-	 * @param key
+	 * @param userKey A user key of the record to loaded.
 	 */
-	public SingleLoader<T> key(String key) {
-		this.stringKeys.add(key);
+	public SingleLoader<T> key(String userKey) {
+		this.stringKeys.add(userKey);
 		return this;
 	}
 
@@ -166,7 +167,7 @@ public class SingleLoader<T> {
 				break;
 		}
 
-		// set metafields on the entity: @Namespace, @SetName, @Expiration..
+		// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
 		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 		// set field values

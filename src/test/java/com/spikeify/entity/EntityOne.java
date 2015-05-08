@@ -4,6 +4,7 @@ import com.spikeify.annotations.*;
 
 import java.util.*;
 
+@SuppressWarnings("WeakerAccess")
 public class EntityOne {
 
 	@UserKey
@@ -34,9 +35,9 @@ public class EntityOne {
 	public EntitySub sub;
 
 	@AnyProperty
-	public Map<String, Object> unmapped = new HashMap<>();
+	public final Map<String, Object> unmapped = new HashMap<>();
 
-	// unmappable class must be ignored
+	// un-mappable class must be ignored
 	@Ignore
 	public java.util.Calendar calendar;
 
@@ -60,6 +61,7 @@ public class EntityOne {
 	}
 
 	// below: generated equals() & hashCode() methods for easier object comparing
+	@SuppressWarnings("SimplifiableIfStatement")
 	@Override
 	public boolean equals(Object o) {
 		if (this == o) return true;

@@ -13,8 +13,8 @@ import java.util.Set;
 
 public class InfoTest {
 
-	private String namespace = "test";
-	private List<String> setNames = new ArrayList<>();
+	private final String namespace = "test";
+	private final List<String> setNames = new ArrayList<>();
 	private Spikeify sfy;
 
 	@Before

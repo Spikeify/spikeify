@@ -7,6 +7,7 @@ import com.aerospike.client.query.Filter;
 import com.aerospike.client.query.RecordSet;
 import com.aerospike.client.query.Statement;
 
+@SuppressWarnings("WeakerAccess")
 public class Scanner<T> {
 
 	protected final Class<T> type;

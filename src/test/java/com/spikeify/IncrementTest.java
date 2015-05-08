@@ -1,6 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
@@ -17,15 +16,13 @@ import java.util.concurrent.Future;
 
 public class IncrementTest {
 
-	private String namespace = "test";
-	private String setName = "testSetQuery";
+	private final String namespace = "test";
+	private final String setName = "testSetQuery";
 	private Spikeify sfy;
-	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
 	}
 

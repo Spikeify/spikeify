@@ -13,11 +13,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MapperUtils {
 
 	private static final int IGNORED_FIELD_MODIFIERS = Modifier.FINAL | Modifier.STATIC;
 
-	private static List<? extends ConverterFactory> converters = Arrays.asList(
+	private static final List<? extends ConverterFactory> converters = Arrays.asList(
 			new StringConverter(),
 			new IntegerConverter(),
 			new LongConverter(),
@@ -47,7 +48,7 @@ public class MapperUtils {
 
 	public static List<FieldMapper> getFieldMappers(Class clazz) {
 
-		List<FieldMapper> mappers = new ArrayList<FieldMapper>();
+		List<FieldMapper> mappers = new ArrayList<>();
 
 		for (Field field : clazz.getDeclaredFields()) {
 			if (mappableField(field)) {
@@ -66,7 +67,7 @@ public class MapperUtils {
 	}
 
 	public static List<FieldMapper> getJsonMappers(Class clazz) {
-		List<FieldMapper> jsonMappers = new ArrayList<FieldMapper>();
+		List<FieldMapper> jsonMappers = new ArrayList<>();
 
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(AsJson.class) != null) {
@@ -102,7 +103,6 @@ public class MapperUtils {
 	public static FieldMapper<Integer, Integer> getGenerationFieldMapper(Class clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(Generation.class) != null) {
-				Class fieldType = field.getType();
 				if (int.class.equals(field.getType()) || Integer.class.equals(field.getType())) {
 					return new FieldMapper(null, new PassThroughConverter(), field);
 				} else {

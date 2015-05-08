@@ -12,12 +12,13 @@ import org.junit.Test;
 
 import java.util.*;
 
+@SuppressWarnings("ConstantConditions")
 public class LoaderTest {
 
-	private Long userKey1 = new Random().nextLong();
-	private Long userKey2 = new Random().nextLong();
-	private String namespace = "test";
-	private String setName = "testSet";
+	private final Long userKey1 = new Random().nextLong();
+	private final Long userKey2 = new Random().nextLong();
+	private final String namespace = "test";
+	private final String setName = "testSet";
 	private Spikeify sfy;
 	private IAerospikeClient client;
 
@@ -52,7 +53,7 @@ public class LoaderTest {
 		String unmapped2 = "something";
 		Float unmapped3 = 666.6f;
 
-		EntitySub sub = new EntitySub(333, "krneki", new Date(1234567l));
+		EntitySub sub = new EntitySub(333, "something", new Date(1234567l));
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -109,7 +110,7 @@ public class LoaderTest {
 		Assert.assertEquals(Double.doubleToLongBits(unmapped3), entity.unmapped.get("unmapped3"));
 		Assert.assertEquals(sub.first, entity.sub.first);
 		Assert.assertEquals(sub.second, entity.sub.second);
-		Assert.assertNull(entity.sub.date); // JSON ignored field - deserializes to null
+		Assert.assertNull(entity.sub.date); // JSON ignored field - deserialize to null
 
 	}
 

@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 /**
  * A ClassConstructor implementation that uses no-argument constructor to instantiate objects
  */
+@SuppressWarnings("WeakerAccess")
 public class NoArgClassConstructor implements ClassConstructor {
 
 	public <T> T construct(Class<T> type) {

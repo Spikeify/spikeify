@@ -7,6 +7,7 @@ import com.aerospike.client.query.RecordSet;
 
 import java.util.Iterator;
 
+@SuppressWarnings("WeakerAccess")
 public class ResultSet<T> implements Iterable<T> {
 
 	private final ClassMapper<T> mapper;
@@ -29,7 +30,7 @@ public class ResultSet<T> implements Iterable<T> {
 		return recordSet.getKey();
 	}
 
-	private final T getObject() {
+	private T getObject() {
 
 		Record record = recordSet.getRecord();
 		Key key = recordSet.getKey();
@@ -50,7 +51,7 @@ public class ResultSet<T> implements Iterable<T> {
 				break;
 		}
 
-		// set metafields on the entity: @Namespace, @SetName, @Expiration..
+		// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
 		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 		// set field values

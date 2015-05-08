@@ -5,6 +5,7 @@ import com.spikeify.ConverterFactory;
 
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public class SetConverterFactory implements ConverterFactory {
 
 

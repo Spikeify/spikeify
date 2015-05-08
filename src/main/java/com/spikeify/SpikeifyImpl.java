@@ -9,9 +9,10 @@ import java.util.ConcurrentModificationException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings("unchecked")
 public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
-	private static Logger log = Logger.getLogger(SpikeifyImpl.class.getSimpleName());
+	private static final Logger log = Logger.getLogger(SpikeifyImpl.class.getSimpleName());
 
 	public SpikeifyImpl(IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, String defaultNamespace) {
 		this.synClient = synClient;
@@ -25,8 +26,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private final ClassConstructor classConstructor;
 	private final String defaultNamespace;
 
-	private RecordsCache recordsCache = new RecordsCache();
-	private ThreadLocal<Boolean> tlTransaction = new ThreadLocal<>();
+	private final RecordsCache recordsCache = new RecordsCache();
+	private final ThreadLocal<Boolean> tlTransaction = new ThreadLocal<>();
 
 	@Override
 	public InfoFetcher info() {
@@ -245,7 +246,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 				break;
 		}
 
-		// set metafields on the entity: @Namespace, @SetName, @Expiration..
+		// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
 		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 		// set field values

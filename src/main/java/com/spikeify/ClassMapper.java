@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unchecked")
 public class ClassMapper<TYPE> {
 
 	private final List<FieldMapper> mappers;
@@ -112,7 +113,7 @@ public class ClassMapper<TYPE> {
 
 	public Map<String, Object> getProperties(TYPE object) {
 
-		Map<String, Object> props = new HashMap<String, Object>(mappers.size());
+		Map<String, Object> props = new HashMap<>(mappers.size());
 		for (FieldMapper fieldMapper : mappers) {
 			Object propertyValue = fieldMapper.getPropertyValue(object);
 			if (propertyValue != null) {

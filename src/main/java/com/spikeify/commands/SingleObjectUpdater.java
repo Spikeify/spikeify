@@ -18,6 +18,7 @@ import java.util.Set;
  * This class is not intended to be instantiated by user.
  * @param <T>
  */
+@SuppressWarnings({"unchecked", "WeakerAccess"})
 public class SingleObjectUpdater<T> {
 
 	private final T object;
@@ -39,15 +40,15 @@ public class SingleObjectUpdater<T> {
 		this.object = object;
 	}
 
-	protected String defaultNamespace;
+	protected final String defaultNamespace;
 	protected String setName;
-	private boolean isTx;
-	protected IAerospikeClient synClient;
-	protected IAsyncClient asyncClient;
-	protected RecordsCache recordsCache;
+	private final boolean isTx;
+	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asyncClient;
+	protected final RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy policy;
-	protected ClassMapper<T> mapper;
+	protected final ClassMapper<T> mapper;
 
 
 	/**

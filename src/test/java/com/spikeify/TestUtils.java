@@ -8,13 +8,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@SuppressWarnings("WeakerAccess")
 public class TestUtils {
 
-	public static Random random = new Random();
-	public static AtomicInteger counter = new AtomicInteger();
-	public static AtomicInteger counter2 = new AtomicInteger();
+	public static final Random random = new Random();
+	public static final AtomicInteger counter = new AtomicInteger();
+	public static final AtomicInteger counter2 = new AtomicInteger();
 
-	private static String[] wordBase = ("Lorem ipsum dolor sit amet consectetur adipiscing elit Integer nec odio Praesent libero " +
+	private static final String[] wordBase = ("Lorem ipsum dolor sit amet consectetur adipiscing elit Integer nec odio Praesent libero " +
 			"Sed cursus ante dapibus diam Sed nisi Nulla quis sem at nibh elementum imperdiet Duis sagittis ipsum Praesent mauris " +
 			"Fusce nec tellus sed augue semper porta Mauris massa Vestibulum lacinia arcu eget nulla " +
 			"Class aptent taciti sociosqu ad litora torquent per conubia nostra per inceptos himenaeos " +

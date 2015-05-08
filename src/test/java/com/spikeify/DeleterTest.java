@@ -12,13 +12,14 @@ import org.junit.Test;
 import java.util.Map;
 import java.util.Random;
 
+@SuppressWarnings("SuspiciousToArrayCall")
 public class DeleterTest {
 
-	private Random random = new Random();
-	private Long userKeyLong = random.nextLong();
-	private String userKeyString = String.valueOf(random.nextLong());
-	private String namespace = "test";
-	private String setName = "testSet";
+	private final Random random = new Random();
+	private final Long userKeyLong = random.nextLong();
+	private final String userKeyString = String.valueOf(random.nextLong());
+	private final String namespace = "test";
+	private final String setName = "testSet";
 
 	private Spikeify sfy;
 	private IAerospikeClient client;

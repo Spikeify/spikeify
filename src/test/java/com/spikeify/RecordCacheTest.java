@@ -54,7 +54,7 @@ public class RecordCacheTest {
 		props2.put("three", 1.1d);
 		props2.put("four", 1.5f);
 		props2.put("five", null);  // null should be ignored
-		strings.remove(0); // chanke a list of strings
+		strings.remove(0); // change list of strings
 		props2.put("string", strings);
 		Set<String> updateResult22 = cache.update(key2, props2);
 		Assert.assertEquals(4, updateResult22.size());
