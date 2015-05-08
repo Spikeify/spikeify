@@ -58,9 +58,8 @@ public class MapperUtils {
 					throw new SpikeifyError("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
 							"of unsupported type '" + fieldType + "'.");
 				}
-				mappers.add(new FieldMapper(field.getName(), fieldConverter, field));
+				mappers.add(new FieldMapper(getBinName(field), fieldConverter, field));
 			}
-
 		}
 
 		return mappers;
@@ -72,7 +71,8 @@ public class MapperUtils {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(AsJson.class) != null) {
 				Class fieldType = field.getType();
-				jsonMappers.add(new FieldMapper(field.getName(), new JsonConverter(fieldType), field));
+
+				jsonMappers.add(new FieldMapper(getBinName(field), new JsonConverter(fieldType), field));
 			}
 
 		}
@@ -80,7 +80,26 @@ public class MapperUtils {
 		return jsonMappers;
 	}
 
-	public static FieldMapper getGenerationFieldMapper(Class clazz) {
+	private static String getBinName(Field field) {
+		// is @BinName annotation used
+		String binName = field.getName();
+		if (field.getAnnotation(BinName.class) != null) {
+			if (field.getAnnotation(BinName.class).value().isEmpty()) {
+				throw new SpikeifyError("Error: @BinName has empty value: '" + field.getDeclaringClass() + "." + field.getName() + "'.");
+			}
+			binName = field.getAnnotation(BinName.class).value();
+			if (binName.length() > 14) {
+				throw new SpikeifyError("Error: @BinName value too long: value must be max 14 chars long, currently it's " + binName.length() +
+						". Field: '" + field.getDeclaringClass() + "." + field.getName() + "'.");
+			}
+		}
+		if (binName.length() > 14) {
+			throw new SpikeifyError("Error: Field name too long: value must be max 14 chars long, currently it's " + binName.length() +
+					". Field: '" + field.getDeclaringClass() + "." + field.getName() + "'.");		}
+		return binName;
+	}
+
+	public static FieldMapper<Integer, Integer> getGenerationFieldMapper(Class clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(Generation.class) != null) {
 				Class fieldType = field.getType();
@@ -129,7 +148,7 @@ public class MapperUtils {
 		return null;
 	}
 
-	public static FieldMapper getNamespaceFieldMapper(Class clazz) {
+	public static FieldMapper<String, String> getNamespaceFieldMapper(Class clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(Namespace.class) != null) {
 				Class fieldType = field.getType();

@@ -58,7 +58,7 @@ public class LoaderTest {
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
-		Bin binThree = new Bin("three", three);
+		Bin binThree = new Bin("third", three); // explicitly set bin name via @BinName annotation
 		Bin binFour = new Bin("four", four);
 		Bin binFive = new Bin("five", five);
 		Bin binSix = new Bin("six", six);

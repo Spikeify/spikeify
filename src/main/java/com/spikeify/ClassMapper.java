@@ -112,7 +112,7 @@ public class ClassMapper<TYPE> {
 
 	public Map<String, Object> getProperties(TYPE object) {
 
-		Map<String, Object> props = new HashMap<>(mappers.size());
+		Map<String, Object> props = new HashMap<String, Object>(mappers.size());
 		for (FieldMapper fieldMapper : mappers) {
 			Object propertyValue = fieldMapper.getPropertyValue(object);
 			if (propertyValue != null) {

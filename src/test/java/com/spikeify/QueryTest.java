@@ -36,7 +36,7 @@ public class QueryTest {
 	@Test
 	public void testEntityQuery() {
 
-		client.createIndex(new Policy(), namespace, setName, setName + "_index", "two", IndexType.STRING);
+		client.createIndex(new Policy(), namespace, setName, setName + "_index", "second", IndexType.STRING);
 		client.createIndex(new Policy(), namespace, setName, setName + "_index_long", "one", IndexType.NUMERIC);
 
 		// create records
@@ -53,7 +53,7 @@ public class QueryTest {
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
 				.indexName(setName + "_index")
 				.setName(setName)
-				.setFilters(Filter.equal("two", "content"))
+				.setFilters(Filter.equal("second", "content")) // explicitly set bin name via @BinName annotation
 				.now();
 
 		int count = 0;
@@ -67,7 +67,7 @@ public class QueryTest {
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
 				.indexName(setName + "_index")
 				.setName(setName)
-				.setFilters(Filter.equal("two", "content"))
+				.setFilters(Filter.equal("second", "content")) // explicitly set bin name via @BinName annotation
 				.now();
 
 		int count2 = 0;

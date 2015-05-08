@@ -17,6 +17,8 @@ public class EntityOne {
 
 	public int one;
 	public String two;
+
+	@BinName("third")  // explicitly set the name of the bin	public double three;
 	public double three;
 	public float four;
 	private short five;
