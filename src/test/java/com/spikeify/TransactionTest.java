@@ -4,6 +4,7 @@ import com.aerospike.client.*;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntityTx;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -52,19 +53,15 @@ public class TransactionTest {
 				@Override
 				public void run() {
 
-					try {
-						sfy.transact(15, new Work<EntityOne>() {
-							@Override
-							public EntityOne run() {
-								EntityOne out = sfy.get(EntityOne.class).key(inKey).now();
-								out.one++;
-								sfy.update(out).now();
-								return null;
-							}
-						});
-					} catch (Exception e) {
-						System.out.println(e.getMessage());
-					}
+					sfy.transact(15, new Work<EntityOne>() {
+						@Override
+						public EntityOne run() {
+							EntityOne out = sfy.get(EntityOne.class).key(inKey).now();
+							out.one++;
+							sfy.update(out).now();
+							return null;
+						}
+					});
 				}
 			});
 
@@ -83,6 +80,28 @@ public class TransactionTest {
 
 		Assert.assertEquals(increaseCount, out.one);
 		executor.shutdown();
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void testTransactionsWithoutGenerationField() {
+
+		// generate counter entity
+		EntityTx in = new EntityTx();
+		in.theSetName = setName;
+		in.userId = random.nextLong();
+		in.one = 0;
+
+		final Key inKey = sfy.create(in).now();
+
+		sfy.transact(15, new Work<EntityTx>() {
+			@Override
+			public EntityTx run() {
+				EntityTx out = sfy.get(EntityTx.class).key(inKey).now();
+				out.one++;
+				sfy.update(out).now();
+				return null;
+			}
+		});
 	}
 
 	public void testTransactionsDirect() {

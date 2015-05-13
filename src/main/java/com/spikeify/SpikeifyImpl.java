@@ -329,8 +329,6 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 					tlTransaction.remove();
 					throw new ConcurrentModificationException("Error: too much contention. Record could not be updated.");
 				}
-			} catch (Exception ex) {
-				log.warning("Error: other exception");
 			}
 			try {
 				Thread.sleep((long) (10 + (Math.random() * 10 * retries))); // sleep for random time to give competing thread chance to finish job
