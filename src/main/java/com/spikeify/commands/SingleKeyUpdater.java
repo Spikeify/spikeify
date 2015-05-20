@@ -159,11 +159,9 @@ public class SingleKeyUpdater<T, K> {
 		// must be set so that user key can be retrieved in queries
 		this.policy.sendKey = true;
 
-		Long expiration = mapper.getExpiration(object);
-		if (expiration != null) {
-			// Entities expiration:  Java time in milliseconds
-			// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
-			policy.expiration = (int) (expiration / 1000) - 1262304000;
+		Integer recordExpiration = mapper.getRecordExpiration(object);
+		if (recordExpiration != null) {
+			policy.expiration = recordExpiration;
 		}
 
 		// is version checking necessary

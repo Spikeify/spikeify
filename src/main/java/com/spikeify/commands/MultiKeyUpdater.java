@@ -265,11 +265,9 @@ public class MultiKeyUpdater {
 				}
 			}
 
-			Long expiration = mapper.getExpiration(object);
-			if (expiration != null) {
-				// Entities expiration:  Java time in milliseconds
-				// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
-				policy.expiration = (int) (expiration / 1000) - 1262304000; // todo fix Expiration
+			Integer recordExpiration = mapper.getRecordExpiration(object);
+			if (recordExpiration != null) {
+				policy.expiration = recordExpiration;
 			}
 
 			synClient.put(policy, key, bins);

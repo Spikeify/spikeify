@@ -16,6 +16,7 @@ import java.util.Set;
 /**
  * A command chain for creating or updating a single object in database.
  * This class is not intended to be instantiated by user.
+ *
  * @param <T>
  */
 @SuppressWarnings({"unchecked", "WeakerAccess"})
@@ -56,7 +57,8 @@ public class SingleObjectUpdater<T> {
 	 * <br/>Internally the 'sendKey' property of the policy will always be set to true.
 	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
 	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
-	 *  @param policy The policy.
+	 *
+	 * @param policy The policy.
 	 */
 	public SingleObjectUpdater<T> policy(WritePolicy policy) {
 		this.policy = policy;
@@ -121,11 +123,9 @@ public class SingleObjectUpdater<T> {
 			this.policy.recordExistsAction = RecordExistsAction.UPDATE;
 		}
 
-		Long expiration = mapper.getExpiration(object);
-		if (expiration != null) {
-			// Entities expiration:  Java time in milliseconds
-			// Aerospike expiration: seconds from 1.1.2010 = 1262304000s.
-//			policy.expiration = (int) (expiration / 1000) - 1262304000;
+		Integer recordExpiration = mapper.getRecordExpiration(object);
+		if (recordExpiration != null) {
+			policy.expiration = recordExpiration;
 		}
 
 		if (isTx) {
@@ -134,7 +134,7 @@ public class SingleObjectUpdater<T> {
 			if (generation != null) {
 				policy.generation = generation;
 			} else {
-				throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
 						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
 			}
 		}

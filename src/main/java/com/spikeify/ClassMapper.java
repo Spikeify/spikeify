@@ -24,7 +24,8 @@ public class ClassMapper<TYPE> {
 	private final FieldMapper userKeyFieldMapper;
 	private final FieldMapper anyPropertyMapper;
 
-	public ClassMapper(Class<TYPE> clazz) {List<FieldMapper> fieldMappers;
+	public ClassMapper(Class<TYPE> clazz) {
+		List<FieldMapper> fieldMappers;
 		this.type = clazz;
 
 		// parse @Namespace class annotation
@@ -151,13 +152,41 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
-	public void setMetaFieldValues(Object object, String namespace, String setName, int generation, long expiration) {
+	private long getJavaExpiration(int recordExpiration) {
+		long javaExpiration = 0;
+
+		// Aerospike expiry settings are messed up: ypu put in -1 and get back 0
+		if (recordExpiration == 0) {
+			javaExpiration = -1; // default expiration setting: -1 - no expiration set
+		} else {
+			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
+			// to java epoch time in milliseconds
+			javaExpiration = 1000l * (1262304000l + recordExpiration);
+		}
+		return javaExpiration;
+	}
+
+	private int getRecordExpiration(long javaExpiration) {
+		int recordExpiration;
+
+		if (javaExpiration == 0 || javaExpiration == -1) {
+			recordExpiration = (int) javaExpiration; // default expiration settings: 0 - server default expiration, -1 - no expiration
+		} else {
+			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
+			// to java epoch time in milliseconds
+			long now = System.currentTimeMillis();
+			recordExpiration = (int) ((javaExpiration - now) / 1000l);
+		}
+		return recordExpiration;
+	}
+
+	public void setMetaFieldValues(Object object, String namespace, String setName, int generation, int recordExpiration) {
 
 		if (generationFieldMapper != null) {
 			generationFieldMapper.setFieldValue(object, generation);
 		}
 		if (expirationFieldMapper != null) {
-			expirationFieldMapper.setFieldValue(object, expiration);
+			expirationFieldMapper.setFieldValue(object, getJavaExpiration(recordExpiration));
 		}
 		if (namespaceFieldMapper != null) {
 			namespaceFieldMapper.setFieldValue(object, namespace);
@@ -167,11 +196,11 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
-	public Long getExpiration(TYPE object) {
+	public Integer getRecordExpiration(TYPE object) {
 		if (expirationFieldMapper == null) {
 			return null;
 		}
-		return expirationFieldMapper.getPropertyValue(object);
+		return getRecordExpiration(expirationFieldMapper.getPropertyValue(object));
 	}
 
 	public Integer getGeneration(TYPE object) {

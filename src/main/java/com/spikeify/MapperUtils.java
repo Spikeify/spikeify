@@ -115,7 +115,7 @@ public class MapperUtils {
 
 	public static FieldMapper<Long, Long> getExpirationFieldMapper(Class clazz) {
 		for (Field field : clazz.getDeclaredFields()) {
-			if (field.getAnnotation(Expiration.class) != null) {
+			if (field.getAnnotation(Expires.class) != null) {
 				Class fieldType = field.getType();
 				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
 					return new FieldMapper<>(null, findConverter(fieldType), field);
@@ -183,7 +183,7 @@ public class MapperUtils {
 	private static boolean mappableField(Field field) {
 		return !field.isAnnotationPresent(UserKey.class)
 				&& !field.isAnnotationPresent(Generation.class)
-				&& !field.isAnnotationPresent(Expiration.class)
+				&& !field.isAnnotationPresent(Expires.class)
 				&& !field.isAnnotationPresent(SetName.class)
 				&& !field.isAnnotationPresent(Namespace.class)
 				&& !field.isAnnotationPresent(AnyProperty.class)
