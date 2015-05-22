@@ -318,16 +318,22 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 				// success - exit the transact wrapper
 				return result;
 			} catch (AerospikeException ex) {
-				if (retries++ < limitTries) {
-					if (log.isLoggable(Level.FINEST) && retries >= (limitTries - 3)) {
-						log.warning("Optimistic concurrency failure for " + work + " (retrying:" + retries + "): " + ex);
+
+				// only retry in case of generation error, which happens in case of concurrent updates
+				if (ex.getResultCode() == ResultCode.GENERATION_ERROR) {
+					if (retries++ < limitTries) {
+						if (log.isLoggable(Level.FINEST) && retries >= (limitTries - 3)) {
+							log.warning("Optimistic concurrency failure for " + work + " (retrying:" + retries + "): " + ex);
+						}
+					} else {
+						if (log.isLoggable(Level.FINEST)) {//&& retries >= (limitTries - 3)) {
+							log.warning("Optimistic concurrency failure for " + work + ": Could not update record.");
+						}
+						tlTransaction.remove();
+						throw new ConcurrentModificationException("Error: too much contention. Record could not be updated.");
 					}
 				} else {
-					if (log.isLoggable(Level.FINEST)) {//&& retries >= (limitTries - 3)) {
-						log.warning("Optimistic concurrency failure for " + work + ": Could not update record.");
-					}
-					tlTransaction.remove();
-					throw new ConcurrentModificationException("Error: too much contention. Record could not be updated.");
+					throw new AerospikeException(ex.getResultCode(), ex.getMessage());
 				}
 			}
 			try {
