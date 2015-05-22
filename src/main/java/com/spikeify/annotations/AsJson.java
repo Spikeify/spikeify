@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * Flags a field should be serialised to JSON
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
+@Target({ElementType.FIELD, ElementType.TYPE})
 public @interface AsJson {
 }
 

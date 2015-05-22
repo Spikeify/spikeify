@@ -5,16 +5,7 @@ import com.spikeify.ConverterFactory;
 
 import java.util.List;
 
-public class ListConverter implements Converter<List, List>, ConverterFactory {
-
-	@Override
-	public Converter init(Class type) {
-		return this;
-	}
-
-	public boolean canConvert(Class type) {
-		return List.class.isAssignableFrom(type);
-	}
+public class ListConverter implements Converter<List, List>{
 
 	public List fromProperty(List list) {
 		return list;

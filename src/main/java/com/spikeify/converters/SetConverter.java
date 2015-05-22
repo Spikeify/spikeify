@@ -1,6 +1,8 @@
 package com.spikeify.converters;
 
-import com.spikeify.*;
+import com.spikeify.Converter;
+import com.spikeify.NoArgClassConstructor;
+import com.spikeify.SpikeifyError;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -16,7 +18,7 @@ public class SetConverter<T> implements Converter<Set<T>, List<T>> {
 	private final Constructor<? extends Set> noArgConstructor;
 
 	public SetConverter(Class<? extends Set> setType) {
-		if(setType.equals(Set.class)){
+		if (setType.equals(Set.class)) {
 			setType = HashSet.class;
 		}
 
@@ -33,7 +35,7 @@ public class SetConverter<T> implements Converter<Set<T>, List<T>> {
 		try {
 			set = noArgConstructor.newInstance();
 		} catch (InstantiationException | InvocationTargetException | IllegalAccessException e) {
-			throw new SpikeifyError("Error: could not instantiate '"+setType+"' via a default no-arg constructor.");
+			throw new SpikeifyError("Error: could not instantiate '" + setType + "' via a default no-arg constructor.");
 		}
 		set.addAll(list);
 		return set;

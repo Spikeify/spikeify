@@ -3,10 +3,12 @@ package com.spikeify.converters;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
+import java.lang.reflect.Field;
+
 public class ShortConverter implements Converter<Short, Long>, ConverterFactory {
 
 	@Override
-	public Converter init(Class type) {
+	public Converter init(Field field) {
 		return this;
 	}
 

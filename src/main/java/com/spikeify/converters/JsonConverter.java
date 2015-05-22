@@ -7,7 +7,7 @@ import com.spikeify.SpikeifyError;
 
 import java.io.IOException;
 
-public class JsonConverter implements Converter<Object, String> {
+public class JsonConverter<T> implements Converter<T, String> {
 
 	private static final ThreadLocal<ObjectMapper> tlObjectMapper = new ThreadLocal<ObjectMapper>() {
 		@Override
@@ -16,14 +16,14 @@ public class JsonConverter implements Converter<Object, String> {
 		}
 	};
 
-	private final Class type;
+	private final Class<T> type;
 
-	public JsonConverter(Class type) {
+	public JsonConverter(Class<T> type) {
 		this.type = type;
 	}
 
 	@Override
-	public Object fromProperty(String property) {
+	public T fromProperty(String property) {
 		try {
 			return tlObjectMapper.get().readValue(property, type);
 		} catch (IOException e) {

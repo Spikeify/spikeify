@@ -4,10 +4,7 @@ import com.aerospike.client.Key;
 import com.spikeify.annotations.*;
 import com.spikeify.converters.*;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,17 +27,17 @@ public class MapperUtils {
 			new ShortConverter(),
 			new ByteArrayConverter(),
 			new SetConverterFactory(),
-			new ListConverter(),
-			new MapConverter(),
+			new ListConverterFactory(),
+			new MapConverterFactory(),
 			new EnumConverterFactory()
 //			,
 //			new JsonConverterFactory()
 	);
 
-	public static Converter findConverter(Class fieldType) {
+	public static Converter findConverter(Field field) {
 		for (ConverterFactory converterFactory : converters) {
-			if (converterFactory.canConvert(fieldType)) {
-				return converterFactory.init(fieldType);
+			if (converterFactory.canConvert(field.getType())) {
+				return converterFactory.init(field);
 			}
 		}
 		return null;
@@ -53,7 +50,7 @@ public class MapperUtils {
 		for (Field field : clazz.getDeclaredFields()) {
 			if (mappableField(field)) {
 				Class fieldType = field.getType();
-				Converter fieldConverter = findConverter(fieldType);
+				Converter fieldConverter = findConverter(field);
 
 				if (fieldConverter == null) {
 					throw new SpikeifyError("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
@@ -118,7 +115,7 @@ public class MapperUtils {
 			if (field.getAnnotation(Expires.class) != null) {
 				Class fieldType = field.getType();
 				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
-					return new FieldMapper<>(null, findConverter(fieldType), field);
+					return new FieldMapper<>(null, findConverter(field), field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @Expiration must be of type long or Long.");
 				}
@@ -139,7 +136,7 @@ public class MapperUtils {
 				if (Map.class.isAssignableFrom(fieldType) && paramTypes != null &&
 						paramTypes.getActualTypeArguments()[0].equals(String.class) &&
 						paramTypes.getActualTypeArguments()[1].equals(Object.class)) {
-					return new FieldMapper<>(null, findConverter(fieldType), field);
+					return new FieldMapper<>(null, findConverter(field), field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @AnyProperty must be of type long or Long.");
 				}
@@ -153,7 +150,7 @@ public class MapperUtils {
 			if (field.getAnnotation(Namespace.class) != null) {
 				Class fieldType = field.getType();
 				if (String.class.equals(fieldType)) {
-					return new FieldMapper(null, findConverter(fieldType), field);
+					return new FieldMapper(null, findConverter(field), field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @Namespace must be of type String.");
 				}
@@ -167,7 +164,7 @@ public class MapperUtils {
 			if (field.getAnnotation(SetName.class) != null) {
 				Class fieldType = field.getType();
 				if (String.class.equals(fieldType)) {
-					return new FieldMapper(null, findConverter(fieldType), field);
+					return new FieldMapper(null, findConverter(field), field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @SetName must be of type String.");
 				}
@@ -198,7 +195,7 @@ public class MapperUtils {
 			if (field.getAnnotation(UserKey.class) != null) {
 				Class fieldType = field.getType();
 				if (String.class.equals(fieldType) || Long.class.equals(fieldType) || long.class.equals(fieldType)) {
-					Converter converter = findConverter(fieldType);
+					Converter converter = findConverter(field);
 					return new FieldMapper(null, converter, field);
 				} else {
 					throw new SpikeifyError("Error: field marked with @UserKey must be of type String, Long or long.");

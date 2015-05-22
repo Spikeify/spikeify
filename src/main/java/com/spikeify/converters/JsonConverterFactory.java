@@ -3,12 +3,13 @@ package com.spikeify.converters;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
+import java.lang.reflect.Field;
+
 public class JsonConverterFactory implements ConverterFactory {
 
-
 	@Override
-	public Converter init(Class type) {
-		return new JsonConverter(type);
+	public Converter init(Field field) {
+		return new JsonConverter(field.getType());
 	}
 
 	public boolean canConvert(Class type) {
