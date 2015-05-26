@@ -49,6 +49,11 @@ public class InfoTest {
 		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(0)));
 		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(1)));
 		Assert.assertTrue(infoSetNames.keySet().contains(setNames.get(2)));
+
+		// check record counts
+		Assert.assertEquals(10, sfy.info().getRecordCount(namespace, setNames.get(0)));
+		Assert.assertEquals(20, sfy.info().getRecordCount(namespace, setNames.get(1)));
+		Assert.assertEquals(30, sfy.info().getRecordCount(namespace, setNames.get(2)));
 	}
 
 

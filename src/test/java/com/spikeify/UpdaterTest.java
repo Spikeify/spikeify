@@ -1,12 +1,16 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.Bin;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.EntityEnum;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.entity.EntitySub;
+import com.spikeify.entity.EntityTwo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,6 +24,7 @@ public class UpdaterTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final Long userKey2 = new Random().nextLong();
+	private final String userKeyString = String.valueOf(new Random().nextLong());
 	private final String namespace = "test";
 	private final String setName = "newTestSet";
 	private Spikeify sfy;
@@ -95,9 +100,21 @@ public class UpdaterTest {
 	}
 
 	@Test
-	public void saveAndLoadProperties() {
+	public void mismatchedKeyType() {
 
 		EntityOne entity = new EntityOne();
+		Key keyString = new Key(namespace, setName, userKeyString);
+
+		// we did not provide namespace on purpose - let default kick in
+		Key saveKey = sfy
+				.update(keyString, entity)
+				.now();
+	}
+
+	@Test
+	public void saveAndLoadProperties() {
+
+		EntityTwo entity = new EntityTwo();
 
 		entity.one = 123;
 		entity.two = "a test";
@@ -110,16 +127,16 @@ public class UpdaterTest {
 		entity.eleven = EntityEnum.SECOND;
 		entity.sub = new EntitySub(333, "something", new Date(1234567l));
 
-		Key key1 = new Key(namespace, setName, userKey1);
+		Key key1 = new Key(namespace, setName, userKeyString);
 
 		// we did not provide namespace on purpose - let default kick in
 		Key saveKey = sfy
 				.update(key1, entity)
 				.now();
 
-		Key loadKey = new Key(namespace, setName, userKey1);
+		Key loadKey = new Key(namespace, setName, userKeyString);
 
-		EntityOne reloaded = sfy.get(EntityOne.class).key(loadKey).now();
+		EntityTwo reloaded = sfy.get(EntityTwo.class).key(loadKey).now();
 
 		Assert.assertEquals(entity.one, reloaded.one);
 		Assert.assertEquals(entity.two, reloaded.two);

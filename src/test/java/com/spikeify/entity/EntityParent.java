@@ -9,7 +9,7 @@ import java.util.Map;
 public class EntityParent {
 
 	@UserKey
-	public Long userId;
+	public String userId;
 
 	public Map<String, EntitySubJson> map;
 

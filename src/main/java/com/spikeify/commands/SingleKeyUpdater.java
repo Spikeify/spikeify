@@ -135,6 +135,7 @@ public class SingleKeyUpdater<T, K> {
 	public K now() {
 
 		collectKeys();
+		mapper.checkKeyType(key);
 
 		if (object == null) {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");

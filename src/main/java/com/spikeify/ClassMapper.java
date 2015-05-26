@@ -1,5 +1,7 @@
 package com.spikeify;
 
+import com.aerospike.client.Key;
+import com.aerospike.client.Value;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
@@ -37,9 +39,6 @@ public class ClassMapper<TYPE> {
 		classSetName = setNameAnnotation != null ? setNameAnnotation.value() : null;
 
 		fieldMappers = MapperUtils.getFieldMappers(clazz);
-		if (fieldMappers == null) {
-			fieldMappers = new ArrayList<>();
-		}
 		fieldMappers.addAll(MapperUtils.getJsonMappers(clazz));
 		mappers = fieldMappers;
 
@@ -222,7 +221,7 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
-	public void setUserKey(Object object, Long userKey) {
+	public void setUserKey(TYPE object, Long userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
@@ -237,5 +236,9 @@ public class ClassMapper<TYPE> {
 
 	public String getBinName(String fieldName) {
 		return fieldName;
+	}
+
+	public void checkKeyType(Key key) {
+		userKeyFieldMapper.converter.fromProperty(key.userKey.getObject());
 	}
 }
