@@ -20,7 +20,7 @@ public class ListConverterFactory implements ConverterFactory {
 			Class classType = (Class) valueType;
 			if (classType.isAnnotationPresent(AsJson.class)) {
 				Class fieldType = field.getType();
-				return new ListJsonConverter<>(fieldType, classType);
+				return new ListJsonConverter(fieldType, classType);
 			}
 		}
 

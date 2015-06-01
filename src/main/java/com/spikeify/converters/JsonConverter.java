@@ -32,7 +32,7 @@ public class JsonConverter<T> implements Converter<T, String> {
 	}
 
 	@Override
-	public String fromField(Object fieldValue) {
+	public String fromField(T fieldValue) {
 		try {
 			return tlObjectMapper.get().writeValueAsString(fieldValue);
 		} catch (JsonProcessingException e) {

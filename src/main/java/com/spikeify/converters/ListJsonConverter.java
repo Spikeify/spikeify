@@ -7,12 +7,12 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ListJsonConverter<T> implements Converter<List<T>, List<String>> {
+public class ListJsonConverter implements Converter<List, List> {
 
 	private final Constructor<? extends List> classConstructor;
-	private JsonConverter<T> valueConverter;
+	private JsonConverter valueConverter;
 
-	public ListJsonConverter(Class<? extends List> listType, Class<T> valueType) {
+	public ListJsonConverter(Class<? extends List> listType, Class valueType) {
 		this.valueConverter = new JsonConverter(valueType);
 
 		if (listType.equals(List.class)) {
@@ -22,18 +22,22 @@ public class ListJsonConverter<T> implements Converter<List<T>, List<String>> {
 	}
 
 	@Override
-	public List<T> fromProperty(List<String> propertyList) {
-		List<T> fieldList = NoArgClassConstructor.newInstance(classConstructor);
-		for (String entry : propertyList) {
-			fieldList.add(valueConverter.fromProperty(entry));
+	public List fromProperty(List propertyList) {
+		List fieldList = NoArgClassConstructor.newInstance(classConstructor);
+		for (Object entry : propertyList) {
+			if(entry instanceof String){
+				fieldList.add(valueConverter.fromProperty((String) entry));
+			} else {
+				fieldList.add(entry);
+			}
 		}
 		return fieldList;
 	}
 
 	@Override
-	public List<String> fromField(List<T> fieldList) {
+	public List<String> fromField(List fieldList) {
 		List<String> propertyList = new ArrayList<>(fieldList.size());
-		for (T entry : fieldList) {
+		for (Object entry : fieldList) {
 			propertyList.add(valueConverter.fromField(entry));
 		}
 		return propertyList;
