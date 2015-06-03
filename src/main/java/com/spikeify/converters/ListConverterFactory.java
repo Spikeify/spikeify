@@ -11,6 +11,7 @@ import java.util.List;
 
 public class ListConverterFactory implements ConverterFactory {
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Converter init(Field field) {
 

@@ -150,7 +150,7 @@ public class ClassMapper<TYPE> {
 	}
 
 	private long getJavaExpiration(int recordExpiration) {
-		long javaExpiration = 0;
+		long javaExpiration;
 
 		// Aerospike expiry settings are messed up: ypu put in -1 and get back 0
 		if (recordExpiration == 0) {
@@ -203,7 +203,7 @@ public class ClassMapper<TYPE> {
 	/**
 	 * Gets a value of the field marked with @Generation
 	 *
-	 * @param object
+	 * @param object Object.
 	 * @return null if no @Generation marked field exists, 0 if this is a new object, otherwise an integer value
 	 */
 	public Integer getGeneration(TYPE object) {

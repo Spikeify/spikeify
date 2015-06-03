@@ -13,6 +13,7 @@ public class MapJsonConverter implements Converter<Map, Map> {
 	private final Constructor<? extends Map> classConstructor;
 	private JsonConverter valueConverter;
 
+	@SuppressWarnings("unchecked")
 	public MapJsonConverter(Class<? extends Map> mapType, Class valueType) {
 		this.valueConverter = new JsonConverter(valueType);
 
@@ -22,6 +23,7 @@ public class MapJsonConverter implements Converter<Map, Map> {
 		classConstructor = NoArgClassConstructor.getNoArgConstructor(mapType);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map fromProperty(Map propertyMap) {
 		Map fieldMap = NoArgClassConstructor.newInstance(classConstructor);
@@ -38,6 +40,7 @@ public class MapJsonConverter implements Converter<Map, Map> {
 		return fieldMap;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map fromField(Map fieldMap) {
 		Map<Object, String> propertyMap = new HashMap<>(fieldMap.size());

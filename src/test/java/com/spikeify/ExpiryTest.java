@@ -19,12 +19,11 @@ public class ExpiryTest {
 	private final String namespace = "test";
 	private final String setName = "newTestSet";
 	private Spikeify sfy;
-	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
+		IAerospikeClient client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
 	}
 

@@ -2,8 +2,6 @@ package com.spikeify.entity;
 
 import com.spikeify.annotations.*;
 
-import java.util.*;
-
 @SuppressWarnings("WeakerAccess")
 public class EntityTx {
 

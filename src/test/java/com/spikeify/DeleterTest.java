@@ -118,14 +118,14 @@ public class DeleterTest {
 	public void deleteObjects() {
 		Map<Long,EntityOne> entities = TestUtils.randomEntityOne(10, setName);
 		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
-		Map<Key, Object> res = sfy.createAll(antArray).now();
+		Map<Key, Object> res = sfy.createAll((Object[])antArray).now();
 
 		for (Key key : res.keySet()) {
 			Assert.assertTrue(client.exists(null, key));
 		}
 
 		EntityOne[] delEntities = res.values().toArray(new EntityOne[res.size()]);
-		Map<Object, Boolean> del = sfy.deleteAll(delEntities).now();
+		Map<Object, Boolean> del = sfy.deleteAll((Object[])delEntities).now();
 		for (Map.Entry<Object, Boolean> delEntry : del.entrySet()) {
 			Assert.assertTrue(delEntry.getValue());
 		}
@@ -135,7 +135,7 @@ public class DeleterTest {
 	public void deleteKeys() {
 		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(10, setName);
 		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
-		Map<Key, Object> res = sfy.createAll(antArray).now();
+		Map<Key, Object> res = sfy.createAll((Object[])antArray).now();
 
 		for (Key key : res.keySet()) {
 			Assert.assertTrue(client.exists(null, key));

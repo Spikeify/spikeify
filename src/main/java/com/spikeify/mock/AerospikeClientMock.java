@@ -19,7 +19,7 @@ import com.spikeify.SpikeifyError;
 
 import java.util.*;
 
-@SuppressWarnings({"WeakerAccess", "UnusedAssignment"})
+@SuppressWarnings({"WeakerAccess", "UnusedAssignment", "deprecation"})
 public class AerospikeClientMock implements IAerospikeClient {
 
 	public final Policy readPolicyDefault = new Policy();

@@ -32,7 +32,7 @@ public class JsonConverter<T> implements Converter<T, String> {
 
 	public JsonConverter(Field field) {
 		if (Map.class.isAssignableFrom(field.getType())) {
-			Class<? extends Object> rawType = field.getType().equals(Map.class) ? HashMap.class : field.getType();
+			Class<?> rawType = field.getType().equals(Map.class) ? HashMap.class : field.getType();
 			Type keyType = TypeUtils.getMapKeyType(field);
 			if (!(keyType instanceof Class)) {
 				throw new SpikeifyError("Type error: @AsJson annotation can only be used on Maps where key type is a Class. " +
@@ -48,7 +48,7 @@ public class JsonConverter<T> implements Converter<T, String> {
 			SimpleType valueClass = SimpleType.construct((Class<?>) valueType);
 			this.type = MapType.construct(rawType, keyClass, valueClass);
 		} else if (Collection.class.isAssignableFrom(field.getType())) {
-			Class<? extends Object> rawType = (field.getType().equals(List.class) || field.getType().equals(Collection.class))
+			Class<?> rawType = (field.getType().equals(List.class) || field.getType().equals(Collection.class))
 					? ArrayList.class : field.getType();
 
 			Type elementType = TypeUtils.getCollectionValueType(field);

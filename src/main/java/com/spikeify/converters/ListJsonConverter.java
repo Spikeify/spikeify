@@ -12,6 +12,7 @@ public class ListJsonConverter implements Converter<List, List> {
 	private final Constructor<? extends List> classConstructor;
 	private JsonConverter valueConverter;
 
+	@SuppressWarnings("unchecked")
 	public ListJsonConverter(Class<? extends List> listType, Class valueType) {
 		this.valueConverter = new JsonConverter(valueType);
 
@@ -21,6 +22,7 @@ public class ListJsonConverter implements Converter<List, List> {
 		classConstructor = NoArgClassConstructor.getNoArgConstructor(listType);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List fromProperty(List propertyList) {
 		List fieldList = NoArgClassConstructor.newInstance(classConstructor);
@@ -34,6 +36,7 @@ public class ListJsonConverter implements Converter<List, List> {
 		return fieldList;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public List<String> fromField(List fieldList) {
 		List<String> propertyList = new ArrayList<>(fieldList.size());

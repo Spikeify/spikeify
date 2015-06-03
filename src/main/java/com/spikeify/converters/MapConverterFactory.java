@@ -11,6 +11,7 @@ import java.util.Map;
 
 public class MapConverterFactory implements ConverterFactory {
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Converter init(Field field) {
 		Type valueType = TypeUtils.getMapValueType(field);
