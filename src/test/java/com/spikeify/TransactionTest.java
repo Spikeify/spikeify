@@ -3,6 +3,8 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.WritePolicy;
+import com.spikeify.annotations.Generation;
+import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.entity.EntityTx;
 import org.junit.After;
@@ -227,6 +229,66 @@ public class TransactionTest {
 		System.out.println("counter:" + TestUtils.counter.get());
 		System.out.println("duration:" + (System.currentTimeMillis() - start));
 
+	}
+
+	/**
+	 * If we try to call update on non-existing object in transaction wrapper, new object should be created,
+	 * existing should be updated, .update function outside of transaction wrapper creates / update object in database it
+	 * should do the same in transaction wrapper
+	 */
+	@Test
+	public void testCreationOfEntityInsideTransactionViaUpdate() {
+		DemoEntity out = sfy.transact(5, new Work<DemoEntity>() {
+			@Override
+			public DemoEntity run() {
+				DemoEntity demoEntity = sfy.get(DemoEntity.class).key("1").now();
+				if (demoEntity == null) {
+					demoEntity = new DemoEntity();
+					demoEntity.id = "1";
+				}
+				demoEntity.timestamp = System.currentTimeMillis();
+				sfy.update(demoEntity).now();
+				return demoEntity;
+			}
+		});
+		Assert.assertEquals(out.id, "1");
+	}
+
+	/**
+	 * If trying to call create inside transaction wrapper we should be able to create new object in database
+	 */
+	@Test
+	public void testCreationOfEntityInsideTransactionViaCreate() {
+		DemoEntity out = sfy.transact(5, new Work<DemoEntity>() {
+			@Override
+			public DemoEntity run() {
+				DemoEntity demoEntity = sfy.get(DemoEntity.class).key("1").now();
+				boolean _new = false;
+				if (demoEntity == null) {
+					demoEntity = new DemoEntity();
+					demoEntity.id = "1";
+					_new = true;
+				}
+				demoEntity.timestamp = System.currentTimeMillis();
+				if (_new) {
+					sfy.create(demoEntity).now();
+				} else {
+					sfy.update(demoEntity).now();
+				}
+				return demoEntity;
+			}
+		});
+		Assert.assertEquals(out.id, "1");
+	}
+
+	public static class DemoEntity {
+		@UserKey
+		public String id;
+
+		@Generation
+		public Integer generation;
+
+		public Long timestamp;
 	}
 
 }

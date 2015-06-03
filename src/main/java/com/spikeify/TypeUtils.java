@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +40,7 @@ public class TypeUtils {
 	}
 
 	public static Type[] getMapTypes(Field field) {
-		if (field.getType().isAssignableFrom(Map.class)) {
+		if (Map.class.isAssignableFrom(field.getType())) {
 			if (field.getGenericType() instanceof ParameterizedType) {
 				ParameterizedType mapType = (ParameterizedType) field.getGenericType();
 				return mapType.getActualTypeArguments();
@@ -51,7 +52,19 @@ public class TypeUtils {
 	}
 
 	public static Type getListValueType(Field field) {
-		if (field.getType().isAssignableFrom(List.class)) {
+		if (List.class.isAssignableFrom(field.getType())) {
+			if (field.getGenericType() instanceof ParameterizedType) {
+				ParameterizedType listType = (ParameterizedType) field.getGenericType();
+				return listType.getActualTypeArguments()[0];
+			}
+			return null;
+		} else {
+			return Object.class;
+		}
+	}
+
+	public static Type getCollectionValueType(Field field) {
+		if (Collection.class.isAssignableFrom(field.getType())) {
 			if (field.getGenericType() instanceof ParameterizedType) {
 				ParameterizedType listType = (ParameterizedType) field.getGenericType();
 				return listType.getActualTypeArguments()[0];

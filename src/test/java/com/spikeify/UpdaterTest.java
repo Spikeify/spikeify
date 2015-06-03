@@ -99,7 +99,7 @@ public class UpdaterTest {
 		Assert.assertNull(subReloaded.date); // Json ignored field
 	}
 
-	@Test
+	@Test(expected = SpikeifyError.class)
 	public void mismatchedKeyType() {
 
 		EntityOne entity = new EntityOne();

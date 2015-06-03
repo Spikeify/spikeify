@@ -5,6 +5,9 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spikeify.annotations.AsJson;
+import com.spikeify.annotations.Generation;
+import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityParent;
 import com.spikeify.entity.EntitySub;
 import com.spikeify.entity.EntitySubJson;
@@ -20,7 +23,7 @@ import java.util.*;
  * A test where Map or List contains classes marked with @AsJson
  */
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
-public class CollectionJsonTest {
+public class JsonCollectionsTest {
 
 	private final String userKey1 = String.valueOf(new Random().nextLong());
 	private final String namespace = "test";
@@ -181,6 +184,89 @@ public class CollectionJsonTest {
 
 		Assert.assertEquals(entity.list, reloaded.list);
 		Assert.assertEquals(entity.map, reloaded.map);
+	}
+
+	/**
+	 * If annotation @AsJson is on Map field should be serialized to JSON string and mapped as
+	 * it would be mapped when normal custom field is used
+	 */
+	@Test
+	public void testSavingMapAsJson() {
+		Long timestamp = System.currentTimeMillis();
+		DemoMapAsJson demoMapAsJson = new DemoMapAsJson();
+		demoMapAsJson.id = "1";
+		demoMapAsJson.data = new HashMap<>();
+		demoMapAsJson.data.put("test", new DemoMapAsJson.CustomObject(timestamp));
+		Key saveKey = sfy.create(demoMapAsJson).now();
+		Assert.assertEquals(demoMapAsJson.data.get("test").timestamp, timestamp);
+
+		Record record = client.get(null, saveKey);
+
+
+		DemoMapAsJson out = sfy.get(DemoMapAsJson.class).key("1").now();
+		Assert.assertEquals(out.data.get("test").timestamp, timestamp);
+	}
+
+	public static class DemoMapAsJson {
+		@UserKey
+		public String id;
+
+		@Generation
+		public Integer generation;
+
+		@AsJson
+		public Map<String, CustomObject> data;
+
+		public static class CustomObject {
+			public Long timestamp;
+
+			public CustomObject() {
+			}
+
+			public CustomObject(Long timestamp) {
+				this.timestamp = timestamp;
+			}
+		}
+	}
+
+	/**
+	 * If annotation @AsJson is on List field should be serialized to JSON string and mapped as
+	 * it would be mapped when normal custom field is used
+	 */
+	@Test
+	public void testSavingListAsJson() {
+		Long timestamp = System.currentTimeMillis();
+		DemoListAsJson demoListAsJson = new DemoListAsJson();
+		demoListAsJson.id = "1";
+		demoListAsJson.data = new ArrayList<>();
+		demoListAsJson.data.add(new DemoListAsJson.CustomObject(timestamp));
+		sfy.create(demoListAsJson).now();
+		Assert.assertEquals(demoListAsJson.data.get(0).timestamp, timestamp);
+
+		DemoListAsJson out = sfy.get(DemoListAsJson.class).key("1").now();
+		Assert.assertEquals(out.data.get(0).timestamp, timestamp);
+	}
+
+	public static class DemoListAsJson {
+		@UserKey
+		public String id;
+
+		@Generation
+		public Integer generation;
+
+		@AsJson
+		public List<CustomObject> data;
+
+		public static class CustomObject {
+			public Long timestamp;
+
+			public CustomObject() {
+			}
+
+			public CustomObject(Long timestamp) {
+				this.timestamp = timestamp;
+			}
+		}
 	}
 
 }

@@ -78,13 +78,13 @@ public class DeleterTest {
 		entity.setSix((byte) 100);
 		entity.seven = true;
 
-		String saveKey = sfy
-				.create(userKeyString, entity)
+		Long saveKey = sfy
+				.create(userKeyLong, entity)
 				.namespace(namespace)
 				.setName(setName)
 				.now();
 
-		sfy.delete(userKeyString).namespace(namespace).setName(setName).now();
+		sfy.delete(userKeyLong).namespace(namespace).setName(setName).now();
 
 		Policy policy = new Policy();
 		policy.sendKey = true;

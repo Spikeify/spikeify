@@ -68,9 +68,7 @@ public class MapperUtils {
 
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(AsJson.class) != null) {
-				Class fieldType = field.getType();
-
-				jsonMappers.add(new FieldMapper(getBinName(field), new JsonConverter(fieldType), field));
+				jsonMappers.add(new FieldMapper(getBinName(field), new JsonConverter(field), field));
 			}
 
 		}

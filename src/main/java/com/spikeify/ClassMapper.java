@@ -1,11 +1,9 @@
 package com.spikeify;
 
 import com.aerospike.client.Key;
-import com.aerospike.client.Value;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,11 +200,18 @@ public class ClassMapper<TYPE> {
 		return getRecordExpiration(expirationFieldMapper.getPropertyValue(object));
 	}
 
+	/**
+	 * Gets a value of the field marked with @Generation
+	 *
+	 * @param object
+	 * @return null if no @Generation marked field exists, 0 if this is a new object, otherwise an integer value
+	 */
 	public Integer getGeneration(TYPE object) {
 		if (generationFieldMapper == null) {
 			return null;
 		}
-		return generationFieldMapper.getPropertyValue(object);
+		Integer generation = generationFieldMapper.getPropertyValue(object);
+		return generation == null ? 0 : generation;  // default generation value for new objects is 0
 	}
 
 	public void setUserKey(TYPE object, String userKey) {
@@ -239,6 +244,12 @@ public class ClassMapper<TYPE> {
 	}
 
 	public void checkKeyType(Key key) {
-		userKeyFieldMapper.converter.fromProperty(key.userKey.getObject());
+		try {
+			userKeyFieldMapper.converter.fromProperty(key.userKey.getObject());
+		} catch (ClassCastException e) {
+			throw new SpikeifyError("Mismatched key type: provided " + key.userKey.getObject().getClass().getName() +
+					" key can not be mapped to " + userKeyFieldMapper.field.getType() + " ("
+					+ userKeyFieldMapper.field.getDeclaringClass().getName() + "." + userKeyFieldMapper.field.getName() + ")");
+		}
 	}
 }

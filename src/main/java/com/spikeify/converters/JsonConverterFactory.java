@@ -9,7 +9,7 @@ public class JsonConverterFactory implements ConverterFactory {
 
 	@Override
 	public Converter init(Field field) {
-		return new JsonConverter(field.getType());
+		return new JsonConverter(field);
 	}
 
 	public boolean canConvert(Class type) {
