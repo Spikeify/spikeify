@@ -59,6 +59,7 @@ public class UpdaterTest {
 		entity.unmapped.put("unmap1", 123l);
 		entity.unmapped.put("unmap2", "unmapped string");
 		entity.unmapped.put("unmap3", 3.14d);
+		entity.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		entity.sub = new EntitySub(333, "something", new Date(1234567l));
 
@@ -87,6 +88,7 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.unmapped.get("unmap1"), record.getLong("unmap1"));
 		Assert.assertEquals(entity.unmapped.get("unmap2"), record.getString("unmap2"));
 		Assert.assertEquals(entity.unmapped.get("unmap3"), record.getDouble("unmap3"));
+		Assert.assertArrayEquals(entity.thirteen, (byte[]) record.getValue("thirteen"));
 
 		EntitySub subReloaded;
 		try {
@@ -126,7 +128,6 @@ public class UpdaterTest {
 		entity.eight = new Date(1420070400);
 		entity.eleven = EntityEnum.SECOND;
 		entity.sub = new EntitySub(333, "something", new Date(1234567l));
-
 		Key key1 = new Key(namespace, setName, userKeyString);
 
 		// we did not provide namespace on purpose - let default kick in
@@ -184,6 +185,7 @@ public class UpdaterTest {
 		entity.one = 100;
 		entity.two = "new string";
 		entity.nine.add("three");
+		entity.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		sfy.update(userKey1, entity)
 				.namespace(namespace)
@@ -206,6 +208,8 @@ public class UpdaterTest {
 		Assert.assertEquals(reloaded.eight, null);
 		Assert.assertEquals(reloaded.nine.size(), 3);
 		Assert.assertTrue(reloaded.nine.contains("three"));
+		Assert.assertArrayEquals(reloaded.thirteen, new byte[]{1, 2, 3, 4, 5});
+
 	}
 
 	@Test

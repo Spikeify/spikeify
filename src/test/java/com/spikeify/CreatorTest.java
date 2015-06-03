@@ -45,6 +45,7 @@ public class CreatorTest {
 		entity.nine = new ArrayList<>();
 		entity.nine.add("one");
 		entity.nine.add("two");
+		entity.thirteen = new byte[]{1,2,3,4,5};
 
 		// set Metadata fields
 		entity.userId = userKey1;
@@ -69,6 +70,7 @@ public class CreatorTest {
 		Assert.assertEquals(reloaded.getSix(), 100);
 		Assert.assertEquals(reloaded.eight.getTime(), 1420070400);
 		Assert.assertEquals(reloaded.userId, userKey1);
+		Assert.assertArrayEquals(reloaded.thirteen, new byte[]{1, 2, 3, 4, 5});
 
 	}
 
@@ -87,6 +89,7 @@ public class CreatorTest {
 		entity1.nine = new ArrayList<>();
 		entity1.nine.add("one");
 		entity1.nine.add("two");
+		entity1.thirteen = new byte[]{1,2,3,4,5};
 
 		EntityOne entity2 = new EntityOne();
 		entity2.one = 123;
@@ -100,6 +103,7 @@ public class CreatorTest {
 		entity2.nine = new ArrayList<>();
 		entity2.nine.add("one");
 		entity2.nine.add("two");
+		entity2.thirteen = new byte[]{1,2,3,4,5};
 
 		Map<Key, Object> saveKeys = sfy
 				.createAll(new Long[]{userKey1, userKey2}, new Object[]{entity1, entity2})
@@ -133,6 +137,7 @@ public class CreatorTest {
 		entity.nine = new ArrayList<>();
 		entity.nine.add("one");
 		entity.nine.add("two");
+		entity.thirteen = new byte[]{1,2,3,4,5};
 
 		sfy.create(userKey1, entity)
 				.namespace(namespace)
@@ -163,6 +168,7 @@ public class CreatorTest {
 		entity.twelve = new HashSet();
 		entity.twelve.add("one");
 		entity.twelve.add("two");
+		entity.thirteen = new byte[]{1,2,3,4,5};
 
 		Long saveKey = sfy
 				.create(userKey1, entity)

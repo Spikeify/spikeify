@@ -30,6 +30,7 @@ public class EntityOne {
 	public Map ten;
 	public EntityEnum eleven;
 	public Set twelve;
+	public byte[] thirteen;
 
 	@AsJson
 	public EntitySub sub;
