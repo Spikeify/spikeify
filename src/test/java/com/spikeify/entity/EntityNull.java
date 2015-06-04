@@ -8,4 +8,6 @@ public class EntityNull {
 	public Long userId;
 
 	public String value;
+
+	public Long longValue;
 }

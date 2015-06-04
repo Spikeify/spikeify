@@ -416,4 +416,42 @@ public class UpdaterTest {
 		assertNull(check.value);
 	}
 
+	@Test
+	public void saveLongBackToNullProperties() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+		entity.longValue = 10L;
+
+		sfy.create(entity)
+		   .now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNull saved = sfy.get(EntityNull.class)
+							  .key(userKey1)
+							  .now();
+
+		assertNotNull(saved);
+		assertNotNull(saved.userId);
+		assertNull(saved.value);
+		assertEquals(10L, saved.longValue.longValue());
+
+		// set to null
+		saved.longValue = null;
+
+		sfy.update(saved)
+		   .now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNull check = sfy.get(EntityNull.class)
+							  .key(userKey1)
+							  .now();
+
+		assertNotNull(check);
+		assertNotNull(check.userId);
+		assertEquals("Should be zero ... as null can't be set", 0L, check.longValue.longValue());
+	}
+
 }
