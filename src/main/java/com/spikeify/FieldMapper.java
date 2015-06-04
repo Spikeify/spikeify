@@ -36,7 +36,10 @@ public class FieldMapper<F, P> {
 
 	public void setFieldValue(Object targetObject, P propertyValue) {
 		try {
-			field.set(targetObject, converter.fromProperty(propertyValue));
+			F value = converter.fromProperty(propertyValue);
+			if (!(value == null && field.getType().isPrimitive())) { // do not set value if primitive type, leave it default
+				field.set(targetObject, value);
+			}
 		} catch (IllegalAccessException e) {
 			throw new SpikeifyError(e); //todo nicer error
 		}

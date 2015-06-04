@@ -17,7 +17,7 @@ public class ByteConverter implements Converter<Byte, Long>, ConverterFactory {
 	}
 
 	public Byte fromProperty(Long property) {
-		return property.byteValue();
+		return property == null ? null : property.byteValue();
 	}
 
 	public Long fromField(Byte fieldValue) {

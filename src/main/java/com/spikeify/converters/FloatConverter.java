@@ -17,7 +17,7 @@ public class FloatConverter implements Converter<Float, Long>, ConverterFactory 
 	}
 
 	public Float fromProperty(Long property) {
-		return (float) Double.longBitsToDouble(property);
+		return property == null ? null : (float) Double.longBitsToDouble(property);
 	}
 
 	public Long fromField(Float fieldValue) {

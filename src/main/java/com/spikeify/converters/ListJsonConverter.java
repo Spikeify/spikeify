@@ -25,6 +25,9 @@ public class ListJsonConverter implements Converter<List, List> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public List fromProperty(List propertyList) {
+		if (propertyList == null) {
+			return null;
+		}
 		List fieldList = NoArgClassConstructor.newInstance(classConstructor);
 		for (Object entry : propertyList) {
 			if(entry instanceof String){

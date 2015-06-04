@@ -66,6 +66,9 @@ public class JsonConverter<T> implements Converter<T, String> {
 
 	@Override
 	public T fromProperty(String property) {
+		if (property == null) {
+			return null;
+		}
 		try {
 			return tlObjectMapper.get().readValue(property, type);
 		} catch (IOException e) {

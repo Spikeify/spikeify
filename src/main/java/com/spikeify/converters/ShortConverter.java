@@ -17,7 +17,7 @@ public class ShortConverter implements Converter<Short, Long>, ConverterFactory 
 	}
 
 	public Short fromProperty(Long property) {
-		return property.shortValue();
+		return property == null ? null : property.shortValue();
 	}
 
 	public Long fromField(Short fieldValue) {

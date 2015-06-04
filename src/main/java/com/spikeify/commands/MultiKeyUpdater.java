@@ -20,7 +20,7 @@ import java.util.*;
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiKeyUpdater {
 
-	private boolean skipCache = false;
+	private boolean forceReplace = false;
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -181,10 +181,11 @@ public class MultiKeyUpdater {
 
 	/**
 	 * Sets updater to skip cache check for object changes. This causes that all
-	 * object properties will be written to database.
+	 * object properties will be written to database. It also deletes previous saved
+	 * properties in database and now not mapped to object.
 	 */
-	public MultiKeyUpdater skipCache() {
-		this.skipCache = true;
+	public MultiKeyUpdater forceReplace() {
+		this.forceReplace = true;
 		return this;
 	}
 
@@ -239,18 +240,25 @@ public class MultiKeyUpdater {
 			ClassMapper mapper = MapperService.getMapper(object.getClass());
 
 			Map<String, Object> props = mapper.getProperties(object);
-			Set<String> changedProps = recordsCache.update(key, props, skipCache);
+			Set<String> changedProps = recordsCache.update(key, props, forceReplace);
 
-			Bin[] bins = new Bin[changedProps.size()];
-			int position = 0;
+			List<Bin> bins = new ArrayList<>();
+			boolean nonNullField = false;
 			for (String propName : changedProps) {
 				Object value = props.get(propName);
-				if (value instanceof List<?>) {
-					bins[position++] = new Bin(propName, (List) value);
+				if (value == null) {
+					if (!forceReplace) {
+						bins.add(Bin.asNull(propName));
+					}
+				} else if (value instanceof List<?>) {
+					bins.add(new Bin(propName, (List) value));
+					nonNullField = true;
 				} else if (value instanceof Map<?, ?>) {
-					bins[position++] = new Bin(propName, (Map) value);
+					bins.add(new Bin(propName, (Map) value));
+					nonNullField = true;
 				} else {
-					bins[position++] = new Bin(propName, value);
+					bins.add(new Bin(propName, value));
+					nonNullField = true;
 				}
 			}
 
@@ -260,8 +268,16 @@ public class MultiKeyUpdater {
 			// type of operation: create or update?
 			if (create) {
 				this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+				if (!nonNullField) {
+					throw new SpikeifyError("Error: cannot create object with no writable properties. " +
+									"At least one object property other then UserKey must be different from NULL.");
+				}
 			} else {
-				this.policy.recordExistsAction = RecordExistsAction.UPDATE;
+				if (forceReplace) {
+					this.policy.recordExistsAction = RecordExistsAction.REPLACE;
+				} else {
+					this.policy.recordExistsAction = RecordExistsAction.UPDATE;
+				}
 			}
 
 			// is version checking necessary
@@ -281,7 +297,7 @@ public class MultiKeyUpdater {
 				policy.expiration = recordExpiration;
 			}
 
-			synClient.put(policy, key, bins);
+			synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
 		}
 
 		return result;

@@ -17,7 +17,7 @@ public class BooleanConverter implements Converter<Boolean, Long>, ConverterFact
 	}
 
 	public Boolean fromProperty(Long property) {
-		return property != 0;
+		return property != null && property != 0;
 	}
 
 	public Long fromField(Boolean fieldValue) {

@@ -1,10 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
+import com.aerospike.client.policy.ScanPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.*;
@@ -375,11 +373,11 @@ public class UpdaterTest {
 		out = sfy.get(EntityOne.class).key(entity1.userId).now();
 		Assert.assertEquals(out.generation.intValue(), 1);
 
-		sfy.update(out).skipCache().now();
+		sfy.update(out).forceReplace().now();
 		out = sfy.get(EntityOne.class).key(entity1.userId).now();
 		Assert.assertEquals(out.generation.intValue(), 2);
 
-		sfy.update(out.userId, out).skipCache().now();
+		sfy.update(out.userId, out).forceReplace().now();
 		out = sfy.get(EntityOne.class).key(entity1.userId).now();
 		Assert.assertEquals(out.generation.intValue(), 3);
 
@@ -408,12 +406,12 @@ public class UpdaterTest {
 		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 1);
 		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 1);
 
-		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).skipCache().now();
+		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).forceReplace().now();
 		out = sfy.getAll(EntityOne.class, entity1.userId, entity2.userId).now();
 		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 2);
 		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 2);
 
-		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).skipCache().now();
+		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).forceReplace().now();
 		out = sfy.getAll(EntityOne.class, entity1.userId, entity2.userId).now();
 		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 3);
 		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 3);
@@ -438,7 +436,7 @@ public class UpdaterTest {
 
 		assertNotNull(saved);
 		assertNotNull(saved.userId);
-		assertNull(saved.value);
+		assertNull(saved.longValue);
 	}
 
 	@Test
@@ -461,21 +459,56 @@ public class UpdaterTest {
 		assertNotNull(saved.userId);
 		assertEquals("Some value", saved.value);
 
+		// check if key exist in database
+		SpikeifyService.getClient().scanAll(new ScanPolicy(), namespace, EntityNull.class.getSimpleName(), new ScanCallback() {
+			@Override
+			public void scanCallback(Key key, Record record) throws AerospikeException {
+				System.out.println("Key before setting all bins to null: " + key.userKey.toString());
+			}
+		});
+
 		// set to null
 		saved.value = null;
 
 		sfy.update(saved)
 		   .now();
 
+		// check if key exist in database
+		SpikeifyService.getClient().scanAll(new ScanPolicy(), namespace, EntityNull.class.getSimpleName(), new ScanCallback() {
+			@Override
+			public void scanCallback(Key key, Record record) throws AerospikeException {
+				System.out.println("Key: " + key.userKey.toString());
+			}
+		});
+
+		EntityNull check = sfy.get(EntityNull.class)
+						.key(userKey1)
+						.now();
+		assertNull(check);
+
+		saved.value = "something";
+		sfy.create(saved).now();
+
+
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
-		EntityNull check = sfy.get(EntityNull.class)
+		check = sfy.get(EntityNull.class)
 							  .key(userKey1)
 							  .now();
 
 		assertNotNull(check);
 		assertNotNull(check.userId);
-		assertNull(check.value);
+		assertNotNull(check.value);
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void saveEmptyObject() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+
+		sfy.create(entity)
+						.now();
 	}
 
 	@Test
@@ -483,6 +516,7 @@ public class UpdaterTest {
 
 		EntityNull entity = new EntityNull();
 		entity.userId = userKey1;
+		entity.value = "test";
 		entity.longValue = 10L;
 
 		sfy.create(entity)
@@ -496,7 +530,7 @@ public class UpdaterTest {
 
 		assertNotNull(saved);
 		assertNotNull(saved.userId);
-		assertNull(saved.value);
+		assertEquals(saved.value, "test");
 		assertEquals(10L, saved.longValue.longValue());
 
 		// set to null
@@ -513,7 +547,58 @@ public class UpdaterTest {
 
 		assertNotNull(check);
 		assertNotNull(check.userId);
-		assertEquals("Should be zero ... as null can't be set", 0L, check.longValue.longValue());
+		assertNotNull(check.value);
+		assertNull(check.longValue);
 	}
 
+	@Test
+	public void saveLongPrimitiveBackToNullProperties() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+		entity.value = "test";
+		entity.longValue = 10L;
+
+		sfy.create(entity)
+						.now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNull saved = sfy.get(EntityNull.class)
+						.key(userKey1)
+						.now();
+
+		assertNotNull(saved);
+		assertNotNull(saved.userId);
+		assertEquals(saved.value, "test");
+		assertEquals(10L, saved.longValue.longValue());
+
+		EntityNullV2 checkMapping = sfy.get(EntityNullV2.class)
+						.setName(EntityNull.class.getSimpleName())
+						.key(userKey1)
+						.now();
+
+		assertNotNull(checkMapping);
+		assertNotNull(checkMapping.userId);
+		assertEquals(checkMapping.value, "test");
+		assertEquals(10L, checkMapping.longValue);
+
+		// set to null
+		saved.longValue = null;
+
+		sfy.update(saved)
+						.now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNullV2 check = sfy.get(EntityNullV2.class)
+						.setName(EntityNull.class.getSimpleName())
+						.key(userKey1)
+						.now();
+
+		assertNotNull(check);
+		assertNotNull(check.userId);
+		assertNotNull(check.value);
+		assertEquals("Should be zero ... as null can't be set", 0L, check.longValue);
+	}
 }

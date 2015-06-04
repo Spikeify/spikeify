@@ -31,6 +31,9 @@ public class SetConverter<T> implements Converter<Set<T>, List<T>> {
 	}
 
 	public Set<T> fromProperty(List<T> list) {
+		if (list == null) {
+			return null;
+		}
 		Set set;
 		try {
 			set = noArgConstructor.newInstance();

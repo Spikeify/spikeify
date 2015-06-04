@@ -17,7 +17,7 @@ public class DoubleConverter implements Converter<Double, Long>, ConverterFactor
 	}
 
 	public Double fromProperty(Long property) {
-		return Double.longBitsToDouble(property);
+		return property == null ? null : Double.longBitsToDouble(property);
 	}
 
 	public Long fromField(Double fieldValue) {

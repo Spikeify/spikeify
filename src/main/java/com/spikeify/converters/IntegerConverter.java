@@ -17,7 +17,7 @@ public class IntegerConverter implements Converter<Integer, Long>, ConverterFact
 	}
 
 	public Integer fromProperty(Long property) {
-		return property.intValue();
+		return property == null ? null : property.intValue();
 	}
 
 	public Long fromField(Integer fieldValue) {

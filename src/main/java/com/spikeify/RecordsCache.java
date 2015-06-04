@@ -58,13 +58,18 @@ public class RecordsCache {
 	 *
 	 * @param key The Key
 	 * @param newProperties New object properties
+	 * @param forceReplace Skip smart cache check for changes and replace all property values
 	 * @return Changed properties.
 	 */
-	public Set<String> update(Key key, Map<String, Object> newProperties, boolean skipCache) {
+	public Set<String> update(Key key, Map<String, Object> newProperties, boolean forceReplace) {
 
 		Map<String, String> existing = cache.get().get(key);
 
 		if (existing != null) {
+			if (forceReplace) {
+				return newProperties.keySet();
+			}
+
 			Set<String> changed = new HashSet<>(newProperties.size());
 
 			for (Map.Entry<String, Object> newEntry : newProperties.entrySet()) {
@@ -77,12 +82,15 @@ public class RecordsCache {
 					if (existingProp == null || !existingProp.equals(newEntryHash)) {
 						changed.add(newEntry.getKey());
 					}
+				} else { // set to null, write it
+					if (existingProp != null) {
+						changed.add(newEntry.getKey());
+					}
 				}
-
 			}
 
 			insert(key, newProperties);
-			return skipCache ? newProperties.keySet() : changed;
+			return changed;
 		}
 
 		insert(key, newProperties);

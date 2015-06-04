@@ -1,5 +1,7 @@
 package com.spikeify;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.EntityOne;
 import org.junit.Assert;
 import org.junit.Test;
@@ -10,7 +12,7 @@ import java.util.Map;
 public class PropertiesTest {
 
 	@Test
-	public void loadProps() {
+	public void loadProps() throws JsonProcessingException {
 
 		EntityOne entityLoad = new EntityOne();
 		entityLoad.one = 123;
@@ -34,7 +36,7 @@ public class PropertiesTest {
 		Assert.assertEquals((short) 234, Long.valueOf((long) props.get("five")).shortValue());
 		Assert.assertEquals((byte) 100, Long.valueOf((long) props.get("six")).byteValue());
 		Assert.assertEquals(1420070400, (long) props.get("eight"));
-		Assert.assertFalse(props.containsKey("ignore"));
+		Assert.assertFalse(props.containsKey("ignored"));
 
 		EntityOne entitySave = new EntityOne();
 		mapper.setFieldValues(entitySave, props);
@@ -44,6 +46,8 @@ public class PropertiesTest {
 
 		// set ignored field and compare with original
 		entitySave.ignored = "should be ignored";
+		// System.out.println("Entity original: " + objectMapper.writeValueAsString(entityLoad));
+		// System.out.println("Entity saved: " + objectMapper.writeValueAsString(entitySave));
 		Assert.assertEquals(entityLoad, entitySave);
 	}
 }

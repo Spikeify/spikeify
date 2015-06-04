@@ -9,6 +9,7 @@ import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,7 @@ import java.util.Set;
 public class SingleObjectUpdater<T> {
 
 	private final T object;
-	private boolean skipCache = false;
+	private boolean forceReplace = false;
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -68,10 +69,11 @@ public class SingleObjectUpdater<T> {
 
 	/**
 	 * Sets updater to skip cache check for object changes. This causes that all
-	 * object properties will be written to database.
+	 * object properties will be written to database. It also deletes previous saved
+	 * properties in database and now not mapped to object.
 	 */
-	public SingleObjectUpdater<T> skipCache() {
-		this.skipCache = true;
+	public SingleObjectUpdater<T> forceReplace() {
+		this.forceReplace = true;
 		return this;
 	}
 
@@ -92,13 +94,6 @@ public class SingleObjectUpdater<T> {
 	 * @return The key of the record.
 	 */
 	public Key now() {
-
-		if (create) {
-			policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-		} else {
-			policy.recordExistsAction = RecordExistsAction.UPDATE;
-		}
-
 		// this should be a one-key operation
 		// if multiple keys - use the first key
 
@@ -109,18 +104,25 @@ public class SingleObjectUpdater<T> {
 		Key key = collectKey(object);
 
 		Map<String, Object> props = mapper.getProperties(object);
-		Set<String> changedProps = recordsCache.update(key, props, skipCache);
+		Set<String> changedProps = recordsCache.update(key, props, forceReplace);
 
-		Bin[] bins = new Bin[changedProps.size()];
-		int position = 0;
+		List<Bin> bins = new ArrayList<>();
+		boolean nonNullField = false;
 		for (String propName : changedProps) {
 			Object value = props.get(propName);
-			if (value instanceof List<?>) {
-				bins[position++] = new Bin(propName, (List) value);
+			if (value == null) {
+				if (!forceReplace) {
+					bins.add(Bin.asNull(propName));
+				}
+			} else if (value instanceof List<?>) {
+				bins.add(new Bin(propName, (List) value));
+				nonNullField = true;
 			} else if (value instanceof Map<?, ?>) {
-				bins[position++] = new Bin(propName, (Map) value);
+				bins.add(new Bin(propName, (Map) value));
+				nonNullField = true;
 			} else {
-				bins[position++] = new Bin(propName, value);
+				bins.add(new Bin(propName, value));
+				nonNullField = true;
 			}
 		}
 
@@ -129,8 +131,16 @@ public class SingleObjectUpdater<T> {
 
 		if (create) {
 			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+			if (!nonNullField) {
+				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
+								"At least one object property other then UserKey must be different from NULL.");
+			}
 		} else {
-			this.policy.recordExistsAction = RecordExistsAction.UPDATE;
+			if (forceReplace) {
+				this.policy.recordExistsAction = RecordExistsAction.REPLACE;
+			} else {
+				this.policy.recordExistsAction = RecordExistsAction.UPDATE;
+			}
 		}
 
 		Integer recordExpiration = mapper.getRecordExpiration(object);
@@ -145,11 +155,11 @@ public class SingleObjectUpdater<T> {
 				policy.generation = generation;
 			} else {
 				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
-						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+								". When using transact(..) you must have @Generation annotation on a field in the entity class.");
 			}
 		}
 
-		synClient.put(policy, key, bins);
+		synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
 		return key;
 	}
 }

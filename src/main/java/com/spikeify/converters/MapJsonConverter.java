@@ -26,6 +26,9 @@ public class MapJsonConverter implements Converter<Map, Map> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public Map fromProperty(Map propertyMap) {
+		if (propertyMap == null) {
+			return null;
+		}
 		Map fieldMap = NoArgClassConstructor.newInstance(classConstructor);
 		Set<Map.Entry> entrySet = propertyMap.entrySet();
 		for (Map.Entry entry : entrySet) {

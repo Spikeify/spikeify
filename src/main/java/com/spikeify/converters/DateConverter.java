@@ -18,7 +18,7 @@ public class DateConverter implements Converter<Date, Long>, ConverterFactory {
 	}
 
 	public Date fromProperty(Long property) {
-		return new Date(property);
+		return property == null ? null : new Date(property);
 	}
 
 	public Long fromField(Date date) {
