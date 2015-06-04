@@ -23,6 +23,7 @@ import java.util.Set;
 public class SingleObjectUpdater<T> {
 
 	private final T object;
+	private boolean skipCache = false;
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -65,6 +66,15 @@ public class SingleObjectUpdater<T> {
 		return this;
 	}
 
+	/**
+	 * Sets updater to skip cache check for object changes. This causes that all
+	 * object properties will be written to database.
+	 */
+	public SingleObjectUpdater<T> skipCache() {
+		this.skipCache = true;
+		return this;
+	}
+
 	protected Key collectKey(Object obj) {
 
 		// get metadata for object
@@ -99,7 +109,7 @@ public class SingleObjectUpdater<T> {
 		Key key = collectKey(object);
 
 		Map<String, Object> props = mapper.getProperties(object);
-		Set<String> changedProps = recordsCache.update(key, props);
+		Set<String> changedProps = recordsCache.update(key, props, skipCache);
 
 		Bin[] bins = new Bin[changedProps.size()];
 		int position = 0;

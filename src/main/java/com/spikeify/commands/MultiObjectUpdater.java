@@ -19,6 +19,7 @@ import java.util.*;
 public class MultiObjectUpdater {
 
 	private final Object[] objects;
+	private boolean skipCache = false;
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -54,6 +55,15 @@ public class MultiObjectUpdater {
 	 */
 	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;
+		return this;
+	}
+
+	/**
+	 * Sets updater to skip cache check for object changes. This causes that all
+	 * object properties will be written to database.
+	 */
+	public MultiObjectUpdater skipCache() {
+		this.skipCache = true;
 		return this;
 	}
 
@@ -109,7 +119,7 @@ public class MultiObjectUpdater {
 			ClassMapper mapper = MapperService.getMapper(object.getClass());
 
 			Map<String, Object> props = mapper.getProperties(object);
-			Set<String> changedProps = recordsCache.update(key, props);
+			Set<String> changedProps = recordsCache.update(key, props, skipCache);
 
 			Bin[] bins = new Bin[changedProps.size()];
 			int position = 0;
@@ -139,7 +149,7 @@ public class MultiObjectUpdater {
 				if (generation != null) {
 					policy.generation = generation;
 				} else {
-					throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+					throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
 							". When using transact(..) you must have @Generation annotation on a field in the entity class.");
 				}
 			}

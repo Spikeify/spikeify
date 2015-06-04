@@ -360,19 +360,81 @@ public class UpdaterTest {
 	}
 
 	@Test
+	public void testSkipCacheObjectUpdating() {
+		EntityOne entity1 = new EntityOne();
+		entity1.userId = 1234l;
+		entity1.one = 123;
+		entity1.two = "a test";
+
+		sfy.create(entity1).now();
+
+		EntityOne out = sfy.get(EntityOne.class).key(entity1.userId).now();
+		Assert.assertEquals(out.generation.intValue(), 1);
+
+		sfy.update(out).now();
+		out = sfy.get(EntityOne.class).key(entity1.userId).now();
+		Assert.assertEquals(out.generation.intValue(), 1);
+
+		sfy.update(out).skipCache().now();
+		out = sfy.get(EntityOne.class).key(entity1.userId).now();
+		Assert.assertEquals(out.generation.intValue(), 2);
+
+		sfy.update(out.userId, out).skipCache().now();
+		out = sfy.get(EntityOne.class).key(entity1.userId).now();
+		Assert.assertEquals(out.generation.intValue(), 3);
+
+	}
+
+	@Test
+	public void testSkipCacheObjectMultiUpdating() {
+		EntityOne entity1 = new EntityOne();
+		entity1.userId = 1234l;
+		entity1.one = 123;
+		entity1.two = "a test";
+
+		EntityOne entity2 = new EntityOne();
+		entity2.userId = 12345l;
+		entity2.one = 123;
+		entity2.two = "a test";
+
+		sfy.createAll(entity1, entity2).now();
+
+		Map<Long, EntityOne> out = sfy.getAll(EntityOne.class, entity1.userId, entity2.userId).now();
+		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 1);
+		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 1);
+
+		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).now();
+		out = sfy.getAll(EntityOne.class, entity1.userId, entity2.userId).now();
+		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 1);
+		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 1);
+
+		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).skipCache().now();
+		out = sfy.getAll(EntityOne.class, entity1.userId, entity2.userId).now();
+		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 2);
+		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 2);
+
+		sfy.updateAll(out.get(entity1.userId), out.get(entity2.userId)).skipCache().now();
+		out = sfy.getAll(EntityOne.class, entity1.userId, entity2.userId).now();
+		Assert.assertEquals(out.get(entity1.userId).generation.intValue(), 3);
+		Assert.assertEquals(out.get(entity2.userId).generation.intValue(), 3);
+
+	}
+
+	@Test
 	public void saveNullProperties() {
 
 		EntityNull entity = new EntityNull();
 		entity.userId = userKey1;
+		entity.value = "test";
 
 		sfy.create(entity)
-			.now();
+				.now();
 
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		EntityNull saved = sfy.get(EntityNull.class)
-								.key(userKey1)
-								.now();
+				.key(userKey1)
+				.now();
 
 		assertNotNull(saved);
 		assertNotNull(saved.userId);

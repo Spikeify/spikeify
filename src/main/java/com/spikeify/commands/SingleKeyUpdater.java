@@ -25,6 +25,7 @@ import java.util.Set;
 public class SingleKeyUpdater<T, K> {
 
 	private final boolean isTx;
+	private boolean skipCache = false;
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -104,6 +105,15 @@ public class SingleKeyUpdater<T, K> {
 		return this;
 	}
 
+	/**
+	 * Sets updater to skip cache check for object changes. This causes that all
+	 * object properties will be written to database.
+	 */
+	public SingleKeyUpdater<T, K> skipCache() {
+		this.skipCache = true;
+		return this;
+	}
+
 	protected void collectKeys() {
 
 		// check if any Long or String keys were provided
@@ -142,7 +152,7 @@ public class SingleKeyUpdater<T, K> {
 		}
 
 		Map<String, Object> props = mapper.getProperties(object);
-		Set<String> changedProps = recordsCache.update(key, props);
+		Set<String> changedProps = recordsCache.update(key, props, skipCache);
 
 		Bin[] bins = new Bin[changedProps.size()];
 		int position = 0;
