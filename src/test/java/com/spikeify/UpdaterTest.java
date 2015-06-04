@@ -7,10 +7,7 @@ import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spikeify.entity.EntityEnum;
-import com.spikeify.entity.EntityOne;
-import com.spikeify.entity.EntitySub;
-import com.spikeify.entity.EntityTwo;
+import com.spikeify.entity.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +15,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
 public class UpdaterTest {
@@ -98,7 +98,7 @@ public class UpdaterTest {
 		}
 		Assert.assertEquals(entity.sub.first, subReloaded.first);
 		Assert.assertEquals(entity.sub.second, subReloaded.second);
-		Assert.assertNull(subReloaded.date); // Json ignored field
+		assertNull(subReloaded.date); // Json ignored field
 	}
 
 	@Test(expected = SpikeifyError.class)
@@ -150,7 +150,7 @@ public class UpdaterTest {
 		Assert.assertEquals(entity.eleven, reloaded.eleven);
 		Assert.assertEquals(entity.sub.first, reloaded.sub.first);
 		Assert.assertEquals(entity.sub.second, reloaded.sub.second);
-		Assert.assertNull(reloaded.sub.date);
+		assertNull(reloaded.sub.date);
 	}
 
 	@Test
@@ -233,7 +233,7 @@ public class UpdaterTest {
 
 		Record result = client.get(policy, saveKey);
 
-		Assert.assertNotNull(result.bins.get("one"));
+		assertNotNull(result.bins.get("one"));
 		Assert.assertEquals(4, ((List) result.bins.get("one")).size());
 	}
 
@@ -259,7 +259,7 @@ public class UpdaterTest {
 
 		Record result = client.get(policy, saveKey);
 
-		Assert.assertNotNull(result.bins.get("one"));
+		assertNotNull(result.bins.get("one"));
 		Assert.assertEquals(4, ((Map) result.bins.get("one")).size());
 	}
 
@@ -356,6 +356,26 @@ public class UpdaterTest {
 		Assert.assertEquals(2, result.size());
 		Assert.assertEquals(entity1, result.get(key1));
 		Assert.assertEquals(entity2, result.get(key2));
+	}
+
+	@Test
+	public void saveNullProperties() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+
+		sfy.create(entity)
+			.now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNull saved = sfy.get(EntityNull.class)
+								.key(userKey1)
+								.now();
+
+		assertNotNull(saved);
+		assertNotNull(saved.userId);
+		assertNull(saved.value);
 	}
 
 }
