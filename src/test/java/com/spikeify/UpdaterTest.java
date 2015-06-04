@@ -16,6 +16,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -376,6 +377,43 @@ public class UpdaterTest {
 		assertNotNull(saved);
 		assertNotNull(saved.userId);
 		assertNull(saved.value);
+	}
+
+	@Test
+	public void saveBackToNullProperties() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+		entity.value = "Some value";
+
+		sfy.create(entity)
+		   .now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNull saved = sfy.get(EntityNull.class)
+							  .key(userKey1)
+							  .now();
+
+		assertNotNull(saved);
+		assertNotNull(saved.userId);
+		assertEquals("Some value", saved.value);
+
+		// set to null
+		saved.value = null;
+
+		sfy.update(saved)
+		   .now();
+
+		// reload entity and check that only two properties were updated
+		// setName will be implicitly set via Class name
+		EntityNull check = sfy.get(EntityNull.class)
+							  .key(userKey1)
+							  .now();
+
+		assertNotNull(check);
+		assertNotNull(check.userId);
+		assertNull(check.value);
 	}
 
 }
