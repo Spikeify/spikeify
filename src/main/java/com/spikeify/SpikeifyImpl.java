@@ -171,8 +171,52 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiObjectUpdater(isTx, synClient, asyncClient,
-				recordsCache, false, defaultNamespace, objects);
+		return new MultiObjectUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, objects);
+	}
+
+	@Override
+	public MultiKeyUpdater updateAll(Key[] keys, Object[] objects) {
+		if (objects == null || objects.length == 0) {
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys == null || keys.length == 0) {
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys.length != objects.length) {
+			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
+		}
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, keys, objects);
+	}
+
+	@Override
+	public MultiKeyUpdater updateAll(Long[] keys, Object[] objects) {
+		if (objects == null || objects.length == 0) {
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys == null || keys.length == 0) {
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys.length != objects.length) {
+			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
+		}
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, keys, objects);
+	}
+
+	@Override
+	public MultiKeyUpdater updateAll(String[] keys, Object[] objects) {
+		if (objects == null || objects.length == 0) {
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys == null || keys.length == 0) {
+			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
+		}
+		if (keys.length != objects.length) {
+			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
+		}
+		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
+		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, keys, objects);
 	}
 
 	public SingleObjectDeleter delete(Object object) {

@@ -23,7 +23,7 @@ public class RecordCacheTest {
 		longs1.add(1l);
 		longs1.add(2l);
 		props1.put("longs", longs1);
-		Set<String> updateResult1 = cache.update(key1, props1);
+		Set<String> updateResult1 = cache.update(key1, props1, false);
 		Assert.assertEquals(props1.keySet(), updateResult1);
 
 		Key key2 = new Key("namespace2", "set2", "12345");
@@ -34,7 +34,7 @@ public class RecordCacheTest {
 		strings.add("1");
 		strings.add("2");
 		props2.put("string", strings);
-		Set<String> updateResult2 = cache.update(key2, props2);
+		Set<String> updateResult2 = cache.update(key2, props2, false);
 		Assert.assertEquals(props2.keySet(), updateResult2);
 
 		// make some changes on key1
@@ -44,7 +44,7 @@ public class RecordCacheTest {
 		props1.put("three", 1.1d);
 		longs1.add(3l);  // add another long
 		props1.put("longs", longs1);
-		Set<String> updateResult12 = cache.update(key1, props1);
+		Set<String> updateResult12 = cache.update(key1, props1, false);
 		Assert.assertEquals(3, updateResult12.size());
 
 		// make some changes on key2
@@ -56,14 +56,14 @@ public class RecordCacheTest {
 		props2.put("five", null);  // null should be ignored
 		strings.remove(0); // change list of strings
 		props2.put("string", strings);
-		Set<String> updateResult22 = cache.update(key2, props2);
+		Set<String> updateResult22 = cache.update(key2, props2, false);
 		Assert.assertEquals(4, updateResult22.size());
 
 		// make more changes on key1 - flip property values
 		props1 = new HashMap<>(5);
 		props1.put("one", "test");
 		props1.put("two", 1);
-		Set<String> updateResult13 = cache.update(key1, props1);
+		Set<String> updateResult13 = cache.update(key1, props1, false);
 		Assert.assertEquals(2, updateResult13.size());
 
 		// remove props on key1
@@ -72,7 +72,7 @@ public class RecordCacheTest {
 		props1.put("one", "test"); // same value - but should be updated, because key was removed from cache
 		props1.put("two", 15);
 		props1.put("three", 12345l);
-		Set<String> updateResult14 = cache.update(key1, props1);
+		Set<String> updateResult14 = cache.update(key1, props1, false);
 		Assert.assertEquals(3, updateResult14.size());
 
 	}

@@ -60,7 +60,7 @@ public class RecordsCache {
 	 * @param newProperties New object properties
 	 * @return Changed properties.
 	 */
-	public Set<String> update(Key key, Map<String, Object> newProperties) {
+	public Set<String> update(Key key, Map<String, Object> newProperties, boolean skipCache) {
 
 		Map<String, String> existing = cache.get().get(key);
 
@@ -82,7 +82,7 @@ public class RecordsCache {
 			}
 
 			insert(key, newProperties);
-			return changed;
+			return skipCache ? newProperties.keySet() : changed;
 		}
 
 		insert(key, newProperties);

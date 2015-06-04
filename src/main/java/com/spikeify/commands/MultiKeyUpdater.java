@@ -20,6 +20,8 @@ import java.util.*;
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiKeyUpdater {
 
+	private boolean skipCache = false;
+
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Key[], Object[])} (Object...)} method.
@@ -177,6 +179,15 @@ public class MultiKeyUpdater {
 		return this;
 	}
 
+	/**
+	 * Sets updater to skip cache check for object changes. This causes that all
+	 * object properties will be written to database.
+	 */
+	public MultiKeyUpdater skipCache() {
+		this.skipCache = true;
+		return this;
+	}
+
 	protected void collectKeys() {
 
 		if (namespace == null) {
@@ -228,7 +239,7 @@ public class MultiKeyUpdater {
 			ClassMapper mapper = MapperService.getMapper(object.getClass());
 
 			Map<String, Object> props = mapper.getProperties(object);
-			Set<String> changedProps = recordsCache.update(key, props);
+			Set<String> changedProps = recordsCache.update(key, props, skipCache);
 
 			Bin[] bins = new Bin[changedProps.size()];
 			int position = 0;

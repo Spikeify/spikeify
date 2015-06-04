@@ -166,11 +166,38 @@ public interface Spikeify {
 	MultiObjectUpdater updateAll(Object... object);
 
 	/**
-	 * Starts a command chain for deleting a single record.
+	 * Starts a command chain for creating or updating multiple records.
 	 *
-	 * @param object The Java object representing a record to be deleted. The Class must contain @UserKey annotation.
+	 * @param keys An array of record keys of the records to create.
+	 * @param objects  Java objects to be mapped to the created records.
 	 * @return the command chain
 	 */
+	MultiKeyUpdater updateAll(Key[] keys, Object[] objects);
+
+	/**
+	 * Starts a command chain for creating or updating multiple records.
+	 *
+	 * @param userkeys An array of record keys of the records to create.
+	 * @param objects  Java objects to be mapped to the created records.
+	 * @return the command chain
+	 */
+	MultiKeyUpdater updateAll(Long[] userkeys, Object[] objects);
+
+	/**
+	 * Starts a command chain for creating or updating multiple records.
+	 *
+	 * @param userkeys An array of record keys of the records to create.
+	 * @param objects  Java objects to be mapped to the created records.
+	 * @return the command chain
+	 */
+	MultiKeyUpdater updateAll(String[] userkeys, Object[] objects);
+
+		/**
+		 * Starts a command chain for deleting a single record.
+		 *
+		 * @param object The Java object representing a record to be deleted. The Class must contain @UserKey annotation.
+		 * @return the command chain
+		 */
 	SingleObjectDeleter delete(Object object);
 
 	/**
