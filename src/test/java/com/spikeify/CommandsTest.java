@@ -14,7 +14,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class IncrementTest {
+public class CommandsTest {
 
 	private final String namespace = "test";
 	private final String setName = "testSetQuery";
@@ -71,6 +71,32 @@ public class IncrementTest {
 
 		Assert.assertEquals(increaseCount * innerIncrease, out.one);
 		executor.shutdown();
+	}
+
+	@Test
+	public void setBinValue() {
+
+		// create record
+		final EntityOne in = TestUtils.randomEntityOne(setName);
+		in.one = 0;
+		in.three = 246.0d;
+		in.four = 123.0f;
+		in.setFive((short) 11);
+		final Key key = sfy.create(in).now();
+
+		// change bin values via set operation
+		sfy.command(EntityOne.class)
+				.key(key)
+				.set("one", 1)
+				.set("three", 2468.0d)  // field name was
+				.set("four", 1234.0f)
+				.now();
+
+		EntityOne out = sfy.get(EntityOne.class).key(key).now();
+
+		Assert.assertEquals(1, out.one);
+		Assert.assertEquals(1234.0f, out.four, 0.1);
+		Assert.assertEquals(2468.0d, out.three, 0.1);
 	}
 
 }

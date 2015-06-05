@@ -38,7 +38,6 @@ public class SingleKeyCommander<T> {
 		this.setName = mapper.getSetName();
 	}
 
-	protected KeyType keyType;
 	protected String namespace;
 	protected String setName;
 	protected String stringKey;
@@ -136,6 +135,20 @@ public class SingleKeyCommander<T> {
 	}
 
 	/**
+	 * An atomic operation that sets or updates a value of a bin.
+	 * The provided field value will be converted to the property value, based on the converters defined via the class mapping.
+	 *
+	 * @param fieldName  Name of the mapped field.
+	 * @param fieldValue Field value to be saved to the bin.
+	 */
+	public SingleKeyCommander set(String fieldName, Object fieldValue) {
+		String binName = mapper.getBinName(fieldName);
+		Object propertyValue = mapper.getFieldMapper(fieldName).converter.fromField(fieldValue);
+		operations.add(Operation.put(new Bin(binName, propertyValue)));
+		return this;
+	}
+
+	/**
 	 * An atomic operation that appends a value to an existing bin value. Bin value must be a string type.
 	 *
 	 * @param fieldName Name of the bin or, if mapped Class was provided, name of the mapped field
@@ -166,6 +179,10 @@ public class SingleKeyCommander<T> {
 			key = new Key(getNamespace(), getSetName(), stringKey);
 		} else if (longKey != null) {
 			key = new Key(getNamespace(), getSetName(), longKey);
+		}
+
+		if (key == null) {
+			throw new SpikeifyError("Missing parameter: key not specified.");
 		}
 	}
 

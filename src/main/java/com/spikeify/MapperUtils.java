@@ -4,9 +4,12 @@ import com.aerospike.client.Key;
 import com.spikeify.annotations.*;
 import com.spikeify.converters.*;
 
-import java.lang.reflect.*;
-import java.util.ArrayList;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -43,9 +46,9 @@ public class MapperUtils {
 		return null;
 	}
 
-	public static List<FieldMapper> getFieldMappers(Class clazz) {
+	public static Map<String, FieldMapper> getFieldMappers(Class clazz) {
 
-		List<FieldMapper> mappers = new ArrayList<>();
+		Map<String, FieldMapper> mappers = new HashMap<>();
 
 		for (Field field : clazz.getDeclaredFields()) {
 			if (mappableField(field)) {
@@ -56,27 +59,25 @@ public class MapperUtils {
 					throw new SpikeifyError("Error: unable to map field '" + field.getDeclaringClass() + "." + field.getName() + "' " +
 							"of unsupported type '" + fieldType + "'.");
 				}
-				mappers.add(new FieldMapper(getBinName(field), fieldConverter, field));
+				mappers.put(field.getName(), new FieldMapper(getBinName(field), fieldConverter, field));
 			}
 		}
 
 		return mappers;
 	}
 
-	public static List<FieldMapper> getJsonMappers(Class clazz) {
-		List<FieldMapper> jsonMappers = new ArrayList<>();
+	public static Map<String, FieldMapper> getJsonMappers(Class clazz) {
+		Map<String, FieldMapper> jsonMappers = new HashMap<>();
 
 		for (Field field : clazz.getDeclaredFields()) {
 			if (field.getAnnotation(AsJson.class) != null) {
-				jsonMappers.add(new FieldMapper(getBinName(field), new JsonConverter(field), field));
+				jsonMappers.put(field.getName(), new FieldMapper(getBinName(field), new JsonConverter(field), field));
 			}
-
 		}
-
 		return jsonMappers;
 	}
 
-	private static String getBinName(Field field) {
+	public static String getBinName(Field field) {
 		// is @BinName annotation used
 		String binName = field.getName();
 		if (field.getAnnotation(BinName.class) != null) {
@@ -91,7 +92,8 @@ public class MapperUtils {
 		}
 		if (binName.length() > 14) {
 			throw new SpikeifyError("Error: Field name too long: value must be max 14 chars long, currently it's " + binName.length() +
-					". Field: '" + field.getDeclaringClass() + "." + field.getName() + "'.");		}
+					". Field: '" + field.getDeclaringClass() + "." + field.getName() + "'.");
+		}
 		return binName;
 	}
 
