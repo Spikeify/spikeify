@@ -60,13 +60,21 @@ public class ClassMapper<TYPE> {
 			throw new SpikeifyError("Class " + type.getName() + " is missing a field with @UserKey annotation.");
 		}
 		Object userKeyObj = userKeyFieldMapper.getPropertyValue(target);
-		if (userKeyObj instanceof String) {
+		if (userKeyObj == null) {
+			throw new SpikeifyError("Field with @UserKey annotation cannot be null" +
+							" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName() + ", value: null");
+		} else if (userKeyObj instanceof String) {
 			metadata.userKeyString = (String) userKeyObj;
+			if (metadata.userKeyString.isEmpty()) {
+				throw new SpikeifyError("Field with @UserKey annotation and with type of String cannot be empty" +
+								" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName() + ", value: ''");
+
+			}
 		} else if (userKeyObj instanceof Long) {
 			metadata.userKeyLong = (Long) userKeyObj;
 		} else {
 			throw new SpikeifyError("@UserKey annotation can only be used on fields of type: String, Long or long." +
-					" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName());
+							" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName());
 		}
 
 		// acquire Namespace in the following order
@@ -75,12 +83,12 @@ public class ClassMapper<TYPE> {
 		// 3. use default namespace
 		String fieldNamespace = namespaceFieldMapper != null ? namespaceFieldMapper.getPropertyValue(target) : null;
 		metadata.namespace = fieldNamespace != null ? fieldNamespace :
-				(classNamespace != null ? classNamespace : defaultNamespace);
+						(classNamespace != null ? classNamespace : defaultNamespace);
 		// namespace still not available
 		if (metadata.namespace == null) {
 			throw new SpikeifyError("Error: namespace could not be inferred from class/field annotations, " +
-					"for class " + type.getName() +
-					", nor is default namespace available.");
+							"for class " + type.getName() +
+							", nor is default namespace available.");
 		}
 
 		// acquire @SetName in the following order
@@ -89,7 +97,7 @@ public class ClassMapper<TYPE> {
 		// 3. Use Class simple name
 		String fieldSetName = setNameFieldMapper != null ? setNameFieldMapper.getPropertyValue(target) : null;
 		metadata.setName = fieldSetName != null ? fieldSetName :
-				(classSetName != null ? classSetName : type.getSimpleName());
+						(classSetName != null ? classSetName : type.getSimpleName());
 
 		// acquire @Expires
 		metadata.expires = expirationFieldMapper != null ? expirationFieldMapper.getPropertyValue(target) : null;
@@ -126,6 +134,7 @@ public class ClassMapper<TYPE> {
 
 		return props;
 	}
+
 	public FieldMapper getFieldMapper(String fieldName) {
 		return mappers.get(fieldName);
 	}
@@ -216,8 +225,8 @@ public class ClassMapper<TYPE> {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
-						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
-						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
+								userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
+								"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
 				);
 			}
 			userKeyFieldMapper.setFieldValue(object, userKey);
@@ -228,8 +237,8 @@ public class ClassMapper<TYPE> {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
-						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
-						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."
+								userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
+								"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."
 				);
 			}
 			userKeyFieldMapper.setFieldValue(object, userKey);
@@ -247,8 +256,8 @@ public class ClassMapper<TYPE> {
 			userKeyFieldMapper.converter.fromProperty(key.userKey.getObject());
 		} catch (ClassCastException e) {
 			throw new SpikeifyError("Mismatched key type: provided " + key.userKey.getObject().getClass().getName() +
-					" key can not be mapped to " + userKeyFieldMapper.field.getType() + " ("
-					+ userKeyFieldMapper.field.getDeclaringClass().getName() + "." + userKeyFieldMapper.field.getName() + ")");
+							" key can not be mapped to " + userKeyFieldMapper.field.getType() + " ("
+							+ userKeyFieldMapper.field.getDeclaringClass().getName() + "." + userKeyFieldMapper.field.getName() + ")");
 		}
 	}
 }
