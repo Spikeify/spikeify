@@ -127,6 +127,10 @@ public class MultiLoader<T, K> {
 
 		collectKeys();
 
+		if (keys.size() > 5000) {
+			throw new SpikeifyError("Cannot request more then 5000 keys in single batch request. Check out: https://www.aerospike.com/docs/guide/batch.html");
+		}
+
 		Key[] keysArray = keys.toArray(new Key[keys.size()]);
 		Record[] records = synClient.get(policy, keysArray);
 
