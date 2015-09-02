@@ -107,7 +107,7 @@ public class LoaderTest {
 		Assert.assertEquals(eleven, entity.eleven);
 		Assert.assertEquals((long) unmapped1, entity.unmapped.get("unmapped1"));
 		Assert.assertEquals(unmapped2, entity.unmapped.get("unmapped2"));
-		Assert.assertEquals(Double.doubleToLongBits(unmapped3), entity.unmapped.get("unmapped3"));
+		Assert.assertEquals(unmapped3, entity.unmapped.get("unmapped3"));
 		Assert.assertEquals(sub.first, entity.sub.first);
 		Assert.assertEquals(sub.second, entity.sub.second);
 		Assert.assertNull(entity.sub.date); // JSON ignored field - deserialize to null
