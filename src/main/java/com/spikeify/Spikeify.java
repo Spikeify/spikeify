@@ -18,6 +18,11 @@ public interface Spikeify {
 	InfoFetcher info();
 
 	/**
+	 * @return configured namespace
+	 */
+	String getNamespace();
+
+	/**
 	 * Starts a command chain for loading a single record.
 	 *
 	 * @param type The class to map resulting record to.
@@ -43,6 +48,7 @@ public interface Spikeify {
 	 */
 	<T> MultiLoader<T, Long> getAll(Class<T> type, Long... userKeys);
 
+
 	/**
 	 * Starts a command chain for loading multiple records.
 	 *
@@ -51,6 +57,13 @@ public interface Spikeify {
 	 * @return the command chain
 	 */
 	<T> MultiLoader<T, String> getAll(Class<T> type, String... userKeys);
+
+	/**
+	 *
+	 * @param type
+	 * @return
+	 */
+	<T> ScanLoader<T> scanAll(Class<T> type);
 
 	/**
 	 * Starts a command chain for creating a single record. This command fails if the records is already present in the DB.

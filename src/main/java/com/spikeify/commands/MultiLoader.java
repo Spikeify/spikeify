@@ -146,7 +146,7 @@ public class MultiLoader<T, K> {
 				T object = classConstructor.construct(type);
 
 				// save record hash into cache - used later for differential updating
-				recordsCache.insert(keysArray[i], record.bins);
+				recordsCache.insert(key, record.bins);
 
 				// set UserKey field
 				switch (key.userKey.getType()) {

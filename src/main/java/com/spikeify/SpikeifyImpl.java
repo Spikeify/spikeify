@@ -26,12 +26,18 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	private final ClassConstructor classConstructor;
 	private final String defaultNamespace;
 
-	private final RecordsCache recordsCache = new RecordsCache();
 	private final ThreadLocal<Boolean> tlTransaction = new ThreadLocal<>();
+	private final RecordsCache recordsCache = new RecordsCache();
 
 	@Override
 	public InfoFetcher info() {
 		return new InfoFetcher(synClient);
+	}
+
+	@Override
+	public String getNamespace() {
+
+		return defaultNamespace;
 	}
 
 	@Override
@@ -52,6 +58,11 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public <E> MultiLoader<E, String> getAll(Class<E> type, String... keys) {
 		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace, keys);
+	}
+
+	@Override
+	public <T> ScanLoader<T> scanAll(Class<T> type) {
+		return new ScanLoader<>(type, synClient, classConstructor, recordsCache, defaultNamespace);
 	}
 
 	@Override
@@ -263,11 +274,11 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace);
 	}
 
+
 	@Override
 	public SingleKeyCommander command(Class type) {
 		return new SingleKeyCommander(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace);
 	}
-
 
 	@Override
 	public <T> T map(Class<T> type, Key key, Record record) {
