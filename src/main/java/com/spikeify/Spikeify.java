@@ -1,5 +1,6 @@
 package com.spikeify;
 
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.spikeify.commands.*;
@@ -21,6 +22,11 @@ public interface Spikeify {
 	 * @return configured namespace
 	 */
 	String getNamespace();
+
+	/**
+	 * @return configured client
+	 */
+	IAerospikeClient getClient();
 
 	/**
 	 * Starts a command chain for loading a single record.

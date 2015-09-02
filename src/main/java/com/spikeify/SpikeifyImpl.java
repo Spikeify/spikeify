@@ -36,8 +36,12 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	@Override
 	public String getNamespace() {
-
 		return defaultNamespace;
+	}
+
+	@Override
+	public IAerospikeClient getClient() {
+		return synClient;
 	}
 
 	@Override
