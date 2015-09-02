@@ -12,6 +12,9 @@ import org.junit.Test;
 
 import java.util.*;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 @SuppressWarnings("ConstantConditions")
 public class LoaderTest {
 
@@ -92,24 +95,24 @@ public class LoaderTest {
 		EntityOne entity = sfy.get(EntityOne.class).key(userKey1).namespace(namespace).setName(setName).now();
 
 		// UserKey value
-		Assert.assertEquals(userKey1, entity.userId);
+		assertEquals(userKey1, entity.userId);
 
 		// field values
-		Assert.assertEquals(one, entity.one);
-		Assert.assertEquals(two, entity.two);
-		Assert.assertEquals(three, entity.three, 0.1);
-		Assert.assertEquals(four, entity.four, 0.1);
-		Assert.assertEquals(five, entity.getFive());
-		Assert.assertEquals(six, entity.getSix());
-		Assert.assertEquals(seven, entity.seven);
-		Assert.assertEquals(eight, entity.eight);
-		Assert.assertEquals(nine, entity.nine);
-		Assert.assertEquals(eleven, entity.eleven);
-		Assert.assertEquals((long) unmapped1, entity.unmapped.get("unmapped1"));
-		Assert.assertEquals(unmapped2, entity.unmapped.get("unmapped2"));
-		Assert.assertEquals(unmapped3, entity.unmapped.get("unmapped3"));
-		Assert.assertEquals(sub.first, entity.sub.first);
-		Assert.assertEquals(sub.second, entity.sub.second);
+		assertEquals(one, entity.one);
+		assertEquals(two, entity.two);
+		assertEquals(three, entity.three, 0.1);
+		assertEquals(four, entity.four, 0.1);
+		assertEquals(five, entity.getFive());
+		assertEquals(six, entity.getSix());
+		assertEquals(seven, entity.seven);
+		assertEquals(eight, entity.eight);
+		assertEquals(nine, entity.nine);
+		assertEquals(eleven, entity.eleven);
+		assertEquals((long) unmapped1, entity.unmapped.get("unmapped1"));
+		assertEquals(unmapped2, entity.unmapped.get("unmapped2"));
+		assertEquals(unmapped3, entity.unmapped.get("unmapped3"));
+		assertEquals(sub.first, entity.sub.first);
+		assertEquals(sub.second, entity.sub.second);
 		Assert.assertNull(entity.sub.date); // JSON ignored field - deserialize to null
 
 	}
@@ -156,13 +159,13 @@ public class LoaderTest {
 
 		Map<Long, EntityOne> result = sfy.getAll(EntityOne.class, saveKey1, saveKey2).namespace(namespace).setName(setName).now();
 
-		Assert.assertEquals(2, result.size());
+		assertEquals(2, result.size());
 		Assert.assertNotNull(result.get(saveKey1));
 		Assert.assertNotNull(result.get(saveKey2));
 
 		// UserKey value
-		Assert.assertEquals(userKey1, result.get(saveKey1).userId);
-		Assert.assertEquals(userKey2, result.get(saveKey2).userId);
+		assertEquals(userKey1, result.get(saveKey1).userId);
+		assertEquals(userKey2, result.get(saveKey2).userId);
 	}
 
 	@Test
@@ -174,7 +177,7 @@ public class LoaderTest {
 	@Test
 	public void loadAllNonExisting() {
 		Map<Long, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
-		Assert.assertTrue(recs.isEmpty());
+		assertTrue(recs.isEmpty());
 	}
 
 	@Test
@@ -186,13 +189,13 @@ public class LoaderTest {
 
 		// load via Spikeify
 		EntityOne loaded = sfy.get(EntityOne.class).key(key).now();
-		Assert.assertEquals(original, loaded);
+		assertEquals(original, loaded);
 
 		// load natively an map
 		Record loadedRecord = client.get(null, key);
 		EntityOne loadedNative = sfy.map(EntityOne.class, key, loadedRecord);
-		Assert.assertEquals(original, loadedNative);
-		Assert.assertEquals(loaded, loadedNative);
+		assertEquals(original, loadedNative);
+		assertEquals(loaded, loadedNative);
 	}
 
 
@@ -208,5 +211,52 @@ public class LoaderTest {
 		EntityTooLongBinName ent = new EntityTooLongBinName();
 		ent.thisIsAFieldWithATooLongName = "something";
 		sfy.create(123l, ent).now();
+	}
+
+	@Test
+	public void scanLoaderTest() {
+
+		Set<Long> expected = new HashSet<>();
+		Set<Long> checkExpected = new HashSet<>();
+
+		for (int i = 0; i < 100; i++) {
+			EntityOne entity = new EntityOne();
+			entity.userId = Integer.toUnsignedLong(i);
+			entity.one = i;
+
+			sfy.create(entity).now();
+
+			expected.add(entity.userId);
+		}
+
+		List<EntityOne> all = sfy.scanAll(EntityOne.class).now();
+
+		assertEquals(100, all.size());
+
+		// do we have them all?
+		for (EntityOne one: all) {
+			assertTrue(expected.contains(one.userId));
+			checkExpected.add(one.userId);
+
+			assertEquals(one.userId.longValue(), Integer.toUnsignedLong(one.one));
+		}
+
+		assertEquals(expected.size(), checkExpected.size());
+
+		// scan with max records set
+		checkExpected.clear();
+
+		List<EntityOne> notAll = sfy.scanAll(EntityOne.class).maxRecords(20).now();
+		assertEquals(20, notAll.size());
+
+		// do we have them all?
+		for (EntityOne one: notAll) {
+			assertTrue(expected.contains(one.userId));
+			checkExpected.add(one.userId);
+
+			assertEquals(one.userId.longValue(), Integer.toUnsignedLong(one.one));
+		}
+
+		assertEquals(20, checkExpected.size());
 	}
 }
