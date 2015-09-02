@@ -3,9 +3,7 @@ package com.spikeify.commands;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
-import com.spikeify.RecordsCache;
-import com.spikeify.Spikeify;
-import com.spikeify.SpikeifyError;
+import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
@@ -16,7 +14,7 @@ import java.util.*;
  * This class is not intended to be instantiated by user.
  */
 @SuppressWarnings("WeakerAccess")
-public class MultiKeyDeleter{
+public class MultiKeyDeleter {
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
@@ -57,6 +55,23 @@ public class MultiKeyDeleter{
 		this.stringKeys = keys;
 	}
 
+	/**
+	 * Used internally to create a command chain. Not intended to be used by the user directly.
+	 * Use {@link Spikeify#deleteAll(String...)} instead.
+	 */
+	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, String defaultNamespace, Class type) {
+		this.synClient = synClient;
+		this.asyncClient = asyncClient;
+		this.recordsCache = recordsCache;
+		this.namespace = defaultNamespace;
+
+		this.mapper = MapperService.getMapper(type);
+		this.type = type;
+	}
+
+	private ClassMapper mapper;
+	private Class type;
 	private List<Key> keys = new ArrayList<>();
 	private Long[] longKeys;
 	private String[] stringKeys;
@@ -68,6 +83,7 @@ public class MultiKeyDeleter{
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 *
 	 * @param namespace The namespace.
 	 */
 	public MultiKeyDeleter namespace(String namespace) {
@@ -77,6 +93,7 @@ public class MultiKeyDeleter{
 
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 *
 	 * @param setName The name of the set.
 	 */
 	public MultiKeyDeleter setName(String setName) {
@@ -135,14 +152,19 @@ public class MultiKeyDeleter{
 	}
 
 	protected String getNamespace() {
-		if (namespace == null) {
+		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
+		if (useNamespace == null) {
 			throw new SpikeifyError("Namespace not set.");
 		}
-		return namespace;
+		return useNamespace;
 	}
 
 	protected String getSetName() {
-		return setName != null ? setName : null; //mapper.getSetName();
+		String setName =  this.setName != null ? this.setName : (mapper != null ? mapper.getSetName() : null);
+		if (setName == null) {
+			throw new SpikeifyError("Set Name not provided.");
+		}
+		return setName;
 	}
 
 	/**

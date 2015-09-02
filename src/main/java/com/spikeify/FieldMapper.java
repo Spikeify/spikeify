@@ -45,6 +45,10 @@ public class FieldMapper<F, P> {
 		}
 	}
 
+	public F getFieldValue(P propertyValue) {
+		return converter.fromProperty(propertyValue);
+	}
+
 	public final String propName;
 	//	public Class<P> propType;
 	public final Converter<F, P> converter;

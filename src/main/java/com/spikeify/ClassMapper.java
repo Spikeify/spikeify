@@ -156,6 +156,26 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
+	/**
+	 * Translates bin names/values into field names/values.
+	 *
+	 * @param properties
+	 * @return
+	 */
+	public Map<String, Object> getFieldValues(Map<String, Object> properties) {
+
+		Map<String, Object> fieldValues = new HashMap<>();
+
+		for (FieldMapper fieldMapper : mappers.values()) {
+			if (properties.containsKey(fieldMapper.propName)) {
+				Object propValue = properties.get(fieldMapper.propName);
+				fieldValues.put(fieldMapper.field.getName(), fieldMapper.getFieldValue(propValue));
+			}
+		}
+
+		return fieldValues;
+	}
+
 	private long getJavaExpiration(int recordExpiration) {
 		long javaExpiration;
 

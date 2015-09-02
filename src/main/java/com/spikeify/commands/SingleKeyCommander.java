@@ -1,9 +1,6 @@
 package com.spikeify.commands;
 
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
-import com.aerospike.client.Operation;
+import com.aerospike.client.*;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
@@ -12,6 +9,7 @@ import com.spikeify.annotations.SetName;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A command chain to execute a series of atomic commands on a single Record.
@@ -57,7 +55,7 @@ public class SingleKeyCommander<T> {
 	 *
 	 * @param userKey A user key of the record to be updated.
 	 */
-	public SingleKeyCommander key(String userKey) {
+	public SingleKeyCommander<T> key(String userKey) {
 		this.stringKey = userKey;
 		this.longKey = null;
 		this.key = null;
@@ -69,7 +67,7 @@ public class SingleKeyCommander<T> {
 	 *
 	 * @param userKey A user key of the record to be updated.
 	 */
-	public SingleKeyCommander key(Long userKey) {
+	public SingleKeyCommander<T> key(Long userKey) {
 		this.longKey = userKey;
 		this.stringKey = null;
 		this.key = null;
@@ -81,7 +79,7 @@ public class SingleKeyCommander<T> {
 	 *
 	 * @param key A Key of the record to be updated.
 	 */
-	public SingleKeyCommander key(Key key) {
+	public SingleKeyCommander<T> key(Key key) {
 		this.key = key;
 		this.stringKey = null;
 		this.longKey = null;
@@ -93,7 +91,7 @@ public class SingleKeyCommander<T> {
 	 *
 	 * @param namespace The namespace.
 	 */
-	public SingleKeyCommander namespace(String namespace) {
+	public SingleKeyCommander<T> namespace(String namespace) {
 		this.namespace = namespace;
 		return this;
 	}
@@ -103,7 +101,7 @@ public class SingleKeyCommander<T> {
 	 *
 	 * @param setName The name of the set.
 	 */
-	public SingleKeyCommander setName(String setName) {
+	public SingleKeyCommander<T> setName(String setName) {
 		this.setName = setName;
 		return this;
 	}
@@ -116,7 +114,7 @@ public class SingleKeyCommander<T> {
 	 *
 	 * @param policy The policy.
 	 */
-	public SingleKeyCommander policy(WritePolicy policy) {
+	public SingleKeyCommander<T> policy(WritePolicy policy) {
 		this.policy = policy;
 		this.policy.sendKey = true;
 		return this;
@@ -128,7 +126,7 @@ public class SingleKeyCommander<T> {
 	 * @param fieldName Name of the bin or, if mapped Class was provided, name of the mapped field
 	 * @param value     Value to add to the bin value.
 	 */
-	public SingleKeyCommander add(String fieldName, int value) {
+	public SingleKeyCommander<T> add(String fieldName, int value) {
 		String binName = mapper != null ? mapper.getBinName(fieldName) : fieldName;
 		operations.add(Operation.add(new Bin(binName, value)));
 		return this;
@@ -141,10 +139,34 @@ public class SingleKeyCommander<T> {
 	 * @param fieldName  Name of the mapped field.
 	 * @param fieldValue Field value to be saved to the bin.
 	 */
-	public SingleKeyCommander set(String fieldName, Object fieldValue) {
+	public SingleKeyCommander<T> set(String fieldName, Object fieldValue) {
 		String binName = mapper.getBinName(fieldName);
 		Object propertyValue = mapper.getFieldMapper(fieldName).converter.fromField(fieldValue);
 		operations.add(Operation.put(new Bin(binName, propertyValue)));
+		return this;
+	}
+
+	/**
+	 * An atomic operation that gets a value of a bin.
+	 * The provided field value will be converted to the property value, based on the converters defined via the class mapping.
+	 *
+	 * @param fieldName Name of the mapped field.
+	 */
+	public SingleKeyCommander<T> get(String fieldName) {
+		String binName = mapper.getBinName(fieldName);
+		operations.add(Operation.get(binName));
+		return this;
+	}
+
+	/**
+	 * An atomic operation that sets or updates a value of a bin.
+	 * The provided field value will be converted to the property value, based on the converters defined via the class mapping.
+	 *
+	 * @param fieldName Name of the mapped field.
+	 */
+	public SingleKeyCommander<T> getBytes(String fieldName, int offset, int length) {
+		String binName = mapper.getBinName(fieldName);
+		operations.add(Operation.get(binName));
 		return this;
 	}
 
@@ -154,7 +176,7 @@ public class SingleKeyCommander<T> {
 	 * @param fieldName Name of the bin or, if mapped Class was provided, name of the mapped field
 	 * @param value     Value to append to the bin value.
 	 */
-	public SingleKeyCommander append(String fieldName, String value) {
+	public SingleKeyCommander<T> append(String fieldName, String value) {
 		String binName = mapper != null ? mapper.getBinName(fieldName) : fieldName;
 		operations.add(Operation.append(new Bin(binName, value)));
 		return this;
@@ -166,7 +188,7 @@ public class SingleKeyCommander<T> {
 	 * @param fieldName Name of the bin or, if mapped Class was provided, name of the mapped field
 	 * @param value     Value to prepend to the bin value.
 	 */
-	public SingleKeyCommander prepend(String fieldName, String value) {
+	public SingleKeyCommander<T> prepend(String fieldName, String value) {
 		String binName = mapper != null ? mapper.getBinName(fieldName) : fieldName;
 		operations.add(Operation.prepend(new Bin(binName, value)));
 		return this;
@@ -202,8 +224,11 @@ public class SingleKeyCommander<T> {
 
 	/**
 	 * Synchronously executes a set of atomic commands.
+	 *
+	 * @return If there is a read operation in the set of commands, then it returns a Map of field name, field value.
+	 * Otherwise returns null.
 	 */
-	public void now() {
+	public Map<String, Object> now() {
 
 		if (operations.isEmpty()) {
 			throw new SpikeifyError("Error missing command: at least one command method must be called: add(), append() or prepend()");
@@ -214,6 +239,12 @@ public class SingleKeyCommander<T> {
 		// must be set so that user key can be retrieved in queries
 		this.policy.sendKey = true;
 
-		synClient.operate(policy, key, operations.toArray(new Operation[operations.size()]));
+		Record rec = synClient.operate(policy, key, operations.toArray(new Operation[operations.size()]));
+
+		if (rec == null || rec.bins == null) {
+			return null;
+		}
+
+		return mapper.getFieldValues(rec.bins);
 	}
 }

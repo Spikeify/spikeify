@@ -267,6 +267,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 	}
 
 	@Override
+	public void get(BatchPolicy batchPolicy, List<BatchRead> list) throws AerospikeException {
+
+	}
+
+	@Override
 	public Record[] get(Policy policy, Key[] keys) throws AerospikeException {
 		return new Record[0];
 	}
@@ -374,6 +379,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 	@Override
 	public RegisterTask register(Policy policy, ClassLoader resourceLoader, String resourcePath, String serverPath, Language language) throws AerospikeException {
 		return null;
+	}
+
+	@Override
+	public void removeUdf(InfoPolicy infoPolicy, String s) throws AerospikeException {
+
 	}
 
 	@Override

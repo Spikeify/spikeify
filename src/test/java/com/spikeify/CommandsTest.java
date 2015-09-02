@@ -1,5 +1,7 @@
 package com.spikeify;
 
+import com.aerospike.client.Bin;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
@@ -9,6 +11,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -19,11 +22,13 @@ public class CommandsTest {
 	private final String namespace = "test";
 	private final String setName = "testSetQuery";
 	private Spikeify sfy;
+	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		sfy = SpikeifyService.sfy();
+		client = SpikeifyService.getClient();
 	}
 
 	@After
@@ -97,6 +102,36 @@ public class CommandsTest {
 		Assert.assertEquals(1, out.one);
 		Assert.assertEquals(1234.0f, out.four, 0.1);
 		Assert.assertEquals(2468.0d, out.three, 0.1);
+	}
+
+	@Test
+	public void getBinValue() {
+
+		// create record
+		final EntityOne in = TestUtils.randomEntityOne(setName);
+		in.one = 1;
+		in.three = 246.0d;
+		in.four = 123.0f;
+		in.setFive((short) 11);
+		in.thirteen = new byte[]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+		final Key key = sfy.create(in).now();
+
+		// change bin values via set operation
+		Map<String, Object> fields = sfy.command(EntityOne.class)
+				.key(key)
+				.get("one")
+				.get("three")  // field name was mapped
+				.get("four")
+				.get("five")
+				.get("thirteen")
+				.now();
+
+		Assert.assertEquals(1, (int) fields.get("one"));
+		Assert.assertEquals(123.0f, (float) fields.get("four"), 0.1);
+		Assert.assertEquals(246.0d, (double) fields.get("three"), 0.1);
+		Assert.assertEquals(11, (short) fields.get("five"));
+		Assert.assertEquals(10, ((byte[]) fields.get("thirteen")).length);
 	}
 
 }
