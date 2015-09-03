@@ -1,5 +1,6 @@
 package com.spikeify.entity;
 
+import com.aerospike.client.query.IndexType;
 import com.spikeify.annotations.*;
 
 import java.util.*;
@@ -16,7 +17,10 @@ public class EntityOne {
 	@Generation
 	public Integer generation;
 
+	@Indexed(name = "index_one", type = IndexType.NUMERIC)
 	public int one;
+
+	@Indexed
 	public String two;
 
 	@BinName("third")  // explicitly set the name of the bin	public double three;

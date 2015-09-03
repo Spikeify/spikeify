@@ -7,6 +7,7 @@ import com.aerospike.client.async.AsyncClient;
 import com.aerospike.client.async.AsyncClientPolicy;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.ClientPolicy;
+import com.aerospike.client.policy.Policy;
 
 /**
  * This is a helper service that provides a Spikeify instance with a default single-cluster configuration.
@@ -84,4 +85,25 @@ public class SpikeifyService {
 		return new SpikeifyImpl<>(new AerospikeClient(new ClientPolicy(), hosts), new AsyncClient(new AsyncClientPolicy(), hosts), new NoArgClassConstructor(), namespace);
 	}
 
+	/**
+	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
+	 * @param clazz to be registered (Aerospike entity)
+	 */
+	public static void register(Class<?> clazz) {
+
+		register(clazz, new Policy());
+	}
+
+	/**
+	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
+	 * @param clazz to be registered (Aerospike entity)
+	 */
+	public static void register(Class<?> clazz, Policy policy) {
+
+		if (synClient == null) {
+			throw new SpikeifyError("Missing configuration: you must call SpikeifyService.globalConfig(..) once, before using SpikeifyService.register(..).");
+		}
+
+		IndexingService.createIndex(synClient, policy, defaultNamespace, clazz);
+	}
 }

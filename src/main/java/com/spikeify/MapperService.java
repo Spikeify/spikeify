@@ -22,6 +22,14 @@ public class MapperService {
 		return classMapper;
 	}
 
+	/**
+	 * Performs common mapping task when loading an entity ... used in loaders
+	 * see {@link com.spikeify.commands.SingleLoader} {@link com.spikeify.commands.MultiLoader} {@link com.spikeify.commands.ScanLoader}
+	 * @param mapper
+	 * @param key
+	 * @param record
+	 * @param object
+	 */
 	public static void map(ClassMapper mapper, Key key, Record record, Object object) {
 		// set UserKey field
 		switch (key.userKey.getType()) {

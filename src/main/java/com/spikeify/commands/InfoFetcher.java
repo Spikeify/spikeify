@@ -4,6 +4,8 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Info;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.InfoPolicy;
+import com.aerospike.client.query.IndexCollectionType;
+import com.aerospike.client.query.IndexType;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,17 +23,20 @@ public class InfoFetcher {
 	public static final String CONFIG_SET_NAME = "set_name";
 	public static final String CONFIG_NS_NAME = "ns_name";
 	public static final String CONFIG_SET_PARAM = "sets";
+	public static final String CONFIG_SET_INDEXES = "sindex";
 	public static final String CONFIG_NAMESPACES_PARAM = "namespaces";
 	public static final String CONFIG_RECORDS_COUNT = "n_objects";
 
 	public InfoFetcher(IAerospikeClient synClient) {
+
 		this.synClient = synClient;
 	}
 
 	/**
 	 * Returns the number of records in given namespace and set.
+	 *
 	 * @param namespace The namespace.
-	 * @param setName The name of the set.
+	 * @param setName   The name of the set.
 	 * @return number of records in given namespace and set
 	 */
 	public int getRecordCount(String namespace, String setName) {
@@ -52,9 +57,11 @@ public class InfoFetcher {
 
 	/**
 	 * Fetches all namespaces available in database..
+	 *
 	 * @return A set of namespaces
 	 */
 	public Set<String> getNamespaces() {
+
 		Set<String> nsNames = new HashSet<>();
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {
@@ -66,6 +73,7 @@ public class InfoFetcher {
 
 	/**
 	 * Fetches all Sets available in database.
+	 *
 	 * @return A map of sets and the namespaces they belong to
 	 */
 	public Map<String /** set **/, String /** namespace **/> getSets() {
@@ -85,7 +93,55 @@ public class InfoFetcher {
 		return setNames;
 	}
 
+	/**
+	 * Fetches all indexes available in namespace..
+	 * @param namespace namespace
+	 * @return map of index info (index_name / info)
+	 */
+	public Map<String, IndexInfo> getIndexes(String namespace) {
+
+		return getIndexes(namespace, (String)null);
+	}
+
+	/**
+	 * Fetches all indexes of specific set available in namespace..
+	 * @param namespace namespace
+	 * @param clazz entity type
+	 * @return
+	 */
+	public Map<String, IndexInfo> getIndexes(String namespace, Class clazz) {
+		return getIndexes(namespace, clazz.getSimpleName());
+	}
+
+	/**
+	 * Fetches all indexes of specific set available in namespace..
+	 * @param namespace namespace
+	 * @param setName entity name / table name
+	 * @return map of index info (index_name / info)
+	 */
+	public Map<String, IndexInfo> getIndexes(String namespace, String setName) {
+
+		Map<String, IndexInfo> indexInfoSet = new HashMap<>();
+		Node[] nodes = synClient.getNodes();
+		for (Node node : nodes) {
+
+			String indexInfo = Info.request(new InfoPolicy(), node, CONFIG_SET_INDEXES + "/" + namespace);
+			String[] set = indexInfo.split(";");
+
+			for (String setString : set) {
+				IndexInfo info = new IndexInfo(setString);
+
+				if (setName == null || setName.equals(info.setName)) {
+					indexInfoSet.put(info.name, info);
+				}
+			}
+		}
+
+		return indexInfoSet;
+	}
+
 	private Map<String, String> parseConfigString(String configString) {
+
 		Map<String, String> result = new HashMap<>();
 		String[] chunks = configString.split(":");
 		for (String chunk : chunks) {
@@ -95,4 +151,82 @@ public class InfoFetcher {
 		return result;
 	}
 
+	/**
+	 * Holds information about index
+	 */
+	public class IndexInfo {
+
+		public String namespace;
+
+		public String setName;
+
+		public String fieldName;
+
+		public String name;
+
+		public IndexType indexType;
+
+		public IndexCollectionType collectionType;
+
+		public boolean synced;
+		public boolean canRead;
+		public boolean canWrite;
+
+		public IndexInfo(String nodeInfo) {
+
+			// index info is parsed from string ... in format
+			// ns=test:set=EntityOne:indexname=index_one:num_bins=1:bins=one:type=INT SIGNED:indextype=NONE:path=one:sync_state=synced:state=RW;
+			Map<String, String> chunks = parseConfigString(nodeInfo);
+			for (String key : chunks.keySet()) {
+				String value = chunks.get(key);
+
+				switch (key) {
+					case "ns" :
+						namespace = value;
+						break;
+
+					case "set":
+						setName = value;
+						break;
+
+					case "indexname":
+						name = value;
+						break;
+
+					case "path":
+						fieldName = value;
+						break;
+
+					case "type":
+						if ("TEXT".equals(value)) {
+							indexType = IndexType.STRING;
+						}
+						else {  // "INT SIGNED"
+							indexType = IndexType.NUMERIC;
+						}
+						break;
+
+					case "indextype":
+
+						try {
+							collectionType = IndexCollectionType.valueOf(value);
+						}
+						catch (IllegalArgumentException e) {
+							collectionType = IndexCollectionType.DEFAULT;
+						}
+
+						break;
+
+					case "sync_state" :
+						synced = "synced".equals(value);
+						break;
+
+					case "state" :
+						canRead = value.contains("R");
+						canWrite = value.contains("W");
+						break;
+				}
+			}
+		}
+	}
 }
