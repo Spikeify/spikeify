@@ -6,6 +6,7 @@ import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
 import com.spikeify.commands.InfoFetcher;
 import com.spikeify.entity.EntityIndexed;
+import com.spikeify.entity.EntityIndexed2;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Before;
@@ -13,9 +14,7 @@ import org.junit.Test;
 
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class IndexingServiceTest {
 
@@ -39,8 +38,8 @@ public class IndexingServiceTest {
 	public void testCreateIndex() throws Exception {
 
 		// create index ...
-		IndexingService.createIndex(client, new Policy(), namespace, EntityOne.class);
-		IndexingService.createIndex(client, new Policy(), namespace, EntityIndexed.class);
+		IndexingService.createIndex(sfy, new Policy(), EntityOne.class);
+		IndexingService.createIndex(sfy, new Policy(), EntityIndexed.class);
 
 		// check if index exists ...
 		Map<String, InfoFetcher.IndexInfo> indexes = sfy.info().getIndexes(namespace, EntityOne.class);
@@ -127,5 +126,19 @@ public class IndexingServiceTest {
 		assertTrue(info.canRead);
 		assertTrue(info.canWrite);
 		assertTrue(info.synced);
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void testIndexClash() {
+
+		IndexingService.createIndex(sfy, new Policy(), EntityIndexed.class);
+		try {
+			IndexingService.createIndex(sfy, new Policy(), EntityIndexed2.class);
+		}
+		catch (SpikeifyError e) {
+			assertEquals("Index: 'index_number' is already indexing entity: 'EntityIndexed', can not bind to: 'EntityIndexed2'", e.getMessage());
+			throw e;
+		}
+
 	}
 }

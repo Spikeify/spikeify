@@ -100,10 +100,6 @@ public class SpikeifyService {
 	 */
 	public static void register(Class<?> clazz, Policy policy) {
 
-		if (synClient == null) {
-			throw new SpikeifyError("Missing configuration: you must call SpikeifyService.globalConfig(..) once, before using SpikeifyService.register(..).");
-		}
-
-		IndexingService.createIndex(synClient, policy, defaultNamespace, clazz);
+		IndexingService.createIndex(sfy(), policy, clazz);
 	}
 }
