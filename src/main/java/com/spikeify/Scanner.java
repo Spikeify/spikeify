@@ -144,7 +144,6 @@ public class Scanner<T> {
 			}
 
 			indexName = getIndexName(indexed.name(), type, field);
-			setName = type.getSimpleName();
 		}
 		catch (NoSuchFieldException e) {
 			throw new SpikeifyError("Can't query: no such field: '" + fieldName + "' in: '" + type.getName() + "'!");
