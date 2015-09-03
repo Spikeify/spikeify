@@ -88,7 +88,8 @@ public class IndexingService {
 		InfoFetcher.IndexInfo found = indexes.get(indexName);
 		if (found != null) {
 
-			if (!clazz.getSimpleName().equals(found.setName)) {
+			String classSetName = getSetName(clazz);
+			if (!classSetName.equals(found.setName)) {
 				throw new SpikeifyError("Index: '" + indexName + "' is already indexing entity: '" + found.setName+ "', can not bind to: '" + clazz.getName() + "'");
 			}
 
