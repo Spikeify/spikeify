@@ -1,7 +1,6 @@
 package com.spikeify.commands;
 
 import com.aerospike.client.*;
-import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.ScanPolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
@@ -15,7 +14,6 @@ import java.util.List;
  * @param <T>
  */
 public class ScanLoader<T> {
-
 
 	public ScanLoader(Class<T> type,
 					  IAerospikeClient synClient,
@@ -118,7 +116,9 @@ public class ScanLoader<T> {
 					// save record hash into cache - used later for differential updating
 					recordsCache.insert(key, record.bins);
 
-					// set UserKey field
+					MapperService.map(mapper, key, record, object);
+
+					/*// set UserKey field
 					switch (key.userKey.getType()) {
 						case ParticleType.STRING:
 							mapper.setUserKey(object, key.userKey.toString());
@@ -132,7 +132,7 @@ public class ScanLoader<T> {
 					mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 					// set field values
-					mapper.setFieldValues(object, record.bins);
+					mapper.setFieldValues(object, record.bins);*/
 
 					list.add(object);
 

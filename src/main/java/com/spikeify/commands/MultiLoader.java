@@ -4,7 +4,6 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
@@ -148,7 +147,9 @@ public class MultiLoader<T, K> {
 				// save record hash into cache - used later for differential updating
 				recordsCache.insert(key, record.bins);
 
-				// set UserKey field
+				MapperService.map(mapper, key, record, object);
+
+				/*// set UserKey field
 				switch (key.userKey.getType()) {
 					case ParticleType.STRING:
 						mapper.setUserKey(object, key.userKey.toString());
@@ -162,7 +163,7 @@ public class MultiLoader<T, K> {
 				mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 				// set field values
-				mapper.setFieldValues(object, record.bins);
+				mapper.setFieldValues(object, record.bins);*/
 
 				switch (keyType) {
 					case KEY:

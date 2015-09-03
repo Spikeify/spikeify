@@ -2,7 +2,6 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.command.ParticleType;
 import com.spikeify.commands.*;
 
 import java.util.ConcurrentModificationException;
@@ -295,7 +294,9 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 		ClassMapper<T> mapper = MapperService.getMapper(type);
 
-		// set UserKey field
+		MapperService.map(mapper, key, record, object);
+
+		/*// set UserKey field
 		switch (key.userKey.getType()) {
 			case ParticleType.STRING:
 				mapper.setUserKey(object, key.userKey.toString());
@@ -310,7 +311,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 		// set field values
 		mapper.setFieldValues(object, record.bins);
-
+*/
 		return object;
 	}
 

@@ -4,7 +4,6 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.policy.BatchPolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
@@ -154,7 +153,9 @@ public class SingleLoader<T> {
 
 		T object = classConstructor.construct(type);
 
-		// save raw records into cache - used later for differential updating
+		MapperService.map(mapper, key, record, object);
+
+		/*// save raw records into cache - used later for differential updating
 		recordsCache.insert(key, record.bins);
 
 		// set UserKey field
@@ -171,7 +172,7 @@ public class SingleLoader<T> {
 		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
 
 		// set field values
-		mapper.setFieldValues(object, record.bins);
+		mapper.setFieldValues(object, record.bins);*/
 
 		return object;
 	}
