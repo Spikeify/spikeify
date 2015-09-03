@@ -111,7 +111,7 @@ public class IndexingService {
 	 * @param field name
 	 * @return index name
 	 */
-	private static String generateIndexName(Class<?> clazz, Field field) {
+	static String generateIndexName(Class<?> clazz, Field field) {
 
 		return "idx_" + clazz.getSimpleName() + "_" + field.getName();
 	}

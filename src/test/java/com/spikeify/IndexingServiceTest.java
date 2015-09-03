@@ -136,7 +136,7 @@ public class IndexingServiceTest {
 			IndexingService.createIndex(sfy, new Policy(), EntityIndexed2.class);
 		}
 		catch (SpikeifyError e) {
-			assertEquals("Index: 'index_number' is already indexing entity: 'EntityIndexed', can not bind to: 'EntityIndexed2'", e.getMessage());
+			assertEquals("Index: 'index_number' is already indexing entity: 'EntityIndexed', can not bind to: 'com.spikeify.entity.EntityIndexed2'", e.getMessage());
 			throw e;
 		}
 

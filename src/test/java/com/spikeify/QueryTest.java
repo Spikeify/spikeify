@@ -3,6 +3,7 @@ package com.spikeify;
 import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.*;
+import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;
@@ -23,6 +24,7 @@ public class QueryTest {
 
 	@Before
 	public void dbSetup() {
+
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
@@ -30,6 +32,7 @@ public class QueryTest {
 
 	@After
 	public void dbCleanup() {
+
 		sfy.truncateNamespace(namespace);
 	}
 
@@ -50,10 +53,10 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
-				.indexName(setName + "_index")
-				.setName(setName)
-				.setFilters(Filter.equal("two", "content"))
-				.now();
+										   .indexName(setName + "_index")
+										   .setName(setName)
+										   .setFilters(Filter.equal("two", "content"))
+										   .now();
 
 		int count = 0;
 		for (EntityOne entity : entities) {
@@ -64,10 +67,10 @@ public class QueryTest {
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
-				.indexName(setName + "_index")
-				.setName(setName)
-				.setFilters(Filter.equal("two", "content"))
-				.now();
+											.indexName(setName + "_index")
+											.setName(setName)
+											.setFilters(Filter.equal("two", "content"))
+											.now();
 
 		int count2 = 0;
 		for (EntityOne entity2 : entities2) {
@@ -153,7 +156,8 @@ public class QueryTest {
 			entity.nine.add(TestUtils.randomWord());
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			} else {
+			}
+			else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -161,11 +165,11 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-				.query(EntityOne.class)
-				.setName(setName)
-				.indexName(stringListIndex)
-				.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"))
-				.now();
+			.query(EntityOne.class)
+			.setName(setName)
+			.indexName(stringListIndex)
+			.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"))
+			.now();
 
 
 		int resultCount = 0;
@@ -177,4 +181,72 @@ public class QueryTest {
 		Assert.assertEquals(50, resultCount);
 	}
 
+	@Test
+	public void testQueryWithIndexingAnnotation() {
+
+		// register entity (and create indexes)
+		SpikeifyService.register(EntityIndexed.class);
+
+		// fill up
+		// create records
+		for (int i = 0; i < 100; i++) {
+			EntityIndexed ent = new EntityIndexed();
+			ent.key = Long.toString(new Random().nextLong());
+			ent.list = new ArrayList<>();
+
+			if (i % 10 == 0) {
+				ent.text = "content";
+
+				ent.list.add("bla");
+			}
+
+			if (i % 5 == 0) {
+				ent.list.add("hopa");
+				ent.list.add("cupa");
+			}
+
+			ent.number = i;
+
+			sfy.create(ent).now();
+		}
+
+		// 1. equals
+		ResultSet<EntityIndexed> entities = sfy.query(EntityIndexed.class)
+											   .filter("text", "content")
+											   .now();
+
+
+		int count = 0;
+		for (EntityIndexed entity : entities) {
+			count++;
+			Assert.assertEquals("content", entity.text);
+		}
+		Assert.assertEquals(10, count);
+
+
+		// 2. range
+		entities = sfy.query(EntityIndexed.class)
+					  .filter("number", 10, 20)
+					  .now();
+
+		count = 0;
+		for (EntityIndexed entity : entities) {
+			count++;
+			Assert.assertTrue(entity.number >= 10);
+			Assert.assertTrue(entity.number <= 20);
+		}
+		Assert.assertEquals(11, count);
+
+		// 2. list
+		entities = sfy.query(EntityIndexed.class)
+					  .filter("list", IndexCollectionType.LIST, "bla")
+					  .now();
+
+		count = 0;
+		for (EntityIndexed entity : entities) {
+			count++;
+			Assert.assertTrue(entity.list.contains("bla"));
+		}
+		Assert.assertEquals(10, count);
+	}
 }
