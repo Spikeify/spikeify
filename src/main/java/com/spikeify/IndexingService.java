@@ -7,6 +7,7 @@ import com.aerospike.client.query.IndexType;
 import com.aerospike.client.task.IndexTask;
 import com.spikeify.annotations.Ignore;
 import com.spikeify.annotations.Indexed;
+import com.spikeify.annotations.SetName;
 import com.spikeify.annotations.UserKey;
 import com.spikeify.commands.InfoFetcher;
 
@@ -113,7 +114,18 @@ public class IndexingService {
 	 */
 	static String generateIndexName(Class<?> clazz, Field field) {
 
-		return "idx_" + clazz.getSimpleName() + "_" + field.getName();
+		String setName = getSetName(clazz);
+		return "idx_" + setName + "_" + field.getName();
+	}
+
+	private static String getSetName(Class<?> clazz) {
+
+		SetName setName = clazz.getAnnotation(SetName.class);
+		if (setName == null) {
+			return clazz.getSimpleName();
+		}
+
+		return setName.value();
 	}
 
 	/**
