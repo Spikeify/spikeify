@@ -33,6 +33,13 @@ public class InfoFetcher {
 		this.synClient = synClient;
 	}
 
+	/**
+	 * Returns the number of records in given namespace and set.
+	 *
+	 * @param namespace The namespace.
+	 * @param clazz The name of the set.
+	 * @return number of records in given namespace and set
+	 */
 	public int getRecordCount(String namespace, Class clazz) {
 		return getRecordCount(namespace, IndexingService.getSetName(clazz));
 	}
@@ -101,7 +108,7 @@ public class InfoFetcher {
 	/**
 	 * Fetches all indexes available in namespace..
 	 * @param namespace namespace
-	 * @return map of index info (index_name / info)
+	 * @return map of index name / {@link IndexInfo}
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace) {
 
@@ -112,7 +119,7 @@ public class InfoFetcher {
 	 * Fetches all indexes of specific set available in namespace..
 	 * @param namespace namespace
 	 * @param clazz entity type
-	 * @return
+	 * @return map of index name / {@link IndexInfo}
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace, Class clazz) {
 		return getIndexes(namespace, IndexingService.getSetName(clazz));

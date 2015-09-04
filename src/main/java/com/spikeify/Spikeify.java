@@ -65,9 +65,8 @@ public interface Spikeify {
 	<T> MultiLoader<T, String> getAll(Class<T> type, String... userKeys);
 
 	/**
-	 *
-	 * @param type
-	 * @return
+	 * @param type entity type
+	 * @return list of all entities
 	 */
 	<T> ScanLoader<T> scanAll(Class<T> type);
 

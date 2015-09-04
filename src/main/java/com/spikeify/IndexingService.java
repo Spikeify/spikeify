@@ -143,15 +143,15 @@ public class IndexingService {
 	/**
 	 * Creates index for entity field ...
 	 *
-	 * @param entityType
-	 * @param client
-	 * @param policy
-	 * @param namespace
-	 * @param indexName
-	 * @param fieldName
-	 * @param indexType
-	 * @param collectionType
-	 * @return
+	 * @param entityType entity class
+	 * @param client aerospike client
+	 * @param policy policy
+	 * @param namespace namespace
+	 * @param indexName name of index
+	 * @param fieldName name of field
+	 * @param indexType type of index
+	 * @param collectionType type of collection index
+	 * @return indexing task
 	 */
 	private static IndexTask createIndex(Class entityType,
 										 IAerospikeClient client,
@@ -170,6 +170,6 @@ public class IndexingService {
 			collectionType = IndexCollectionType.DEFAULT;
 		}
 
-		return client.createIndex(policy, namespace, entityType.getSimpleName(), indexName, fieldName, indexType, collectionType);
+		return client.createIndex(policy, namespace, getSetName(entityType), indexName, fieldName, indexType, collectionType);
 	}
 }

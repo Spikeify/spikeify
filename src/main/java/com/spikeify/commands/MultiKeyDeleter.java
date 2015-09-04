@@ -67,11 +67,11 @@ public class MultiKeyDeleter {
 		this.namespace = defaultNamespace;
 
 		this.mapper = MapperService.getMapper(type);
-		this.type = type;
+	//	this.type = type;
 	}
 
 	private ClassMapper mapper;
-	private Class type;
+	// private Class type;
 	private List<Key> keys = new ArrayList<>();
 	private Long[] longKeys;
 	private String[] stringKeys;

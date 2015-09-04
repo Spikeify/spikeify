@@ -1,6 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
@@ -21,12 +20,10 @@ public class IndexingServiceTest {
 
 	private final String namespace = "test";
 	private Spikeify sfy;
-	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
 	}
 

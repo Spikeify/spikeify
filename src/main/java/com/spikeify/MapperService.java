@@ -25,10 +25,10 @@ public class MapperService {
 	/**
 	 * Performs common mapping task when loading an entity ... used in loaders
 	 * see {@link com.spikeify.commands.SingleLoader} {@link com.spikeify.commands.MultiLoader} {@link com.spikeify.commands.ScanLoader}
-	 * @param mapper
-	 * @param key
-	 * @param record
-	 * @param object
+	 * @param mapper to be used
+	 * @param key record key
+	 * @param record record value
+	 * @param object object holding data
 	 */
 	public static void map(ClassMapper mapper, Key key, Record record, Object object) {
 		// set UserKey field

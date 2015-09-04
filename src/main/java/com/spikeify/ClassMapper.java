@@ -108,7 +108,11 @@ public class ClassMapper<TYPE> {
 		return metadata;
 	}
 
+	/**
+	 * @return returns set name according to class type or setName annotation
+	 */
 	public String getSetName() {
+
 		return classSetName != null ? classSetName : type.getSimpleName();
 	}
 
@@ -159,8 +163,8 @@ public class ClassMapper<TYPE> {
 	/**
 	 * Translates bin names/values into field names/values.
 	 *
-	 * @param properties
-	 * @return
+	 * @param properties map of field properties
+	 * @return mapped properties
 	 */
 	public Map<String, Object> getFieldValues(Map<String, Object> properties) {
 

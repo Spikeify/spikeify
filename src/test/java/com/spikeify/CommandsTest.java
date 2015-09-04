@@ -1,7 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
@@ -22,13 +20,11 @@ public class CommandsTest {
 	private final String namespace = "test";
 	private final String setName = "testSetQuery";
 	private Spikeify sfy;
-	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		sfy = SpikeifyService.sfy();
-		client = SpikeifyService.getClient();
 	}
 
 	@After
