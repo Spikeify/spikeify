@@ -4,10 +4,7 @@ import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
 import com.spikeify.commands.InfoFetcher;
-import com.spikeify.entity.EntityIndexed;
-import com.spikeify.entity.EntityIndexed2;
-import com.spikeify.entity.EntityIndexed3;
-import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.*;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,6 +27,15 @@ public class IndexingServiceTest {
 	@After
 	public void dbCleanup() {
 		sfy.truncateNamespace(namespace);
+	}
+
+	@Test
+	public void readInfoNonExistent() {
+
+		Map<String, InfoFetcher.IndexInfo> indexes = sfy.info().getIndexes(namespace, EntityTwo.class);
+		assertEquals(0, indexes.size());
+
+		SpikeifyService.register(EntityTwo.class); // nothing to register
 	}
 
 	@Test
