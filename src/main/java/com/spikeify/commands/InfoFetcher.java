@@ -33,6 +33,10 @@ public class InfoFetcher {
 		this.synClient = synClient;
 	}
 
+	public int getRecordCount(String namespace, Class clazz) {
+		return getRecordCount(namespace, IndexingService.getSetName(clazz));
+	}
+
 	/**
 	 * Returns the number of records in given namespace and set.
 	 *
