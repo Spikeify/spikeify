@@ -6,6 +6,7 @@ import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.InfoPolicy;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
+import com.spikeify.IndexingService;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -110,7 +111,7 @@ public class InfoFetcher {
 	 * @return
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace, Class clazz) {
-		return getIndexes(namespace, clazz.getSimpleName());
+		return getIndexes(namespace, IndexingService.getSetName(clazz));
 	}
 
 	/**

@@ -130,7 +130,7 @@ public class IndexingService {
 		return "idx_" + setName + "_" + field.getName();
 	}
 
-	private static String getSetName(Class<?> clazz) {
+	public static String getSetName(Class<?> clazz) {
 
 		SetName setName = clazz.getAnnotation(SetName.class);
 		if (setName == null) {
