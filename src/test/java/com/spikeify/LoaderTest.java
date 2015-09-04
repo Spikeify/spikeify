@@ -221,7 +221,7 @@ public class LoaderTest {
 
 		for (int i = 0; i < 100; i++) {
 			EntityOne entity = new EntityOne();
-			entity.userId = Integer.toUnsignedLong(i);
+			entity.userId = (long) i;
 			entity.one = i;
 
 			sfy.create(entity).now();
@@ -238,7 +238,7 @@ public class LoaderTest {
 			assertTrue(expected.contains(one.userId));
 			checkExpected.add(one.userId);
 
-			assertEquals(one.userId.longValue(), Integer.toUnsignedLong(one.one));
+			assertEquals(one.userId.longValue(), (long)one.one);
 		}
 
 		assertEquals(expected.size(), checkExpected.size());
@@ -254,7 +254,7 @@ public class LoaderTest {
 			assertTrue(expected.contains(one.userId));
 			checkExpected.add(one.userId);
 
-			assertEquals(one.userId.longValue(), Integer.toUnsignedLong(one.one));
+			assertEquals(one.userId.longValue(), (long) one.one);
 		}
 
 		assertEquals(20, checkExpected.size());
