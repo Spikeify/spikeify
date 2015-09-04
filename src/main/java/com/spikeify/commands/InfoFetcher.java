@@ -158,7 +158,9 @@ public class InfoFetcher {
 		String[] chunks = configString.split(":");
 		for (String chunk : chunks) {
 			String[] chunkParts = chunk.split("=");
-			result.put(chunkParts[0], chunkParts[1]);
+			if (chunkParts.length == 2) {
+				result.put(chunkParts[0], chunkParts[1]);
+			}
 		}
 		return result;
 	}
