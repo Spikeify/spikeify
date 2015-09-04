@@ -7,6 +7,7 @@ import com.aerospike.client.query.IndexType;
 import com.spikeify.commands.InfoFetcher;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityIndexed2;
+import com.spikeify.entity.EntityIndexed3;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Before;
@@ -137,6 +138,21 @@ public class IndexingServiceTest {
 		}
 		catch (SpikeifyError e) {
 			assertEquals("Index: 'index_number' is already indexing entity: 'EntityIndexed', can not bind to: 'com.spikeify.entity.EntityIndexed2'", e.getMessage());
+			throw e;
+		}
+
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void testIndexClash_2() {
+
+		IndexingService.createIndex(sfy, new Policy(), EntityIndexed.class);
+
+		try {
+			IndexingService.createIndex(sfy, new Policy(), EntityIndexed3.class);
+		}
+		catch (SpikeifyError e) {
+			assertEquals("Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3'!", e.getMessage());
 			throw e;
 		}
 

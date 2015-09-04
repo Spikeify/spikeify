@@ -85,10 +85,11 @@ public class IndexingService {
 	 */
 	private static void check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, String fieldName, String indexName, IndexType indexType, IndexCollectionType collectionType) {
 
+		String classSetName = getSetName(clazz);
 		InfoFetcher.IndexInfo found = indexes.get(indexName);
+
 		if (found != null) {
 
-			String classSetName = getSetName(clazz);
 			if (!classSetName.equals(found.setName)) {
 				throw new SpikeifyError("Index: '" + indexName + "' is already indexing entity: '" + found.setName+ "', can not bind to: '" + clazz.getName() + "'");
 			}
@@ -103,6 +104,16 @@ public class IndexingService {
 
 			if (!collectionType.equals(found.collectionType)) {
 				throw new SpikeifyError("Index: '" + indexName + "' can not change index collection type from: '" + found.collectionType+ "', to: '" + collectionType + "', remove index manually!");
+			}
+		}
+
+		// reverse search ... is there some index on this field and set ?
+		for (InfoFetcher.IndexInfo info: indexes.values()) {
+
+			if (info.setName.equals(classSetName) &&
+				info.fieldName.equals(fieldName) &&
+				!indexName.equals(info.name)) {
+				throw new SpikeifyError("Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz.getName() + "'!");
 			}
 		}
 	}
