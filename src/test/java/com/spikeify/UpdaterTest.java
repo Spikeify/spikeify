@@ -77,8 +77,15 @@ public class UpdaterTest {
 
 		Assert.assertEquals(entity.one, record.getInt("one"));
 		Assert.assertEquals(entity.two, record.getString("two"));
-		Assert.assertEquals(entity.three, record.getDouble("third"), 0.1); // explicitly set bin name via @BinName annotation
-		Assert.assertEquals(entity.four, record.getFloat("four"), 0.1);
+
+		// support for float types is enabled
+		if (Value.UseDoubleType) {
+			Assert.assertEquals(entity.three, record.getDouble("third"), 0.1); // explicitly set bin name via @BinName annotation
+			Assert.assertEquals(entity.four, record.getFloat("four"), 0.1);
+		} else {
+			Assert.assertEquals(entity.three, record.getDouble("third"), 0.1); // explicitly set bin name via @BinName annotation
+			Assert.assertEquals(entity.four, record.getFloat("four"), 0.1);
+		}
 		Assert.assertEquals(entity.getFive(), record.getShort("five"));
 		Assert.assertEquals(entity.getSix(), record.getByte("six"));
 		Assert.assertEquals(entity.seven, record.getBoolean("seven"));

@@ -27,17 +27,47 @@ public class InfoFetcher {
 	public static final String CONFIG_SET_INDEXES = "sindex";
 	public static final String CONFIG_NAMESPACES_PARAM = "namespaces";
 	public static final String CONFIG_RECORDS_COUNT = "n_objects";
+	public static final String CONFIG_BUILD = "build";
 
 	public InfoFetcher(IAerospikeClient synClient) {
 
 		this.synClient = synClient;
 	}
 
+	public static class Build{
+		public int major;
+		public int minor;
+		public int release;
+
+		public Build(int major, int minor, int release) {
+			this.major = major;
+			this.minor = minor;
+			this.release = release;
+		}
+	}
+
+	/**
+	 * Returns the server build.
+	 *
+	 * @return server build string
+	 */
+	public Build getServerBuild() {
+		String build = null;
+		Node[] nodes = synClient.getNodes();
+		if (nodes == null || nodes.length == 0) {
+			throw new IllegalStateException("No Aerospike nodes found.");
+		}
+		build = Info.request(new InfoPolicy(), nodes[0], CONFIG_BUILD);
+		String[] buildNumbers = build.split("\\.");
+
+		return new Build(Integer.valueOf(buildNumbers[0]),Integer.valueOf(buildNumbers[1]),Integer.valueOf(buildNumbers[2]));
+	}
+
 	/**
 	 * Returns the number of records in given namespace and set.
 	 *
 	 * @param namespace The namespace.
-	 * @param clazz The name of the set.
+	 * @param clazz     The name of the set.
 	 * @return number of records in given namespace and set
 	 */
 	public int getRecordCount(String namespace, Class clazz) {
@@ -78,7 +108,10 @@ public class InfoFetcher {
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {
 			String nodeNsNames = Info.request(new InfoPolicy(), node, CONFIG_NAMESPACES_PARAM);
-			nsNames.add(nodeNsNames);
+			String[] nsNamesArray = nodeNsNames.split(";");
+			for (String nsName : nsNamesArray) {
+				nsNames.add(nsName);
+			}
 		}
 		return nsNames;
 	}
@@ -107,18 +140,20 @@ public class InfoFetcher {
 
 	/**
 	 * Fetches all indexes available in namespace..
+	 *
 	 * @param namespace namespace
 	 * @return map of index name / {@link IndexInfo}
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace) {
 
-		return getIndexes(namespace, (String)null);
+		return getIndexes(namespace, (String) null);
 	}
 
 	/**
 	 * Fetches all indexes of specific set available in namespace..
+	 *
 	 * @param namespace namespace
-	 * @param clazz entity type
+	 * @param clazz     entity type
 	 * @return map of index name / {@link IndexInfo}
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace, Class clazz) {
@@ -127,8 +162,9 @@ public class InfoFetcher {
 
 	/**
 	 * Fetches all indexes of specific set available in namespace..
+	 *
 	 * @param namespace namespace
-	 * @param setName entity name / table name
+	 * @param setName   entity name / table name
 	 * @return map of index info (index_name / info)
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace, String setName) {
@@ -195,7 +231,7 @@ public class InfoFetcher {
 				String value = chunks.get(key);
 
 				switch (key) {
-					case "ns" :
+					case "ns":
 						namespace = value;
 						break;
 
@@ -214,8 +250,7 @@ public class InfoFetcher {
 					case "type":
 						if ("TEXT".equals(value)) {
 							indexType = IndexType.STRING;
-						}
-						else {  // "INT SIGNED"
+						} else {  // "INT SIGNED"
 							indexType = IndexType.NUMERIC;
 						}
 						break;
@@ -224,18 +259,17 @@ public class InfoFetcher {
 
 						try {
 							collectionType = IndexCollectionType.valueOf(value);
-						}
-						catch (IllegalArgumentException e) {
+						} catch (IllegalArgumentException e) {
 							collectionType = IndexCollectionType.DEFAULT;
 						}
 
 						break;
 
-					case "sync_state" :
+					case "sync_state":
 						synced = "synced".equals(value);
 						break;
 
-					case "state" :
+					case "state":
 						canRead = value.contains("R");
 						canWrite = value.contains("W");
 						break;

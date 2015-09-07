@@ -1,11 +1,12 @@
 package com.spikeify.converters;
 
+import com.aerospike.client.Value;
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
 
 import java.lang.reflect.Field;
 
-public class DoubleConverter implements Converter<Double, Long>, ConverterFactory {
+public class DoubleConverter implements Converter<Double, Object>, ConverterFactory {
 
 	@Override
 	public Converter init(Field field) {
@@ -16,12 +17,26 @@ public class DoubleConverter implements Converter<Double, Long>, ConverterFactor
 		return Double.class.isAssignableFrom(type) || double.class.isAssignableFrom(type);
 	}
 
-	public Double fromProperty(Long property) {
-		return property == null ? null : Double.longBitsToDouble(property);
+	public Double fromProperty(Object property) {
+		if (property == null) {
+			return null;
+		} else if (property instanceof Double) {
+			return (Double) property;
+		} else if (property instanceof Long) {
+			return Double.longBitsToDouble((Long) property);
+		} else {
+			throw new IllegalArgumentException("Fields of type 'double' can only be mapped to DB values of Long or Double.");
+		}
 	}
 
-	public Long fromField(Double fieldValue) {
-		return Double.doubleToLongBits(fieldValue);
+	public Object fromField(Double fieldValue) {
+
+		// is double supported by the database
+		if (Value.UseDoubleType) {
+			return fieldValue;  // return Double
+		} else {
+			return Double.doubleToLongBits(fieldValue); // return Long - the old, pre-3.6.0 way of converting Double to Long
+		}
 	}
 
 }

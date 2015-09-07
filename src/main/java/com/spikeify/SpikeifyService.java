@@ -1,13 +1,14 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Host;
-import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.*;
 import com.aerospike.client.async.AsyncClient;
 import com.aerospike.client.async.AsyncClientPolicy;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.ClientPolicy;
+import com.aerospike.client.policy.InfoPolicy;
 import com.aerospike.client.policy.Policy;
+import com.spikeify.commands.InfoFetcher;
 
 /**
  * This is a helper service that provides a Spikeify instance with a default single-cluster configuration.
@@ -26,6 +27,9 @@ public class SpikeifyService {
 	public static void globalConfig(String defaultNamespace, Host... hosts) {
 		synClient = new AerospikeClient(null, hosts);
 		asyncClient = new AsyncClient(null, hosts);
+
+		checkDoubleSupport(synClient);
+
 		SpikeifyService.defaultNamespace = defaultNamespace;
 	}
 
@@ -33,7 +37,7 @@ public class SpikeifyService {
 	private static IAsyncClient asyncClient;
 	public static String defaultNamespace;
 
-	public static IAerospikeClient getClient(){
+	public static IAerospikeClient getClient() {
 		return synClient;
 	}
 
@@ -43,11 +47,9 @@ public class SpikeifyService {
 	 * @return Spikeify instance
 	 */
 	public static Spikeify sfy() {
-
 		if (synClient == null || asyncClient == null) {
 			throw new SpikeifyError("Missing configuration: you must call SpikeifyService.globalConfig(..) once, before using SpikeifyService.sfy().");
 		}
-
 		return new SpikeifyImpl(synClient, asyncClient, new NoArgClassConstructor(), defaultNamespace);
 	}
 
@@ -62,9 +64,10 @@ public class SpikeifyService {
 
 	/**
 	 * Creates a new instance of Spikeify with given parameters.
+	 *
 	 * @param namespace Default namespace
-	 * @param port Default port
-	 * @param hosts Aerospike server hosts
+	 * @param port      Default port
+	 * @param hosts     Aerospike server hosts
 	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, int port, String... hosts) {
@@ -77,29 +80,62 @@ public class SpikeifyService {
 
 	/**
 	 * Creates a new instance of Spikeify with given parameters.
+	 *
 	 * @param namespace Default namespace
-	 * @param hosts Aerospike server hosts
+	 * @param hosts     Aerospike server hosts
 	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, Host... hosts) {
-		return new SpikeifyImpl<>(new AerospikeClient(new ClientPolicy(), hosts), new AsyncClient(new AsyncClientPolicy(), hosts), new NoArgClassConstructor(), namespace);
+		AerospikeClient synClient = new AerospikeClient(new ClientPolicy(), hosts);
+		AsyncClient asyncClient = new AsyncClient(new AsyncClientPolicy(), hosts);
+
+		checkDoubleSupport(synClient);
+
+		return new SpikeifyImpl<>(synClient, asyncClient, new NoArgClassConstructor(), namespace);
 	}
 
 	/**
 	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
+	 *
 	 * @param clazz to be registered (Aerospike entity)
 	 */
 	public static void register(Class<?> clazz) {
-
 		register(clazz, new Policy());
 	}
 
 	/**
 	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
+	 *
 	 * @param clazz to be registered (Aerospike entity)
 	 */
 	public static void register(Class<?> clazz, Policy policy) {
-
 		IndexingService.createIndex(sfy(), policy, clazz);
+	}
+
+	/**
+	 * Checks if server supports saving double values. This is supported on servers >= 3.6.0
+	 * @param client
+	 */
+	public static void checkDoubleSupport(IAerospikeClient client){
+		InfoFetcher.Build build = getServerBuild(client);
+		// check that server build is >= 3.6.0
+		if (build.major >= 3 && build.minor >= 6) {
+			Value.UseDoubleType = true;  // enable server side support for double numbers
+		}
+	}
+
+	/**
+	 * Privet helper method to get servers build number.
+	 *
+	 * @return
+	 */
+	private static InfoFetcher.Build getServerBuild(IAerospikeClient client) {
+		Node[] nodes = client.getNodes();
+		if (nodes == null || nodes.length == 0) {
+			throw new IllegalStateException("No Aerospike nodes found.");
+		}
+		String build = Info.request(new InfoPolicy(), nodes[0], "build");
+		String[] buildNumbers = build.split("\\.");
+		return new InfoFetcher.Build(Integer.valueOf(buildNumbers[0]), Integer.valueOf(buildNumbers[1]), Integer.valueOf(buildNumbers[2]));
 	}
 }

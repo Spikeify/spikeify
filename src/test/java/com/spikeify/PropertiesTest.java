@@ -1,7 +1,7 @@
 package com.spikeify;
 
+import com.aerospike.client.Value;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.EntityOne;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,8 +31,15 @@ public class PropertiesTest {
 		// we need to convert accordingly
 		Assert.assertEquals(123, ((Long) props.get("one")).intValue());
 		Assert.assertEquals("a test", props.get("two"));
-		Assert.assertEquals(123.0d, Double.longBitsToDouble((long) props.get("third")), 0.1); // explicitly set bin name via @BinName annotation
-		Assert.assertEquals(123.0f, (float) Double.longBitsToDouble((long) props.get("four")), 0.1);
+
+		// support for float types is enabled
+		if (Value.UseDoubleType) {
+			Assert.assertEquals(123.0d, (double) props.get("third"), 0.1); // explicitly set bin name via @BinName annotation
+			Assert.assertEquals(123.0f, (double) props.get("four"), 0.1);
+		} else {
+			Assert.assertEquals(123.0d, Double.longBitsToDouble((long) props.get("third")), 0.1); // explicitly set bin name via @BinName annotation
+			Assert.assertEquals(123.0f, (float) Double.longBitsToDouble((long) props.get("four")), 0.1);
+		}
 		Assert.assertEquals((short) 234, Long.valueOf((long) props.get("five")).shortValue());
 		Assert.assertEquals((byte) 100, Long.valueOf((long) props.get("six")).byteValue());
 		Assert.assertEquals(1420070400, (long) props.get("eight"));
