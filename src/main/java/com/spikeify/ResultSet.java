@@ -114,6 +114,9 @@ public class ResultSet<T> implements Iterable<T> {
 		while (iterator.hasNext()) {
 			output.add(iterator.next());
 		}
+
+		close();
+
 		return output;
 	}
 }

@@ -106,6 +106,18 @@ public class SpikeifyService {
 	/**
 	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
 	 *
+	 * @param classes list of classes to be registered (Aerospike entity)
+	 */
+	public static void register(Class<?>... classes) {
+
+		for (Class item: classes) {
+			register(item, new Policy());
+		}
+	}
+
+	/**
+	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
+	 *
 	 * @param clazz to be registered (Aerospike entity)
 	 */
 	public static void register(Class<?> clazz, Policy policy) {
