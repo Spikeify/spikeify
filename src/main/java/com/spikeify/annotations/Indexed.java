@@ -1,7 +1,6 @@
 package com.spikeify.annotations;
 
 import com.aerospike.client.query.IndexCollectionType;
-import com.aerospike.client.query.IndexType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -17,11 +16,6 @@ public @interface Indexed {
 	 * if not given index name is generated automatically
 	 */
 	String name() default "";
-
-	/**
-	 * Index type
-	 */
-	IndexType type() default IndexType.STRING;
 
 	/**
 	 * Index collection type

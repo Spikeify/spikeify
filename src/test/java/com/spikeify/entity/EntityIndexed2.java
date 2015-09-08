@@ -1,6 +1,5 @@
 package com.spikeify.entity;
 
-import com.aerospike.client.query.IndexType;
 import com.spikeify.annotations.Generation;
 import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
@@ -18,7 +17,7 @@ public class EntityIndexed2 {
 	public Integer generation;
 
 	// specific index name and type
-	@Indexed(name = "index_number", type = IndexType.NUMERIC)
+	@Indexed(name = "index_number")
 	public int someOtherField;
 /*
 	// default index type

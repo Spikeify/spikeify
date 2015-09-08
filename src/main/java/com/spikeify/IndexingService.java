@@ -5,13 +5,13 @@ import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
 import com.aerospike.client.task.IndexTask;
-import com.spikeify.annotations.Ignore;
-import com.spikeify.annotations.Indexed;
-import com.spikeify.annotations.SetName;
-import com.spikeify.annotations.UserKey;
+import com.spikeify.annotations.*;
 import com.spikeify.commands.InfoFetcher;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,16 +49,22 @@ public class IndexingService {
 
 				// ignored fields and keys are skipped
 				if (field.getAnnotation(Ignore.class) != null ||
+					field.getAnnotation(Generation.class) != null ||
 					field.getAnnotation(UserKey.class) != null) {
 					continue;
 				}
 
 				Indexed index = field.getAnnotation(Indexed.class);
+
 				if (index != null) {
 
+					if (field.getAnnotation(AsJson.class) != null) {
+						throw new SpikeifyError("Field : '" + field.getName() + "' can't index fields converted to JSON, remove @AsJson or @Index annotation!");
+					}
+
 					String indexName = index.name();
-					IndexType indexType = index.type();
-					IndexCollectionType collectionType = index.collection();
+					IndexType indexType = getIndexType(field);
+					IndexCollectionType collectionType = getIndexCollectionType(field, index.collection());
 
 					// if name not given ... name is generated automatically
 					if ("".equals(indexName)) {
@@ -73,6 +79,55 @@ public class IndexingService {
 				}
 			}
 		}
+	}
+
+	protected static IndexType getIndexType(Field field) {
+
+		if (field.getType().isAssignableFrom(Character.class) ||
+			field.getType().isAssignableFrom(char.class) ||
+			field.getType().isAssignableFrom(BigDecimal.class) ||
+			field.getType().isAssignableFrom(BigInteger.class)) {
+			throw new SpikeifyError("Can't index field: " + field.getName() + ", indexing field type: " + field.getType() + " not supported!");
+		}
+
+			// others are Strings (char, enum or string)
+		if (field.getType().isAssignableFrom(boolean.class) ||
+			field.getType().isAssignableFrom(int.class) ||
+		    field.getType().isAssignableFrom(long.class) ||
+		    field.getType().isAssignableFrom(byte.class) ||
+		    field.getType().isAssignableFrom(short.class) ||
+		    field.getType().isAssignableFrom(double.class) ||
+		    field.getType().isAssignableFrom(float.class) ||
+		    field.getType().isAssignableFrom(double.class) ||
+		    field.getType().isAssignableFrom(Boolean.class) ||
+		    field.getType().isAssignableFrom(Integer.class) ||
+			field.getType().isAssignableFrom(Long.class) ||
+			field.getType().isAssignableFrom(Byte.class) ||
+			field.getType().isAssignableFrom(Short.class) ||
+			field.getType().isAssignableFrom(Float.class) ||
+			field.getType().isAssignableFrom(Double.class)) {
+			return IndexType.NUMERIC;
+		}
+
+		return IndexType.STRING;
+	}
+
+	private static IndexCollectionType getIndexCollectionType(Field field, IndexCollectionType defaultType) {
+
+		if (!IndexCollectionType.DEFAULT.equals(defaultType)) {
+			return defaultType;
+		}
+
+		if (field.getType().isAssignableFrom(List.class) ||
+			field.getType().isAssignableFrom(Array.class)) {
+			return IndexCollectionType.LIST;
+		}
+
+		if (field.getType().isAssignableFrom(Map.class)) {
+			return IndexCollectionType.MAPKEYS;
+		}
+
+		return defaultType;
 	}
 
 	/**

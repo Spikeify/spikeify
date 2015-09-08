@@ -74,7 +74,7 @@ public class IndexingServiceTest {
 
 		// 3.
 		indexes = sfy.info().getIndexes(namespace, EntityIndexed.class);
-		assertEquals(5, indexes.size());
+		assertEquals(18, indexes.size());
 
 		info = indexes.get("idx_EntityIndexed_text");
 		assertNotNull(info);
@@ -125,6 +125,137 @@ public class IndexingServiceTest {
 		assertEquals(IndexType.STRING, info.indexType);
 		assertEquals(IndexCollectionType.MAPVALUES, info.collectionType);
 		assertEquals("idx_EntityIndexed_mapValues", info.name);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		//
+		info = indexes.get("idx_EntityIndexed_aboolean");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_along");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_abyte");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_ashort");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_adouble");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_afloat");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aBoolean");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aInteger");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aLong");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aByte");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aShort");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aFloat");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_aDouble");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
 		assertEquals("EntityIndexed", info.setName);
 		assertEquals(namespace, info.namespace);
 		assertTrue(info.canRead);
