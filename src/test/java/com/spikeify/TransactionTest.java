@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 
+import static org.junit.Assert.assertTrue;
+
 public class TransactionTest {
 
 	private final Random random = new Random();
@@ -27,6 +29,7 @@ public class TransactionTest {
 
 	@Before
 	public void dbSetup() {
+
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
@@ -34,6 +37,7 @@ public class TransactionTest {
 
 	@After
 	public void dbCleanup() {
+
 		sfy.truncateNamespace(namespace);
 	}
 
@@ -58,6 +62,7 @@ public class TransactionTest {
 					sfy.transact(15, new Work<EntityOne>() {
 						@Override
 						public EntityOne run() {
+
 							EntityOne out = sfy.get(EntityOne.class).key(inKey).now();
 							out.one++;
 							sfy.update(out).now();
@@ -73,7 +78,8 @@ public class TransactionTest {
 		for (Future future : futures) {
 			try {
 				future.get();
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 		}
@@ -98,6 +104,7 @@ public class TransactionTest {
 		sfy.transact(15, new Work<EntityTx>() {
 			@Override
 			public EntityTx run() {
+
 				EntityTx out = sfy.get(EntityTx.class).key(inKey).now();
 				out.one++;
 				sfy.update(out).now();
@@ -107,6 +114,7 @@ public class TransactionTest {
 	}
 
 	public void testTransactionsDirect() {
+
 		Long start = System.currentTimeMillis();
 
 		EntityOne in = TestUtils.randomEntityOne(setName);
@@ -137,11 +145,13 @@ public class TransactionTest {
 							sfy.update(out).policy(wp).now();
 							TestUtils.counter2.incrementAndGet();
 							count = maxCount;
-						} catch (AerospikeException ae) {
+						}
+						catch (AerospikeException ae) {
 							count++;
 							try {
 								Thread.sleep(10 + random.nextInt(5 * count));
-							} catch (InterruptedException e) {
+							}
+							catch (InterruptedException e) {
 								e.printStackTrace();
 							}
 							if (count == maxCount) {
@@ -157,7 +167,8 @@ public class TransactionTest {
 		for (Future future : futures) {
 			try {
 				future.get();
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 		}
@@ -171,6 +182,7 @@ public class TransactionTest {
 	}
 
 	public void testTxNative() {
+
 		Long start = System.currentTimeMillis();
 
 		Bin one = new Bin("one", 0);
@@ -202,7 +214,8 @@ public class TransactionTest {
 							TestUtils.counter.incrementAndGet();
 							client.put(wp, key, updated);
 							count = maxCount;
-						} catch (AerospikeException ae) {
+						}
+						catch (AerospikeException ae) {
 							count++;
 							Thread.sleep(10 + random.nextInt(5 * count));
 							if (count == maxCount) {
@@ -218,7 +231,8 @@ public class TransactionTest {
 		for (Future future : futures) {
 			try {
 				future.get();
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}
 		}
@@ -238,9 +252,11 @@ public class TransactionTest {
 	 */
 	@Test
 	public void testCreationOfEntityInsideTransactionViaUpdate() {
+
 		DemoEntity out = sfy.transact(5, new Work<DemoEntity>() {
 			@Override
 			public DemoEntity run() {
+
 				DemoEntity demoEntity = sfy.get(DemoEntity.class).key("1").now();
 				if (demoEntity == null) {
 					demoEntity = new DemoEntity();
@@ -259,9 +275,11 @@ public class TransactionTest {
 	 */
 	@Test
 	public void testCreationOfEntityInsideTransactionViaCreate() {
+
 		DemoEntity out = sfy.transact(5, new Work<DemoEntity>() {
 			@Override
 			public DemoEntity run() {
+
 				DemoEntity demoEntity = sfy.get(DemoEntity.class).key("1").now();
 				boolean _new = false;
 				if (demoEntity == null) {
@@ -272,7 +290,8 @@ public class TransactionTest {
 				demoEntity.timestamp = System.currentTimeMillis();
 				if (_new) {
 					sfy.create(demoEntity).now();
-				} else {
+				}
+				else {
 					sfy.update(demoEntity).now();
 				}
 				return demoEntity;
@@ -281,7 +300,52 @@ public class TransactionTest {
 		Assert.assertEquals(out.id, "1");
 	}
 
+	@Test
+	public void testTransactionWhenWorkerThrowsException() {
+
+		try {
+
+			sfy.transact(5, new Work<DemoEntity>() {
+				@Override
+				public DemoEntity run() {
+
+					throw new IllegalArgumentException("Bang!");
+				}
+			});
+
+			assertTrue("Should not get here", false);
+		}
+		catch (IllegalArgumentException e) {
+			// ok we got it ... let's try again
+		}
+
+		DemoEntity out = sfy.transact(5, new Work<DemoEntity>() {
+			@Override
+			public DemoEntity run() {
+
+				DemoEntity demoEntity = sfy.get(DemoEntity.class).key("1").now();
+				boolean _new = false;
+				if (demoEntity == null) {
+					demoEntity = new DemoEntity();
+					demoEntity.id = "1";
+					_new = true;
+				}
+				demoEntity.timestamp = System.currentTimeMillis();
+				if (_new) {
+					sfy.create(demoEntity).now();
+				}
+				else {
+					sfy.update(demoEntity).now();
+				}
+				return demoEntity;
+			}
+		});
+
+		Assert.assertEquals(out.id, "1");
+	}
+
 	public static class DemoEntity {
+
 		@UserKey
 		public String id;
 

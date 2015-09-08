@@ -8,6 +8,7 @@ import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.RecordSet;
 import com.aerospike.client.query.Statement;
 import com.spikeify.annotations.Indexed;
+import com.spikeify.commands.InfoFetcher;
 
 import java.lang.reflect.Field;
 
@@ -20,6 +21,8 @@ public class Scanner<T> {
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 	protected final ClassMapper<T> mapper;
+
+	protected String fieldName;
 	protected String indexName;
 	protected String namespace;
 	protected String setName;
@@ -27,7 +30,8 @@ public class Scanner<T> {
 	protected Filter[] filters;
 
 	public Scanner(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	               RecordsCache recordsCache, String defaultNamespace) {
+				   RecordsCache recordsCache, String defaultNamespace) {
+
 		this.type = type;
 		this.mapper = MapperService.getMapper(type);
 		this.synClient = synClient;
@@ -37,24 +41,26 @@ public class Scanner<T> {
 		this.namespace = defaultNamespace;
 	}
 
-	@Deprecated
-	public Scanner<T> indexName(String indexName) {
-		this.indexName = indexName;
-		return this;
-	}
-
 	public Scanner<T> namespace(String namespace) {
+
 		this.namespace = namespace;
 		return this;
 	}
 
-	@Deprecated
 	public Scanner<T> setName(String setName) {
+
 		this.setName = setName;
+
+		if (indexName != null) {
+			// set name has changed ... index name must be refreshed
+			setIndexName(type, setName, namespace, fieldName);
+		}
+
 		return this;
 	}
 
 	public Scanner<T> policy(QueryPolicy policy) {
+
 		this.policy = policy;
 		this.policy.sendKey = true;
 		return this;
@@ -62,11 +68,12 @@ public class Scanner<T> {
 
 	/**
 	 * Sets query filters. From {@link com.aerospike.client.query.Statement#setFilters(Filter... filters) Statement.setFilters(..)}
+	 *
 	 * @param filters An array of filters
 	 * @return This command chain
 	 */
-	@Deprecated // make private
-	public Scanner<T> setFilters(Filter... filters) {
+	private Scanner<T> setFilters(Filter... filters) {
+
 		this.filters = filters;
 		return this;
 	}
@@ -105,45 +112,57 @@ public class Scanner<T> {
 		}
 	}
 
+
 	public Scanner<T> filter(String fieldName, String fieldValue) {
-		setIndexName(type, fieldName);
-		return setFilters(Filter.equal(fieldName, fieldValue));
-	}
 
-	public Scanner<T> filter(String fieldName, long fieldValue) {
-		setIndexName(type, fieldName);
-		return setFilters(Filter.equal(fieldName, fieldValue));
-	}
+		setIndexName(type, setName, namespace, fieldName);
 
-	public Scanner<T> filter(String fieldName, IndexCollectionType collectionType, String fieldValue) {
-		setIndexName(type, fieldName);
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, fieldName);
+
+		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
+			return setFilters(Filter.equal(fieldName, fieldValue));
+		}
+
 		return setFilters(Filter.contains(fieldName, collectionType, fieldValue));
 	}
 
-	public Scanner<T> filter(String fieldName, IndexCollectionType collectionType, long fieldValue) {
-		setIndexName(type, fieldName);
+	public Scanner<T> filter(String fieldName, long fieldValue) {
+
+		setIndexName(type, setName, namespace, fieldName);
+
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, fieldName);
+
+		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
+			return setFilters(Filter.equal(fieldName, fieldValue));
+		}
+
 		return setFilters(Filter.contains(fieldName, collectionType, fieldValue));
 	}
 
 	public Scanner<T> filter(String fieldName, long begin, long end) {
-		setIndexName(type, fieldName);
-		return setFilters(Filter.range(fieldName, begin, end));
-	}
 
-	public Scanner<T> filter(String fieldName, IndexCollectionType collectionType, long begin, long end) {
-		setIndexName(type, fieldName);
+		setIndexName(type, setName, namespace, fieldName);
+
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, fieldName);
+
+		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
+			return setFilters(Filter.range(fieldName, begin, end));
+		}
+
 		return setFilters(Filter.range(fieldName, collectionType, begin, end));
 	}
 
-	private void setIndexName(Class<T> type, String fieldName) {
+	private void setIndexName(Class<T> type, String setName, String namespace, String fieldName) {
+
 		try {
 			Field field = type.getDeclaredField(fieldName);
-			Indexed indexed = field.getAnnotation(Indexed.class);
-			if (indexed == null) {
-				throw new SpikeifyError("Can't query: missing @Indexed annotation on: '" + fieldName + "' in: '" + type.getName() + "'!");
+
+			if (field == null) {
+				throw new SpikeifyError("Can't query: no such field: '" + fieldName + "' in: '" + type.getName() + "'!");
 			}
 
-			indexName = getIndexName(indexed.name(), type, field);
+			this.fieldName = fieldName;
+			this.indexName = getIndexName(setName, namespace, type, field);
 		}
 		catch (NoSuchFieldException e) {
 			throw new SpikeifyError("Can't query: no such field: '" + fieldName + "' in: '" + type.getName() + "'!");
@@ -152,12 +171,33 @@ public class Scanner<T> {
 
 	/**
 	 * Returns set index name or generated if no name given
-	 * @param name name given in annotation
-	 * @param type class
- 	 * @param field field
+	 *
+	 * @param setName   custom set name
+	 * @param namespace custom namespace
+	 * @param type      class
+	 * @param field     field
 	 * @return index name
 	 */
-	private String getIndexName(String name, Class type, Field field) {
+	private String getIndexName(String setName, String namespace, Class type, Field field) {
+
+		if (setName != null) {
+			// explicit set name filtering (index was created manually) ... @Indexed annotation is ignored
+			// index name can not be resolved from annotations we must look up in information
+			InfoFetcher.IndexInfo info = IndexingService.findIndex(synClient, namespace, setName, field.getName());
+
+			if (info == null) {
+				throw new SpikeifyError("Index in namespace: " + namespace + ", for set: " + setName + " and field: " + field.getName() + ", not found!");
+			}
+
+			return info.name;
+		}
+
+		Indexed indexed = field.getAnnotation(Indexed.class);
+		if (indexed == null) {
+			throw new SpikeifyError("Can't query: missing @Indexed annotation on: '" + field.getName() + "' in: '" + type.getName() + "'!");
+		}
+
+		String name = indexed.name();
 
 		if ("".equals(name)) {
 			return IndexingService.generateIndexName(type, field);

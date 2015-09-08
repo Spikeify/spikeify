@@ -48,9 +48,9 @@ public class IndexingService {
 			for (Field field : fields) {
 
 				// ignored fields and keys are skipped
-				if (field.getAnnotation(Ignore.class) != null ||
-					field.getAnnotation(Generation.class) != null ||
-					field.getAnnotation(UserKey.class) != null) {
+				if (field.isAnnotationPresent(Ignore.class) ||
+					field.isAnnotationPresent(Generation.class) ||
+					field.isAnnotationPresent(UserKey.class)) {
 					continue;
 				}
 
@@ -58,7 +58,7 @@ public class IndexingService {
 
 				if (index != null) {
 
-					if (field.getAnnotation(AsJson.class) != null) {
+					if (field.isAnnotationPresent(AsJson.class)) {
 						throw new SpikeifyError("Field : '" + field.getName() + "' can't index fields converted to JSON, remove @AsJson or @Index annotation!");
 					}
 
@@ -81,6 +81,12 @@ public class IndexingService {
 		}
 	}
 
+	/**
+	 * Resolved index type according to field type
+	 * @throws SpikeifyError in case indexing field type is not supported
+	 * @param field to inspect
+	 * @return STRING or NUMERIC index type
+	 */
 	protected static IndexType getIndexType(Field field) {
 
 		if (field.getType().isAssignableFrom(Character.class) ||
@@ -112,6 +118,12 @@ public class IndexingService {
 		return IndexType.STRING;
 	}
 
+	/**
+	 * Resolves index collection type according to field type
+	 * @param field to inspect
+	 * @param defaultType default type (override)
+	 * @return index collection type for given field
+	 */
 	private static IndexCollectionType getIndexCollectionType(Field field, IndexCollectionType defaultType) {
 
 		if (!IndexCollectionType.DEFAULT.equals(defaultType)) {
@@ -185,6 +197,11 @@ public class IndexingService {
 		return "idx_" + setName + "_" + field.getName();
 	}
 
+	/**
+	 * Return set name from annotation or class name if no annotation
+	 * @param clazz to search for annotation @SetName
+	 * @return set name
+	 */
 	public static String getSetName(Class<?> clazz) {
 
 		SetName setName = clazz.getAnnotation(SetName.class);
@@ -226,5 +243,42 @@ public class IndexingService {
 		}
 
 		return client.createIndex(policy, namespace, getSetName(entityType), indexName, fieldName, indexType, collectionType);
+	}
+
+	/**
+	 * Gets index collection type from @Indexed annotation of given field in type
+	 * @param type to search for field
+	 * @param fieldName to find in type
+	 * @return index collection type or IndexCollectionType.DEFAULT if not found
+	 */
+	public static IndexCollectionType getIndexCollectionType(Class type, String fieldName) {
+
+		try {
+			Field field = type.getField(fieldName);
+			Indexed indexed = field.getAnnotation(Indexed.class);
+
+			if (indexed != null)
+				return getIndexCollectionType(field, indexed.collection());
+
+		}
+		catch (NoSuchFieldException e) {
+			throw new SpikeifyError("Field: '" + fieldName + "' is not present in Entity: " + type.getName());
+		}
+
+		return IndexCollectionType.DEFAULT;
+	}
+
+	/**
+	 * Finds index if set name was manually changed ... custom
+	 * @param synClient client
+	 * @param namespace namespace
+	 * @param fieldName field name
+	 * @param setName to search for index
+	 * @return index information or null if not found
+	 */
+	public static InfoFetcher.IndexInfo findIndex(IAerospikeClient synClient, String namespace, String setName, String fieldName) {
+
+		InfoFetcher fetcher = new InfoFetcher(synClient);
+		return fetcher.findIndex(namespace, setName, fieldName);
 	}
 }

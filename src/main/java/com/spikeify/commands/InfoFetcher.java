@@ -188,6 +188,19 @@ public class InfoFetcher {
 		return indexInfoSet;
 	}
 
+
+	public IndexInfo findIndex(String namespace, String setName, String fieldName) {
+
+		Map<String, IndexInfo> list = getIndexes(namespace, setName);
+		for (IndexInfo info: list.values()) {
+			if (info.fieldName.equals(fieldName))
+				return info;
+		}
+
+		return null;
+	}
+
+
 	private Map<String, String> parseConfigString(String configString) {
 
 		Map<String, String> result = new HashMap<>();

@@ -29,6 +29,8 @@ public class EntityOne {
 	private byte six;
 	public boolean seven;
 	public Date eight;
+
+	@Indexed
 	public List<String> nine;
 	public Map ten;
 	public EntityEnum eleven;

@@ -1,11 +1,13 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.*;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,28 +20,21 @@ import java.util.Random;
 public class QueryTest {
 
 	private final String namespace = "test";
-	private final String setName = "testSetQuery";
+	private final String setName = "EntityOne";
 	private Spikeify sfy;
-	private IAerospikeClient client;
 
 	@Before
 	public void dbSetup() {
 
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-
 		sfy.truncateNamespace(namespace);
 	}
 
 	@Test
 	public void testEntityQuery() {
 
-		client.createIndex(new Policy(), namespace, setName, setName + "_index", "two", IndexType.STRING);
+		SpikeifyService.register(EntityOne.class);
 
 		// create records
 		for (int i = 0; i < 100; i++) {
@@ -53,9 +48,7 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
-										   .indexName(setName + "_index")
-										   .setName(setName)
-										   .setFilters(Filter.equal("two", "content"))
+										   .filter("two", "content")
 										   .now();
 
 		int count = 0;
@@ -67,9 +60,7 @@ public class QueryTest {
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
-											.indexName(setName + "_index")
-											.setName(setName)
-											.setFilters(Filter.equal("two", "content"))
+											.filter("two", "content")
 											.now();
 
 		int count2 = 0;
@@ -137,10 +128,49 @@ public class QueryTest {
 	@Test
 	public void testListQuery() {
 
+		SpikeifyService.register(EntityOne.class);
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(1000, setName);
+
+		int count = 0;
+		for (EntityOne entity : entities.values()) {
+			entity.nine = new ArrayList<>();
+
+			// subset of records have predictable bin values - so they can be found by query
+			if (count % 20 == 0) {
+				entity.nine.add("content"); // fixed string
+			}
+			entity.nine.add(TestUtils.randomWord());
+			entity.nine.add(TestUtils.randomWord());
+
+			if (count % 3 == 0) {
+				sfy.create(entity).now();
+			}
+			else {
+				sfy.create(entity.userId, entity).setName(setName).now();
+			}
+
+			count++;
+		}
+
+		ResultSet<EntityOne> results = sfy
+			.query(EntityOne.class)
+			.filter("nine", "content")
+			.now();
+
+		// query should return 10 records
+		List<EntityOne> list = results.toList();
+		Assert.assertEquals(50, list.size());
+	}
+
+	@Test
+	public void testListQuery_CustomSetName() {
+
+		// custom set name and index on same entity ...
 		String stringListIndex = "index_list_string_2";
+		String setName = "testSetQuery";
 		String binString = "nine";
 
-		client.createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
+		sfy.getClient().createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
 
 		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(1000, setName);
 
@@ -154,6 +184,7 @@ public class QueryTest {
 			}
 			entity.nine.add(TestUtils.randomWord());
 			entity.nine.add(TestUtils.randomWord());
+
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
 			}
@@ -167,18 +198,22 @@ public class QueryTest {
 		ResultSet<EntityOne> results = sfy
 			.query(EntityOne.class)
 			.setName(setName)
-			.indexName(stringListIndex)
-			.setFilters(Filter.contains(binString, IndexCollectionType.LIST, "content"))
+			.filter("nine", "content")
 			.now();
 
+		// query should return 50 records
+		List<EntityOne> list = results.toList();
+		Assert.assertEquals(50, list.size());
 
-		int resultCount = 0;
-		for (EntityOne result : results) {
-			resultCount++;
-		}
+		// 2. ... set name after filter ...
+		results = sfy
+			.query(EntityOne.class)
+			.filter("nine", "content")
+			.setName(setName)
+			.now();
 
-		// query should return 10 records
-		Assert.assertEquals(50, resultCount);
+		list = results.toList();
+		Assert.assertEquals(50, list.size());
 	}
 
 	@Test
@@ -239,7 +274,7 @@ public class QueryTest {
 
 		// 2. list
 		entities = sfy.query(EntityIndexed.class)
-					  .filter("list", IndexCollectionType.LIST, "bla")
+					  .filter("list", "bla")
 					  .now();
 
 		count = 0;

@@ -5,7 +5,9 @@ import com.aerospike.client.Record;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.query.RecordSet;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
 public class ResultSet<T> implements Iterable<T> {
@@ -98,5 +100,20 @@ public class ResultSet<T> implements Iterable<T> {
 		public void remove() {
 			throw new IllegalStateException("Remove operation is not supported.");
 		}
+	}
+
+	/**
+	 * Generic method to convert iterator to list
+	 * @return list of values or empty list if none present
+	 */
+	public List<T> toList() {
+
+		List<T> output = new ArrayList<>();
+		Iterator<T> iterator = iterator();
+
+		while (iterator.hasNext()) {
+			output.add(iterator.next());
+		}
+		return output;
 	}
 }
