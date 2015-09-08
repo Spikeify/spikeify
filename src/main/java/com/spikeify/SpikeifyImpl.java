@@ -405,7 +405,13 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 				} else {
 					throw new AerospikeException(ex.getResultCode(), ex.getMessage());
 				}
+			} catch (Exception e) {
+
+				log.log(Level.SEVERE, "Worker exception, transaction aborted!", e);
+				tlTransaction.remove();
+				throw e;
 			}
+
 			try {
 				Thread.sleep((long) (10 + (Math.random() * 10 * retries))); // sleep for random time to give competing thread chance to finish job
 			} catch (InterruptedException e) {
