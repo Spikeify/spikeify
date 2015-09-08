@@ -284,6 +284,16 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
+	public boolean exists(Class type, Key key) {
+		return synClient.exists(null, key);
+	}
+
+	@Override
+	public boolean[] exist(Class type, Key[] keys) {
+		return synClient.exists(null, keys);
+	}
+
+	@Override
 	public <T> T map(Class<T> type, Key key, Record record) {
 
 		if (record == null) {

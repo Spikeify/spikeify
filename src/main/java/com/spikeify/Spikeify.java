@@ -290,6 +290,22 @@ public interface Spikeify {
 	<T> SingleKeyCommander<T> command(Class<T> type);
 
 	/**
+	 * Chechs if a record with given key exists in the DB.
+	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param key Key of the record to check existence of.
+	 * @return
+	 */
+	boolean exists(Class type, Key key);
+
+	/**
+	 * Checks if records for given keys exist in the DB.
+	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param key Keys of the records to check existence of.
+	 * @return
+	 */
+	boolean[] exist(Class type, Key... key);
+
+	/**
 	 * A helper method that directly maps Record to Java object.
 	 *
 	 * @param type   A Class to map to.

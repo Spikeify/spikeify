@@ -193,4 +193,34 @@ public class CreatorTest {
 		Assert.assertEquals(reloaded.nine.size(), 2);
 		Assert.assertEquals(reloaded.twelve.size(), 2);
 	}
+
+	@Test
+	public void checkExists() {
+
+		// create record
+		final EntityOne in1 = TestUtils.randomEntityOne(setName);
+
+		final Key key = sfy.create(in1).now();
+
+		// change bin values via set operation
+		boolean exists = sfy.exists(EntityOne.class, key);
+
+		Assert.assertTrue(exists);
+	}
+
+	@Test
+	public void checkExistsMulti() {
+
+		// create record
+		final EntityOne in1 = TestUtils.randomEntityOne(setName);
+		final EntityOne in2 = TestUtils.randomEntityOne(setName);
+
+		final Key key1 = sfy.create(in1).now();
+		final Key key2 = sfy.create(in2).now();
+
+		// change bin values via set operation
+		boolean[] exist = sfy.exist(EntityOne.class, key1, key2);
+
+		Assert.assertEquals(2, exist.length);
+	}
 }
