@@ -108,10 +108,9 @@ public class Scanner<T> {
 		}
 
 		if (indexName == null) {
-			throw new SpikeifyError("Error: Index name not defined.");
+			throw new SpikeifyError("Error: Index name not defined. Missing filter() expression!");
 		}
 	}
-
 
 	public Scanner<T> filter(String fieldName, String fieldValue) {
 
