@@ -5,6 +5,8 @@ import com.aerospike.client.async.IAsyncClient;
 import com.spikeify.commands.*;
 
 import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -284,13 +286,87 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public boolean exists(Class type, Key key) {
+	public boolean exists(Key key) {
 		return synClient.exists(null, key);
 	}
 
 	@Override
-	public boolean[] exist(Class type, Key[] keys) {
-		return synClient.exists(null, keys);
+	public Map<Key, Boolean> exist(Key... keys) {
+		boolean[] exist = synClient.exists(null, keys);
+
+		Map<Key, Boolean> results = new HashMap<>(keys.length);
+		for (int i = 0; i < keys.length; i++) {
+			results.put(keys[i], exist[i]);
+		}
+		return results;
+	}
+
+	@Override
+	public boolean exists(Class type, String id) {
+		ClassMapper mapper = MapperService.getMapper(type);
+		return synClient.exists(null, new Key(getNamespace(mapper), getSetName(mapper), id));
+	}
+
+	@Override
+	public Map<String, Boolean> exist(Class type, String... ids) {
+		ClassMapper mapper = MapperService.getMapper(type);
+		String namespace = getNamespace(mapper);
+		String setName = getSetName(mapper);
+		Key[] keys = new Key[ids.length];
+		for (int i = 0; i < ids.length; i++) {
+			String id = ids[i];
+			keys[i] = new Key(namespace, setName, id);
+		}
+		boolean[] exist = synClient.exists(null, keys);
+
+		Map<String, Boolean> results = new HashMap<>(keys.length);
+		for (int i = 0; i < ids.length; i++) {
+			results.put(ids[i], exist[i]);
+		}
+		return results;
+	}
+
+	@Override
+	public boolean exists(Class type, Long id) {
+		ClassMapper mapper = MapperService.getMapper(type);
+		Key key = new Key(getNamespace(mapper), getSetName(mapper), id);
+		return synClient.exists(null, key);
+	}
+
+	@Override
+	public Map<Long, Boolean> exist(Class type, Long... ids) {
+		ClassMapper mapper = MapperService.getMapper(type);
+		String namespace = getNamespace(mapper);
+		String setName = getSetName(mapper);
+		Key[] keys = new Key[ids.length];
+		for (int i = 0; i < ids.length; i++) {
+			Long id = ids[i];
+			keys[i] = new Key(namespace, setName, id);
+		}
+		boolean[] exist = synClient.exists(null, keys);
+
+		Map<Long, Boolean> results = new HashMap<>(keys.length);
+		for (int i = 0; i < ids.length; i++) {
+			results.put(ids[i], exist[i]);
+		}
+		return results;
+	}
+
+	private String getNamespace(ClassMapper mapper) {
+		String useNamespace = mapper.getNamespace();
+		useNamespace = useNamespace == null ? defaultNamespace : useNamespace;
+		if (useNamespace == null) {
+			throw new SpikeifyError("Namespace not set. Use annotations or set a default namespace.");
+		}
+		return useNamespace;
+	}
+
+	private String getSetName(ClassMapper mapper) {
+		String setName = mapper.getSetName();
+		if (setName == null) {
+			throw new SpikeifyError("Set Name not provided.");
+		}
+		return setName;
 	}
 
 	@Override

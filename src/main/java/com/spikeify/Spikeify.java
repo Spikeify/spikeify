@@ -5,6 +5,8 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.spikeify.commands.*;
 
+import java.util.Map;
+
 /**
  * This is the main class of Spikeify. All command chains start from this class.
  */
@@ -186,8 +188,8 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating or updating multiple records.
 	 *
-	 * @param keys An array of record keys of the records to create.
-	 * @param objects  Java objects to be mapped to the created records.
+	 * @param keys    An array of record keys of the records to create.
+	 * @param objects Java objects to be mapped to the created records.
 	 * @return the command chain
 	 */
 	MultiKeyUpdater updateAll(Key[] keys, Object[] objects);
@@ -210,12 +212,12 @@ public interface Spikeify {
 	 */
 	MultiKeyUpdater updateAll(String[] userkeys, Object[] objects);
 
-		/**
-		 * Starts a command chain for deleting a single record.
-		 *
-		 * @param object The Java object representing a record to be deleted. The Class must contain @UserKey annotation.
-		 * @return the command chain
-		 */
+	/**
+	 * Starts a command chain for deleting a single record.
+	 *
+	 * @param object The Java object representing a record to be deleted. The Class must contain @UserKey annotation.
+	 * @return the command chain
+	 */
 	SingleObjectDeleter delete(Object object);
 
 	/**
@@ -291,19 +293,55 @@ public interface Spikeify {
 
 	/**
 	 * Chechs if a record with given key exists in the DB.
-	 * @param type The mapped class, used to derive namespace & setName.
+	 *
 	 * @param key Key of the record to check existence of.
-	 * @return
+	 * @return True if record exists, false otherwise
 	 */
-	boolean exists(Class type, Key key);
+	boolean exists(Key key);
 
 	/**
 	 * Checks if records for given keys exist in the DB.
-	 * @param type The mapped class, used to derive namespace & setName.
+	 *
 	 * @param key Keys of the records to check existence of.
-	 * @return
+	 * @return Array of booleans
 	 */
-	boolean[] exist(Class type, Key... key);
+	Map<Key, Boolean> exist(Key... key);
+
+	/**
+	 * Chechs if a record with given key exists in the DB.
+	 *
+	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param id   ID of the record to check existence of.
+	 * @return True if record exists, false otherwise
+	 */
+	boolean exists(Class type, String id);
+
+	/**
+	 * Checks if records for given keys exist in the DB.
+	 *
+	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param ids  IDs of the records to check existence of.
+	 * @return Array of booleans representing if records exist
+	 */
+	Map<String, Boolean> exist(Class type, String... ids);
+
+	/**
+	 * Chechs if a record with given key exists in the DB.
+	 *
+	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param id   ID of the record to check existence of.
+	 * @return True if record exists, false otherwise
+	 */
+	boolean exists(Class type, Long id);
+
+	/**
+	 * Checks if records for given keys exist in the DB.
+	 *
+	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param ids  IDs of the records to check existence of.
+	 * @return Array of booleans representing if records exist
+	 */
+	Map<Long, Boolean> exist(Class type, Long... ids);
 
 	/**
 	 * A helper method that directly maps Record to Java object.

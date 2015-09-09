@@ -1,5 +1,6 @@
 package com.spikeify;
 
+import com.spikeify.entity.EntityExists;
 import com.spikeify.entity.EntityOne;
 
 import java.util.Date;
@@ -64,6 +65,12 @@ public class TestUtils {
 		ent.setSix((byte) random.nextInt());
 		ent.seven = random.nextBoolean();
 		ent.eight = new Date(random.nextLong());
+		return ent;
+	}
+
+	public static EntityExists randomEntityExists() {
+		EntityExists ent = new EntityExists();
+		ent.userId = new Random().nextLong();
 		return ent;
 	}
 }

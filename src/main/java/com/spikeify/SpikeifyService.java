@@ -126,7 +126,7 @@ public class SpikeifyService {
 
 	/**
 	 * Checks if server supports saving double values. This is supported on servers >= 3.6.0
-	 * @param client
+	 * @param client Native Aerospike client
 	 */
 	public static void checkDoubleSupport(IAerospikeClient client){
 		InfoFetcher.Build build = getServerBuild(client);
@@ -139,7 +139,7 @@ public class SpikeifyService {
 	/**
 	 * Privet helper method to get servers build number.
 	 *
-	 * @return
+	 * @return Server build version as InfoFetcher.Build
 	 */
 	private static InfoFetcher.Build getServerBuild(IAerospikeClient client) {
 		Node[] nodes = client.getNodes();

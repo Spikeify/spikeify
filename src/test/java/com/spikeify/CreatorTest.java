@@ -1,6 +1,7 @@
 package com.spikeify;
 
 import com.aerospike.client.*;
+import com.spikeify.entity.EntityExists;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;
@@ -198,29 +199,37 @@ public class CreatorTest {
 	public void checkExists() {
 
 		// create record
-		final EntityOne in1 = TestUtils.randomEntityOne(setName);
+		final EntityExists in = TestUtils.randomEntityExists();
 
-		final Key key = sfy.create(in1).now();
+		final Key key = sfy.create(in).now();
 
 		// change bin values via set operation
-		boolean exists = sfy.exists(EntityOne.class, key);
+		boolean existsByKey = sfy.exists(key);
+		boolean existsById = sfy.exists(EntityExists.class, in.userId);
 
-		Assert.assertTrue(exists);
+		Assert.assertTrue(existsByKey);
+		Assert.assertTrue(existsById);
 	}
 
 	@Test
 	public void checkExistsMulti() {
 
 		// create record
-		final EntityOne in1 = TestUtils.randomEntityOne(setName);
-		final EntityOne in2 = TestUtils.randomEntityOne(setName);
+		final EntityExists in1 = TestUtils.randomEntityExists();
+		final EntityExists in2 = TestUtils.randomEntityExists();
 
 		final Key key1 = sfy.create(in1).now();
 		final Key key2 = sfy.create(in2).now();
 
 		// change bin values via set operation
-		boolean[] exist = sfy.exist(EntityOne.class, key1, key2);
+		Map<Key, Boolean> existByKeys = sfy.exist(key1, key2);
+		Map<Long, Boolean> existsByIds = sfy.exist(EntityExists.class, in1.userId, in2.userId);
 
-		Assert.assertEquals(2, exist.length);
+		Assert.assertEquals(2, existByKeys.size());
+		Assert.assertTrue(existByKeys.get(key1));
+		Assert.assertTrue(existByKeys.get(key2));
+		Assert.assertEquals(2, existsByIds.size());
+		Assert.assertTrue(existsByIds.get(in1.userId));
+		Assert.assertTrue(existsByIds.get(in2.userId));
 	}
 }
