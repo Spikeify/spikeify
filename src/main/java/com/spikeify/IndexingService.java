@@ -177,7 +177,8 @@ public class IndexingService {
 		// reverse search ... is there some index on this field and set ?
 		for (InfoFetcher.IndexInfo info: indexes.values()) {
 
-			if (info.setName.equals(classSetName) &&
+			if (info != null &&
+				info.setName.equals(classSetName) &&
 				info.fieldName.equals(fieldName) &&
 				!indexName.equals(info.name)) {
 				throw new SpikeifyError("Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz.getName() + "'!");

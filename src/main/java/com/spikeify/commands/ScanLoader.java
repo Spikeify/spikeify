@@ -126,7 +126,6 @@ public class ScanLoader<T> {
 
 		try {
 
-
 			synClient.scanAll(getPolicy(), getNamespace(), getSetName(), new ScanCallback() {
 				@Override
 				public void scanCallback(Key key, Record record) throws AerospikeException {
