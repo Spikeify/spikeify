@@ -178,9 +178,7 @@ public class IndexingService {
 		for (InfoFetcher.IndexInfo info: indexes.values()) {
 
 			if (info != null &&
-				info.setName != null &&
 				info.setName.equals(classSetName) &&
-				info.fieldName != null &&
 				info.fieldName.equals(fieldName) &&
 				!indexName.equals(info.name)) {
 				throw new SpikeifyError("Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz.getName() + "'!");
@@ -257,7 +255,7 @@ public class IndexingService {
 	public static IndexCollectionType getIndexCollectionType(Class type, String fieldName) {
 
 		try {
-			Field field = type.getField(fieldName);
+			Field field = type.getDeclaredField(fieldName);
 			Indexed indexed = field.getAnnotation(Indexed.class);
 
 			if (indexed != null)

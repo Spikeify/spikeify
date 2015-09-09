@@ -34,12 +34,14 @@ public class InfoFetcher {
 		this.synClient = synClient;
 	}
 
-	public static class Build{
+	public static class Build {
+
 		public int major;
 		public int minor;
 		public int release;
 
 		public Build(int major, int minor, int release) {
+
 			this.major = major;
 			this.minor = minor;
 			this.release = release;
@@ -52,6 +54,7 @@ public class InfoFetcher {
 	 * @return server build string
 	 */
 	public Build getServerBuild() {
+
 		String build = null;
 		Node[] nodes = synClient.getNodes();
 		if (nodes == null || nodes.length == 0) {
@@ -60,7 +63,7 @@ public class InfoFetcher {
 		build = Info.request(new InfoPolicy(), nodes[0], CONFIG_BUILD);
 		String[] buildNumbers = build.split("\\.");
 
-		return new Build(Integer.valueOf(buildNumbers[0]),Integer.valueOf(buildNumbers[1]),Integer.valueOf(buildNumbers[2]));
+		return new Build(Integer.valueOf(buildNumbers[0]), Integer.valueOf(buildNumbers[1]), Integer.valueOf(buildNumbers[2]));
 	}
 
 	/**
@@ -71,6 +74,7 @@ public class InfoFetcher {
 	 * @return number of records in given namespace and set
 	 */
 	public int getRecordCount(String namespace, Class clazz) {
+
 		return getRecordCount(namespace, IndexingService.getSetName(clazz));
 	}
 
@@ -157,6 +161,7 @@ public class InfoFetcher {
 	 * @return map of index name / {@link IndexInfo}
 	 */
 	public Map<String, IndexInfo> getIndexes(String namespace, Class clazz) {
+
 		return getIndexes(namespace, IndexingService.getSetName(clazz));
 	}
 
@@ -179,7 +184,9 @@ public class InfoFetcher {
 			for (String setString : set) {
 				IndexInfo info = new IndexInfo(setString);
 
-				if (setName == null || setName.equals(info.setName)) {
+				// only if all data is given add to list
+				if ((setName == null || setName.equals(info.setName)) &&
+					info.isComplete()) {
 					indexInfoSet.put(info.name, info);
 				}
 			}
@@ -192,9 +199,10 @@ public class InfoFetcher {
 	public IndexInfo findIndex(String namespace, String setName, String fieldName) {
 
 		Map<String, IndexInfo> list = getIndexes(namespace, setName);
-		for (IndexInfo info: list.values()) {
-			if (info.fieldName.equals(fieldName))
+		for (IndexInfo info : list.values()) {
+			if (info.fieldName.equals(fieldName)) {
 				return info;
+			}
 		}
 
 		return null;
@@ -229,7 +237,7 @@ public class InfoFetcher {
 
 		public IndexType indexType;
 
-		public IndexCollectionType collectionType;
+		public IndexCollectionType collectionType = IndexCollectionType.DEFAULT;
 
 		public boolean synced;
 		public boolean canRead;
@@ -263,7 +271,8 @@ public class InfoFetcher {
 					case "type":
 						if ("TEXT".equals(value)) {
 							indexType = IndexType.STRING;
-						} else {  // "INT SIGNED"
+						}
+						else {  // "INT SIGNED"
 							indexType = IndexType.NUMERIC;
 						}
 						break;
@@ -272,7 +281,8 @@ public class InfoFetcher {
 
 						try {
 							collectionType = IndexCollectionType.valueOf(value);
-						} catch (IllegalArgumentException e) {
+						}
+						catch (IllegalArgumentException e) {
 							collectionType = IndexCollectionType.DEFAULT;
 						}
 
@@ -288,6 +298,14 @@ public class InfoFetcher {
 						break;
 				}
 			}
+		}
+
+		public boolean isComplete() {
+
+			return name != null &&
+				   namespace != null &&
+				   setName != null &&
+				   fieldName != null;
 		}
 	}
 }
