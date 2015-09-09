@@ -15,6 +15,7 @@ import java.util.List;
  */
 public class ScanLoader<T> {
 
+
 	public ScanLoader(Class<T> type,
 					  IAerospikeClient synClient,
 					  ClassConstructor classConstructor,
@@ -25,6 +26,7 @@ public class ScanLoader<T> {
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = namespace;
+		this.setName = null;
 
 		this.policy = new ScanPolicy();
 		this.policy.sendKey = true;
@@ -36,6 +38,7 @@ public class ScanLoader<T> {
 	}
 
 	protected String namespace;
+	protected String setName;
 
 	protected final IAerospikeClient synClient;
 	protected final ClassConstructor classConstructor;
@@ -55,6 +58,17 @@ public class ScanLoader<T> {
 	public ScanLoader<T> namespace(String namespace) {
 
 		this.namespace = namespace;
+		return this;
+	}
+
+	/**
+	 * Manually sets the set name. Overrides the default setName resolving mechanics on the Class via {@link com.spikeify.annotations.SetName} annotation.
+	 *
+	 * @param setName set name.
+	 */
+	public ScanLoader<T> setName(String setName) {
+
+		this.setName = setName;
 		return this;
 	}
 
@@ -95,6 +109,11 @@ public class ScanLoader<T> {
 		return policy;
 	}
 
+	protected String getSetName() {
+
+		return setName == null ? IndexingService.getSetName(type) : setName;
+	}
+
 
 	/**
 	 * Synchronously executes multiple get commands.
@@ -107,7 +126,8 @@ public class ScanLoader<T> {
 
 		try {
 
-			synClient.scanAll(getPolicy(), getNamespace(), type.getSimpleName(), new ScanCallback() {
+
+			synClient.scanAll(getPolicy(), getNamespace(), getSetName(), new ScanCallback() {
 				@Override
 				public void scanCallback(Key key, Record record) throws AerospikeException {
 
@@ -117,22 +137,6 @@ public class ScanLoader<T> {
 					recordsCache.insert(key, record.bins);
 
 					MapperService.map(mapper, key, record, object);
-
-					/*// set UserKey field
-					switch (key.userKey.getType()) {
-						case ParticleType.STRING:
-							mapper.setUserKey(object, key.userKey.toString());
-							break;
-						case ParticleType.INTEGER:
-							mapper.setUserKey(object, key.userKey.toLong());
-							break;
-					}
-
-					// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
-					mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
-
-					// set field values
-					mapper.setFieldValues(object, record.bins);*/
 
 					list.add(object);
 

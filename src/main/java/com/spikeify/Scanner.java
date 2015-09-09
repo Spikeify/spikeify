@@ -51,7 +51,7 @@ public class Scanner<T> {
 
 		this.setName = setName;
 
-		if (indexName != null) {
+		if (indexName != null && fieldName != null) {
 			// set name has changed ... index name must be refreshed
 			setIndexName(type, setName, namespace, fieldName);
 		}
@@ -105,6 +105,10 @@ public class Scanner<T> {
 
 		if (setName == null) {
 			throw new SpikeifyError("Error: SetName not defined.");
+		}
+
+		if (indexName == null && fieldName != null) {
+			setIndexName(type, setName, namespace, fieldName);
 		}
 
 		if (indexName == null) {
