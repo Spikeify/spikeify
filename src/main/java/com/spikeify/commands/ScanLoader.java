@@ -16,6 +16,7 @@ import java.util.List;
 public class ScanLoader<T> {
 
 
+
 	public ScanLoader(Class<T> type,
 					  IAerospikeClient synClient,
 					  ClassConstructor classConstructor,
@@ -49,6 +50,7 @@ public class ScanLoader<T> {
 
 	protected final ClassMapper<T> mapper;
 	protected final Class<T> type;
+	private AcceptFilter<T> acceptFilter;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
@@ -95,6 +97,11 @@ public class ScanLoader<T> {
 		return this;
 	}
 
+	public ScanLoader<T> filter(AcceptFilter<T> filter) {
+		acceptFilter = filter;
+		return this;
+	}
+
 	protected String getNamespace() {
 
 		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
@@ -114,7 +121,6 @@ public class ScanLoader<T> {
 		return setName == null ? IndexingService.getSetName(type) : setName;
 	}
 
-
 	/**
 	 * Synchronously executes multiple get commands.
 	 *
@@ -132,16 +138,22 @@ public class ScanLoader<T> {
 
 					T object = classConstructor.construct(type);
 
-					// save record hash into cache - used later for differential updating
-					recordsCache.insert(key, record.bins);
-
 					MapperService.map(mapper, key, record, object);
 
-					list.add(object);
+					recordsCache.insert(key, record.bins);
 
-					if (maxRecords > 0 && list.size() >= maxRecords) {
-						// quit scanning if we have enough
-						throw new AerospikeException.ScanTerminated();
+					// if filter is given then check if item fits, otherwise simple add
+					boolean add = (acceptFilter == null || acceptFilter.accept(object));
+
+					if (add) {
+						// save record hash into cache - used later for differential updating
+
+						list.add(object);
+
+						if (maxRecords > 0 && list.size() >= maxRecords) {
+							// quit scanning if we have enough
+							throw new AerospikeException.ScanTerminated();
+						}
 					}
 				}
 			});
@@ -149,7 +161,7 @@ public class ScanLoader<T> {
 		catch (AerospikeException.ScanTerminated e) {
 			// this is not the best way to do this ...
 			// check if exception was thrown from ScanLoader ... if not propagate
-			if (list.size() != maxRecords)
+			if (list.size() < maxRecords)
 				throw e;
 		}
 

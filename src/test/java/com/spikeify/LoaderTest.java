@@ -1,11 +1,14 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.Bin;
+import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spikeify.commands.AcceptFilter;
 import com.spikeify.entity.*;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,10 +33,7 @@ public class LoaderTest {
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		client = SpikeifyService.getClient();
 		sfy = SpikeifyService.sfy();
-	}
 
-	@After
-	public void dbCleanup() {
 		sfy.truncateNamespace(namespace);
 	}
 
@@ -258,5 +258,29 @@ public class LoaderTest {
 		}
 
 		assertEquals(20, checkExpected.size());
+	}
+
+	@Test
+	public void scanLoaderWithFilterTest() {
+
+		for (int i = 0; i < 100; i++) {
+			EntityOne entity = new EntityOne();
+			entity.userId = (long) i;
+			entity.one = i;
+
+			sfy.create(entity).now();
+		}
+
+		List<EntityOne> all = sfy.scanAll(EntityOne.class).filter(new AcceptFilter<EntityOne>() {
+			@Override
+			public boolean accept(EntityOne item) {
+				return (item.one < 10);
+			}
+		}).now();
+
+		assertEquals(10, all.size());
+		for (EntityOne one : all) {
+			assertTrue(one.one < 10);
+		}
 	}
 }
