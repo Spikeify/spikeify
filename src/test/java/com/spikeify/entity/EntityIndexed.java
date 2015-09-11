@@ -8,6 +8,7 @@ import com.spikeify.annotations.UserKey;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * For testing indexing service
@@ -85,6 +86,9 @@ public class EntityIndexed {
 
 	@Indexed // (collection = IndexCollectionType.LIST) - is default
 	public List<String> list;
+
+	@Indexed // (collection = IndexCollectionType.LIST) - is default
+	public Set<String> items;
 
 	@Indexed // (collection = IndexCollectionType.MAPKEYS) - is default
 	public Map<String, String> mapKeys;

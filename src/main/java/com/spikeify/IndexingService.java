@@ -15,6 +15,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Takes care of index creation and usage
@@ -131,7 +132,8 @@ public class IndexingService {
 		}
 
 		if (field.getType().isAssignableFrom(List.class) ||
-			field.getType().isAssignableFrom(Array.class)) {
+			field.getType().isAssignableFrom(Array.class) ||
+			field.getType().isAssignableFrom(Set.class)) {
 			return IndexCollectionType.LIST;
 		}
 
