@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static org.junit.Assert.assertEquals;
+
 public class QueryTest {
 
 	private final String namespace = "test";
@@ -54,9 +56,9 @@ public class QueryTest {
 		int count = 0;
 		for (EntityOne entity : entities) {
 			count++;
-			Assert.assertEquals("content", entity.two);
+			assertEquals("content", entity.two);
 		}
-		Assert.assertEquals(10, count);
+		assertEquals(10, count);
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
@@ -68,7 +70,7 @@ public class QueryTest {
 			count2++;
 			Assert.assertTrue(0 < entity2.one && entity2.one < 1000);
 		}
-		Assert.assertEquals(10, count2);
+		assertEquals(10, count2);
 
 	}
 
@@ -122,7 +124,7 @@ public class QueryTest {
 		}
 
 		// query should return 10 records
-		Assert.assertEquals(10, count);
+		assertEquals(10, count);
 	}
 
 	@Test
@@ -159,7 +161,7 @@ public class QueryTest {
 
 		// query should return 10 records
 		List<EntityOne> list = results.toList();
-		Assert.assertEquals(50, list.size());
+		assertEquals(50, list.size());
 	}
 
 	@Test
@@ -203,7 +205,7 @@ public class QueryTest {
 
 		// query should return 50 records
 		List<EntityOne> list = results.toList();
-		Assert.assertEquals(50, list.size());
+		assertEquals(50, list.size());
 
 		// 2. ... set name after filter ...
 		results = sfy
@@ -213,7 +215,7 @@ public class QueryTest {
 			.now();
 
 		list = results.toList();
-		Assert.assertEquals(50, list.size());
+		assertEquals(50, list.size());
 	}
 
 	@Test
@@ -254,9 +256,9 @@ public class QueryTest {
 		int count = 0;
 		for (EntityIndexed entity : entities) {
 			count++;
-			Assert.assertEquals("content", entity.text);
+			assertEquals("content", entity.text);
 		}
-		Assert.assertEquals(10, count);
+		assertEquals(10, count);
 
 
 		// 2. range
@@ -270,7 +272,7 @@ public class QueryTest {
 			Assert.assertTrue(entity.number >= 10);
 			Assert.assertTrue(entity.number <= 20);
 		}
-		Assert.assertEquals(11, count);
+		assertEquals(11, count);
 
 		// 2. list
 		entities = sfy.query(EntityIndexed.class)
@@ -282,6 +284,121 @@ public class QueryTest {
 			count++;
 			Assert.assertTrue(entity.list.contains("bla"));
 		}
-		Assert.assertEquals(10, count);
+		assertEquals(10, count);
+	}
+
+	@Test
+	public void multiQueryTest() {
+
+		// add items to database
+		for (int i = 0; i < 100; i++) {
+			EntityIndexed ent = new EntityIndexed();
+			ent.key = Long.toString(new Random().nextLong());
+			ent.number = i;
+			ent.text = "A";
+			sfy.create(ent).now();
+		}
+
+		// query again and again on same field
+		List<EntityIndexed> list = sfy.query(EntityIndexed.class).filter("text", "A").now().toList();
+		assertEquals(100, list.size());
+
+		for (int i = 1; i <= 100; i++) {
+
+			Random rand = new Random();
+			int idx = rand.nextInt(list.size());
+
+			EntityIndexed change = list.get(idx);
+			change.text = "B";
+			sfy.update(change).now();
+
+			list = sfy.query(EntityIndexed.class).filter("text", "A").now().toList();
+			assertEquals("Number of result should be shorter than before", 100 - i, list.size());
+		}
+	}
+
+	@Test
+	public void multithreadedQueryTest() throws InterruptedException {
+
+		// add items to database
+		int WORKERS = 4;
+		int ITEMS = 400;
+
+		for (int i = 0; i < ITEMS; i++) {
+			EntityIndexed ent = new EntityIndexed();
+			ent.key = Long.toString(new Random().nextLong());
+			ent.number = 0;
+			ent.text = "A";
+			sfy.create(ent).now();
+		}
+
+		// create threads
+		Thread[] threads = new Thread[WORKERS];
+
+		for (int i = 0; i < WORKERS; i++) {
+
+			Runnable runnable = new Runnable() {
+				@Override
+				public void run() {
+
+					execute();
+				}
+			};
+
+			threads[i] = new Thread(runnable);
+		}
+
+		for (int i = 0; i < WORKERS; i++) {
+			threads[i].start();
+		}
+		for (int i = 0; i < WORKERS; i++) {
+			threads[i].join();
+		}
+
+		// query again and again on same field
+		List<EntityIndexed> list = sfy.query(EntityIndexed.class).filter("text", "B").now().toList();
+		assertEquals(ITEMS, list.size());
+
+		for (EntityIndexed item: list) {
+			assertEquals("Item has been changed by two threads: " + item.key, 1, item.number);
+		}
+	}
+
+	private List<String> execute() {
+
+		List<String> ids = new ArrayList<>();
+		List<EntityIndexed> list;
+		do {
+
+			list = sfy.query(EntityIndexed.class).filter("text", "A").now().toList();
+
+			if (list.size() > 0) {
+				Random rand = new Random();
+				int idx = rand.nextInt(list.size());
+
+				final EntityIndexed item = list.get(idx);
+
+				sfy.transact(1, new Work<EntityIndexed>() {
+					@Override
+					public EntityIndexed run() {
+
+						EntityIndexed original = sfy.get(EntityIndexed.class).key(item.key).now();
+						if (original.text.equals("A")) {
+
+							original.text = "B";
+							original.number = original.number + 1; // number of changes
+							sfy.update(original).now();
+						//	sfy.command(EntityIndexed.class).add("number", 1).now();
+						}
+
+						return original;
+					}
+
+				});
+			}
+		}
+		while (list.size() > 0);
+
+		return ids;
 	}
 }
