@@ -15,8 +15,6 @@ import java.util.List;
  */
 public class ScanLoader<T> {
 
-
-
 	public ScanLoader(Class<T> type,
 					  IAerospikeClient synClient,
 					  ClassConstructor classConstructor,
@@ -98,6 +96,7 @@ public class ScanLoader<T> {
 	}
 
 	public ScanLoader<T> filter(AcceptFilter<T> filter) {
+
 		acceptFilter = filter;
 		return this;
 	}
@@ -124,7 +123,7 @@ public class ScanLoader<T> {
 	/**
 	 * Synchronously executes multiple get commands.
 	 *
-	 * @return The map of Keys and Java objects mapped from records
+	 * @return List of Java objects mapped from records
 	 */
 	public List<T> now() {
 
@@ -161,8 +160,47 @@ public class ScanLoader<T> {
 		catch (AerospikeException.ScanTerminated e) {
 			// this is not the best way to do this ...
 			// check if exception was thrown from ScanLoader ... if not propagate
-			if (list.size() < maxRecords)
+			if (list.size() < maxRecords) {
 				throw e;
+			}
+		}
+
+		return list;
+	}
+
+	/**
+	 * Synchronously executes multiple get commands.
+	 *
+	 * @return List of record Keys only
+	 */
+	public List<Value> keys() {
+
+		final List<Value> list = new ArrayList<>();
+
+		try {
+
+			ScanPolicy policy = getPolicy();
+			policy.includeBinData = false;
+
+			synClient.scanAll(policy, getNamespace(), getSetName(), new ScanCallback() {
+				@Override
+				public void scanCallback(Key key, Record record) throws AerospikeException {
+
+					list.add(key.userKey);
+
+					if (maxRecords > 0 && list.size() >= maxRecords) {
+						// quit scanning if we have enough
+						throw new AerospikeException.ScanTerminated();
+					}
+				}
+			});
+		}
+		catch (AerospikeException.ScanTerminated e) {
+			// this is not the best way to do this ...
+			// check if exception was thrown from ScanLoader ... if not propagate
+			if (list.size() < maxRecords) {
+				throw e;
+			}
 		}
 
 		return list;

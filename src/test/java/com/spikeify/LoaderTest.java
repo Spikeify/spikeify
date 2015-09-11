@@ -7,7 +7,6 @@ import com.aerospike.client.Record;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spikeify.commands.AcceptFilter;
 import com.spikeify.entity.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -213,74 +212,5 @@ public class LoaderTest {
 		sfy.create(123l, ent).now();
 	}
 
-	@Test
-	public void scanLoaderTest() {
 
-		Set<Long> expected = new HashSet<>();
-		Set<Long> checkExpected = new HashSet<>();
-
-		for (int i = 0; i < 100; i++) {
-			EntityOne entity = new EntityOne();
-			entity.userId = (long) i;
-			entity.one = i;
-
-			sfy.create(entity).now();
-
-			expected.add(entity.userId);
-		}
-
-		List<EntityOne> all = sfy.scanAll(EntityOne.class).now();
-
-		assertEquals(100, all.size());
-
-		// do we have them all?
-		for (EntityOne one: all) {
-			assertTrue(expected.contains(one.userId));
-			checkExpected.add(one.userId);
-
-			assertEquals(one.userId.longValue(), (long)one.one);
-		}
-
-		assertEquals(expected.size(), checkExpected.size());
-
-		// scan with max records set
-		checkExpected.clear();
-
-		List<EntityOne> notAll = sfy.scanAll(EntityOne.class).maxRecords(20).now();
-		assertEquals(20, notAll.size());
-
-		// do we have them all?
-		for (EntityOne one: notAll) {
-			assertTrue(expected.contains(one.userId));
-			checkExpected.add(one.userId);
-
-			assertEquals(one.userId.longValue(), (long) one.one);
-		}
-
-		assertEquals(20, checkExpected.size());
-	}
-
-	@Test
-	public void scanLoaderWithFilterTest() {
-
-		for (int i = 0; i < 100; i++) {
-			EntityOne entity = new EntityOne();
-			entity.userId = (long) i;
-			entity.one = i;
-
-			sfy.create(entity).now();
-		}
-
-		List<EntityOne> all = sfy.scanAll(EntityOne.class).filter(new AcceptFilter<EntityOne>() {
-			@Override
-			public boolean accept(EntityOne item) {
-				return (item.one < 10);
-			}
-		}).now();
-
-		assertEquals(10, all.size());
-		for (EntityOne one : all) {
-			assertTrue(one.one < 10);
-		}
-	}
 }
