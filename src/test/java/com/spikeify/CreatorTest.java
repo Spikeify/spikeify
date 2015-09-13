@@ -2,6 +2,7 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.spikeify.entity.EntityExists;
+import com.spikeify.entity.EntityNull;
 import com.spikeify.entity.EntityOne;
 import org.junit.After;
 import org.junit.Assert;
@@ -73,6 +74,18 @@ public class CreatorTest {
 		Assert.assertEquals(reloaded.userId, userKey1);
 		Assert.assertArrayEquals(reloaded.thirteen, new byte[]{1, 2, 3, 4, 5});
 
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void nullCreate() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+
+		// throws an error
+		Key saveKey = sfy
+				.create(entity)
+				.now();
 	}
 
 	@Test

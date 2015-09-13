@@ -35,8 +35,8 @@ public class RecordsCache {
 		for (Map.Entry<String, Object> prop : properties.entrySet()) {
 			Object property = prop.getValue();
 			if (property != null) {
-				String propertyKey = getPropertyHash(property);
-				propertiesKeys.put(prop.getKey(), propertyKey);
+				String propertyHash = getPropertyHash(property);
+				propertiesKeys.put(prop.getKey(), propertyHash);
 			}
 		}
 
