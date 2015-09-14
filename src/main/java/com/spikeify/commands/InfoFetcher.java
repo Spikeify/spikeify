@@ -29,6 +29,7 @@ public class InfoFetcher {
 	public static final String CONFIG_RECORDS_COUNT = "n_objects";
 	public static final String CONFIG_BUILD = "build";
 	public static final String CONFIG_NAMESPACE = "get-config:context=namespace;id=";
+	public static final String REPLICATION_FACTOR = "replication-factor";
 
 	public InfoFetcher(IAerospikeClient synClient) {
 
@@ -72,14 +73,24 @@ public class InfoFetcher {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
+		String[] config = Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
+
+		return Long.valueOf(parseConfigString(config, "default-ttl", "0"));
+	}
+
+	public int getReplicationFactor(String namespace) {
+		Node[] nodes = synClient.getNodes();
+		if (nodes == null || nodes.length == 0) {
+			throw new IllegalStateException("No Aerospike nodes found.");
+		}
 		String[] configStrings = Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
 		for (String configString : configStrings) {
 			String[] configLine = configString.split("=");
-			if (configLine.length == 2 && configLine[0].equals("default-ttl")) {
-				return Long.valueOf(configLine[1]);
+			if (configLine.length == 2 && configLine[0].equals(REPLICATION_FACTOR)) {
+				return Integer.valueOf(configLine[1]);
 			}
 		}
-		return 0;
+		return 1;
 	}
 
 	/**
@@ -105,16 +116,15 @@ public class InfoFetcher {
 
 		int count = 0;
 
+		int replicationFactor = getReplicationFactor(namespace);
+
 		Node[] nodes = synClient.getNodes();
+		int nodeCount = nodes.length;
 		for (Node node : nodes) {
-			String nodeSets = Info.request(new InfoPolicy(), node, CONFIG_SET_PARAM + "/" + namespace + "/" + setName);
-			String[] set = nodeSets.split(";");
-			for (String setString : set) {
-				Map<String, String> config = parseConfigString(setString);
-				count += Integer.valueOf(config.get(CONFIG_RECORDS_COUNT));
-			}
+			String[] nodeSets = Info.request(new InfoPolicy(), node, CONFIG_SET_PARAM + "/" + namespace + "/" + setName).split(":");
+			count += Integer.valueOf(parseConfigString(nodeSets, CONFIG_RECORDS_COUNT, "0"));
 		}
-		return count;
+		return count / Math.min(replicationFactor, nodeCount);
 	}
 
 	/**
@@ -236,6 +246,18 @@ public class InfoFetcher {
 			}
 		}
 		return result;
+	}
+
+	private String parseConfigString(String[] configStrings, String paramName, String defaultValue) {
+
+		for (String chunk : configStrings) {
+			String[] chunkParts = chunk.split("=");
+			if (chunkParts.length == 2 && paramName.equals(chunkParts[0])) {
+				return chunkParts[1];
+			}
+		}
+
+		return defaultValue;
 	}
 
 	/**
