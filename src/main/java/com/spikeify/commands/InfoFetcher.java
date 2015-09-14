@@ -29,7 +29,7 @@ public class InfoFetcher {
 	public static final String CONFIG_RECORDS_COUNT = "n_objects";
 	public static final String CONFIG_BUILD = "build";
 	public static final String CONFIG_NAMESPACE = "get-config:context=namespace;id=";
-	public static final String REPLICATION_FACTOR = "replication-factor";
+	public static final String REPLICATION_FACTOR = "repl-factor";
 
 	public InfoFetcher(IAerospikeClient synClient) {
 
@@ -66,6 +66,16 @@ public class InfoFetcher {
 		String[] buildNumbers = build.split("\\.");
 
 		return new Build(Integer.valueOf(buildNumbers[0]), Integer.valueOf(buildNumbers[1]), Integer.valueOf(buildNumbers[2]));
+	}
+
+	public String[] getNamespaceConfig(String namespace) {
+
+		String build = null;
+		Node[] nodes = synClient.getNodes();
+		if (nodes == null || nodes.length == 0) {
+			throw new IllegalStateException("No Aerospike nodes found.");
+		}
+		return Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
 	}
 
 	public long getDefaultTTL(String namespace) {
