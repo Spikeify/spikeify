@@ -137,9 +137,9 @@ public class ScanLoader<T> {
 
 					T object = classConstructor.construct(type);
 
-					MapperService.map(mapper, key, record, object);
-
 					recordsCache.insert(key, record.bins);
+
+					MapperService.map(mapper, key, record, object);
 
 					// if filter is given then check if item fits, otherwise simple add
 					boolean add = (acceptFilter == null || acceptFilter.accept(object));
