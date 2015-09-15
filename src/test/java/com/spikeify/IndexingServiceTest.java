@@ -86,7 +86,7 @@ public class IndexingServiceTest {
 
 		// 3.
 		indexes = sfy.info().getIndexes(namespace, EntityIndexed.class);
-		assertEquals(18, indexes.size());
+		assertEquals(19, indexes.size());
 
 		info = indexes.get("idx_EntityIndexed_text");
 		assertNotNull(info);
@@ -120,6 +120,18 @@ public class IndexingServiceTest {
 		assertTrue(info.canRead);
 		assertTrue(info.canWrite);
 		assertTrue(info.synced);
+
+		info = indexes.get("idx_EntityIndexed_items");
+		assertNotNull(info);
+		assertEquals(IndexType.STRING, info.indexType);
+		assertEquals(IndexCollectionType.LIST, info.collectionType);
+		assertEquals("idx_EntityIndexed_items", info.name);
+		assertEquals("EntityIndexed", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
 
 		info = indexes.get("idx_EntityIndexed_mapKeys");
 		assertNotNull(info);

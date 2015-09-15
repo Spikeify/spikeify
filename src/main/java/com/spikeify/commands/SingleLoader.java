@@ -153,11 +153,12 @@ public class SingleLoader<T> {
 
 		T object = classConstructor.construct(type);
 
-		MapperService.map(mapper, key, record, object);
-
-		/*// save raw records into cache - used later for differential updating
+		// save raw records into cache - used later for differential updating
 		recordsCache.insert(key, record.bins);
 
+		MapperService.map(mapper, key, record, object);
+
+		/*
 		// set UserKey field
 		switch (key.userKey.getType()) {
 			case ParticleType.STRING:
