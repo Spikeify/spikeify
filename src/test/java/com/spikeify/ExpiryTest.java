@@ -34,6 +34,9 @@ public class ExpiryTest {
 
 	@Test
 	public void defaultDbExpires() {
+
+		long defaultTTLmsec = 1000 * sfy.info().getDefaultTTL(namespace);
+
 		EntityExpires entity = new EntityExpires();
 		entity.expires = 0l;
 		Key key1 = new Key(namespace, setName, userKey1);
@@ -43,10 +46,9 @@ public class ExpiryTest {
 				.now();
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
-		long milliSecDay = 24 * 60 * 60 * 1000;
 		long now = new Date().getTime();
-		Assert.assertTrue(now + 5 * milliSecDay >= reloaded.expires);
-		Assert.assertTrue(reloaded.expires> now);
+		Assert.assertTrue(now > reloaded.expires - defaultTTLmsec);
+		Assert.assertTrue(reloaded.expires > now);
 	}
 
 	@Test

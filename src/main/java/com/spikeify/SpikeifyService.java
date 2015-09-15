@@ -137,7 +137,7 @@ public class SpikeifyService {
 	}
 
 	/**
-	 * Privet helper method to get servers build number.
+	 * Private helper method to get servers build number.
 	 *
 	 * @return Server build version as InfoFetcher.Build
 	 */
