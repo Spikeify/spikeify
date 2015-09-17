@@ -298,6 +298,9 @@ public class MultiKeyUpdater {
 			}
 
 			synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+
+			// set LDT fields
+			mapper.setBigDatatypeFields(object, synClient, key);
 		}
 
 		return result;

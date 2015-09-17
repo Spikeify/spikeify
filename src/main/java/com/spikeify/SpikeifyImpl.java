@@ -381,6 +381,10 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		ClassMapper<T> mapper = MapperService.getMapper(type);
 
 		MapperService.map(mapper, key, record, object);
+
+		// set LDT wrappers
+		mapper.setBigDatatypeFields(object, synClient, key);
+
 		return object;
 	}
 
@@ -396,7 +400,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (meta.userKeyString != null) {
 			return new Key(meta.namespace, meta.setName, meta.userKeyString);
 		} else {
-			return new Key(meta.namespace, meta.setName, meta.userKeyLong.longValue());
+			return new Key(meta.namespace, meta.setName, meta.userKeyLong);
 		}
 	}
 

@@ -46,6 +46,15 @@ public class MapperUtils {
 		return null;
 	}
 
+	public static Converter findConverter(Class type) {
+		for (ConverterFactory converterFactory : converters) {
+			if (converterFactory.canConvert(type)) {
+				return converterFactory.init(null);
+			}
+		}
+		return null;
+	}
+
 	public static Map<String, FieldMapper> getFieldMappers(Class clazz) {
 
 		Map<String, FieldMapper> mappers = new HashMap<>();
@@ -64,6 +73,23 @@ public class MapperUtils {
 		}
 
 		return mappers;
+	}
+
+
+	public static Map<String, Class<? extends BigDatatypeWrapper>> getLDTClasses(Class clazz) {
+
+		Map<String, Class<? extends BigDatatypeWrapper>> ldtMappers = new HashMap<>();
+
+		for (Field field : clazz.getDeclaredFields()) {
+			Class fieldType = field.getType();
+			if (BigIndexedList.class.equals(fieldType)) {
+				ldtMappers.put(field.getName(), BigIndexedList.class);
+			} else if (BigMap.class.equals(fieldType)) {
+				ldtMappers.put(field.getName(), BigMap.class);
+			}
+		}
+
+		return ldtMappers;
 	}
 
 	public static Map<String, FieldMapper> getJsonMappers(Class clazz) {
@@ -186,6 +212,7 @@ public class MapperUtils {
 				&& !field.isAnnotationPresent(AnyProperty.class)
 				&& !field.isAnnotationPresent(AsJson.class)
 				&& !field.isAnnotationPresent(Ignore.class)
+				&& !BigDatatypeWrapper.class.isAssignableFrom(field.getType()) // LDT fields are not handled via normal field mappers
 				&& (field.getModifiers() & IGNORED_FIELD_MODIFIERS) == 0
 				&& !field.isSynthetic();
 	}

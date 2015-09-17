@@ -158,22 +158,8 @@ public class SingleLoader<T> {
 
 		MapperService.map(mapper, key, record, object);
 
-		/*
-		// set UserKey field
-		switch (key.userKey.getType()) {
-			case ParticleType.STRING:
-				mapper.setUserKey(object, key.userKey.toString());
-				break;
-			case ParticleType.INTEGER:
-				mapper.setUserKey(object, key.userKey.toLong());
-				break;
-		}
-
-		// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
-		mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
-
-		// set field values
-		mapper.setFieldValues(object, record.bins);*/
+		// set LDT fields
+		mapper.setBigDatatypeFields(object, synClient, key);
 
 		return object;
 	}

@@ -33,17 +33,18 @@ public class MultiLoader<T, K> {
 		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
-		if (keys[0].getClass().equals(Key.class)) {
+		Class componentType = keys.getClass().getComponentType();
+		if (componentType.equals(Key.class)) {
 			this.keys = Arrays.asList((Key[]) keys);
 			this.keyType = KeyType.KEY;
-		} else if (keys[0].getClass().equals(Long.class)) {
+		} else if (componentType.equals(Long.class)) {
 			this.longKeys = Arrays.asList((Long[]) keys);
 			this.keyType = KeyType.LONG;
-		} else if (keys[0].getClass().equals(String.class)) {
+		} else if (componentType.equals(String.class)) {
 			this.stringKeys = Arrays.asList((String[]) keys);
 			this.keyType = KeyType.STRING;
 		} else {
-			throw new IllegalArgumentException("Error: unsupported key type '" + keys[0].getClass() + "'. Supported key types are Key, Long and String.");
+			throw new IllegalArgumentException("Error: unsupported key type '" + componentType + "'. Supported key types are Key, Long and String.");
 		}
 	}
 
@@ -148,6 +149,9 @@ public class MultiLoader<T, K> {
 				recordsCache.insert(key, record.bins);
 
 				MapperService.map(mapper, key, record, object);
+
+				// set LDT wrappers
+				mapper.setBigDatatypeFields(object, synClient, key);
 
 				/*// set UserKey field
 				switch (key.userKey.getType()) {

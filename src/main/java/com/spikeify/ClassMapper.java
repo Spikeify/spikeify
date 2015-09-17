@@ -1,16 +1,20 @@
 package com.spikeify;
 
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class ClassMapper<TYPE> {
 
-	private final Map<String/** field name**/, FieldMapper> mappers;
+	private final Map<String/** field name **/, FieldMapper> mappers;
+	private final Map<String/** field name **/, Class<? extends BigDatatypeWrapper>> ldtMappers;
 
 	private final Class<TYPE> type;
 	private final String classSetName;
@@ -24,7 +28,6 @@ public class ClassMapper<TYPE> {
 	private final FieldMapper anyPropertyMapper;
 
 	public ClassMapper(Class<TYPE> clazz) {
-		Map<String, FieldMapper> fieldMappers;
 		this.type = clazz;
 
 		// parse @Namespace class annotation
@@ -35,9 +38,11 @@ public class ClassMapper<TYPE> {
 		SetName setNameAnnotation = clazz.getAnnotation(SetName.class);
 		classSetName = setNameAnnotation != null ? setNameAnnotation.value() : null;
 
-		fieldMappers = MapperUtils.getFieldMappers(clazz);
+		Map<String, FieldMapper> fieldMappers = MapperUtils.getFieldMappers(clazz);
 		fieldMappers.putAll(MapperUtils.getJsonMappers(clazz));
 		mappers = fieldMappers;
+
+		ldtMappers = MapperUtils.getLDTClasses(clazz);
 
 		generationFieldMapper = MapperUtils.getGenerationFieldMapper(clazz);
 		expirationFieldMapper = MapperUtils.getExpirationFieldMapper(clazz);
@@ -62,19 +67,19 @@ public class ClassMapper<TYPE> {
 		Object userKeyObj = userKeyFieldMapper.getPropertyValue(target);
 		if (userKeyObj == null) {
 			throw new SpikeifyError("Field with @UserKey annotation cannot be null" +
-							" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName() + ", value: null");
+					" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName() + ", value: null");
 		} else if (userKeyObj instanceof String) {
 			metadata.userKeyString = (String) userKeyObj;
 			if (metadata.userKeyString.isEmpty()) {
 				throw new SpikeifyError("Field with @UserKey annotation and with type of String cannot be empty" +
-								" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName() + ", value: ''");
+						" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName() + ", value: ''");
 
 			}
 		} else if (userKeyObj instanceof Long) {
 			metadata.userKeyLong = (Long) userKeyObj;
 		} else {
 			throw new SpikeifyError("@UserKey annotation can only be used on fields of type: String, Long or long." +
-							" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName());
+					" Field " + type.getName() + "$" + userKeyFieldMapper.field.getName() + " type is " + userKeyFieldMapper.field.getType().getName());
 		}
 
 		// acquire Namespace in the following order
@@ -83,12 +88,12 @@ public class ClassMapper<TYPE> {
 		// 3. use default namespace
 		String fieldNamespace = namespaceFieldMapper != null ? namespaceFieldMapper.getPropertyValue(target) : null;
 		metadata.namespace = fieldNamespace != null ? fieldNamespace :
-						(classNamespace != null ? classNamespace : defaultNamespace);
+				(classNamespace != null ? classNamespace : defaultNamespace);
 		// namespace still not available
 		if (metadata.namespace == null) {
 			throw new SpikeifyError("Error: namespace could not be inferred from class/field annotations, " +
-							"for class " + type.getName() +
-							", nor is default namespace available.");
+					"for class " + type.getName() +
+					", nor is default namespace available.");
 		}
 
 		// acquire @SetName in the following order
@@ -97,7 +102,7 @@ public class ClassMapper<TYPE> {
 		// 3. Use Class simple name
 		String fieldSetName = setNameFieldMapper != null ? setNameFieldMapper.getPropertyValue(target) : null;
 		metadata.setName = fieldSetName != null ? fieldSetName :
-						(classSetName != null ? classSetName : type.getSimpleName());
+				(classSetName != null ? classSetName : type.getSimpleName());
 
 		// acquire @Expires
 		metadata.expires = expirationFieldMapper != null ? expirationFieldMapper.getPropertyValue(target) : null;
@@ -160,6 +165,32 @@ public class ClassMapper<TYPE> {
 		}
 	}
 
+
+	public void setBigDatatypeFields(Object object, IAerospikeClient client, Key key) {
+
+		if (!(client instanceof AerospikeClient)) {
+			return;  // only real client can be used, mocks do not support LDTs
+		}
+		AerospikeClient realClient = (AerospikeClient) client;
+
+		for (Map.Entry<String, Class<? extends BigDatatypeWrapper>> entry : ldtMappers.entrySet()) {
+			Field field = null;
+			try {
+				field = object.getClass().getField(entry.getKey());
+			} catch (NoSuchFieldException e) {
+				// should not happen
+				throw new SpikeifyError("Field '" + entry.getKey() + "' on class " + object.getClass() + " not found!");
+			}
+			BigDatatypeWrapper wrapper = (new NoArgClassConstructor()).construct(entry.getValue());
+			wrapper.init(realClient, key, MapperUtils.getBinName(field), field);
+			try {
+				field.set(object, wrapper);
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
 	/**
 	 * Translates bin names/values into field names/values.
 	 *
@@ -183,13 +214,13 @@ public class ClassMapper<TYPE> {
 	private long getJavaExpiration(int recordExpiration) {
 		long javaExpiration;
 
-		// Aerospike expiry settings are messed up: ypu put in -1 and get back 0
+		// Aerospike expiry settings are messed up: you put in -1 and get back 0
 		if (recordExpiration == 0) {
 			javaExpiration = -1; // default expiration setting: -1 - no expiration set
 		} else {
 			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
 			// to java epoch time in milliseconds
-			javaExpiration = 1000l * (1262304000l + recordExpiration);
+			javaExpiration = 1000L * (1262304000L + recordExpiration);
 		}
 		return javaExpiration;
 	}
@@ -249,8 +280,8 @@ public class ClassMapper<TYPE> {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
-								userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
-								"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
+						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
+						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'String'."
 				);
 			}
 			userKeyFieldMapper.setFieldValue(object, userKey);
@@ -261,8 +292,8 @@ public class ClassMapper<TYPE> {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom((userKey.getClass()))) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
-								userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
-								"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."
+						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
+						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."
 				);
 			}
 			userKeyFieldMapper.setFieldValue(object, userKey);
@@ -280,8 +311,9 @@ public class ClassMapper<TYPE> {
 			userKeyFieldMapper.converter.fromProperty(key.userKey.getObject());
 		} catch (ClassCastException e) {
 			throw new SpikeifyError("Mismatched key type: provided " + key.userKey.getObject().getClass().getName() +
-							" key can not be mapped to " + userKeyFieldMapper.field.getType() + " ("
-							+ userKeyFieldMapper.field.getDeclaringClass().getName() + "." + userKeyFieldMapper.field.getName() + ")");
+					" key can not be mapped to " + userKeyFieldMapper.field.getType() + " ("
+					+ userKeyFieldMapper.field.getDeclaringClass().getName() + "." + userKeyFieldMapper.field.getName() + ")");
 		}
 	}
+
 }

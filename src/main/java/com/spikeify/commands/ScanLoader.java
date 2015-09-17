@@ -141,6 +141,9 @@ public class ScanLoader<T> {
 
 					MapperService.map(mapper, key, record, object);
 
+					// set LDT fields
+					mapper.setBigDatatypeFields(object, synClient, key);
+
 					// if filter is given then check if item fits, otherwise simple add
 					boolean add = (acceptFilter == null || acceptFilter.accept(object));
 

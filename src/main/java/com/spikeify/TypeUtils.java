@@ -74,4 +74,38 @@ public class TypeUtils {
 			return Object.class;
 		}
 	}
+
+	public static Type getBigListValueType(Field field) {
+		if (BigIndexedList.class.equals(field.getType())) {
+			if (field.getGenericType() instanceof ParameterizedType) {
+				ParameterizedType listType = (ParameterizedType) field.getGenericType();
+				return listType.getActualTypeArguments()[0];
+			}
+			return null;
+		} else {
+			throw new IllegalStateException("Field '" + field.getName() + "' is not assignable to BigList");
+		}
+	}
+
+	public static Type getBigMapKeyType(Field field) {
+		Type[] mapTypes = getBigMapTypes(field);
+		return mapTypes == null ? Object.class : mapTypes[0];
+	}
+
+	public static Type getBigMapValueType(Field field) {
+		Type[] mapTypes = getBigMapTypes(field);
+		return mapTypes == null ? Object.class : mapTypes[1];
+	}
+
+	public static Type[] getBigMapTypes(Field field) {
+		if (BigMap.class.equals(field.getType())) {
+			if (field.getGenericType() instanceof ParameterizedType) {
+				ParameterizedType mapType = (ParameterizedType) field.getGenericType();
+				return mapType.getActualTypeArguments();
+			}
+			return null;
+		} else {
+			return null;
+		}
+	}
 }

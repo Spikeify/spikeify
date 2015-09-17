@@ -185,7 +185,6 @@ public class LoaderTest {
 		sfy.create(original).now();
 		Key key = new Key(namespace, original.theSetName, original.userId);
 
-
 		// load via Spikeify
 		EntityOne loaded = sfy.get(EntityOne.class).key(key).now();
 		assertEquals(original, loaded);

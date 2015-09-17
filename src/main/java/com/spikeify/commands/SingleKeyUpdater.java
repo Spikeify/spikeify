@@ -150,7 +150,7 @@ public class SingleKeyUpdater<T, K> {
 		mapper.checkKeyType(key);
 
 		if (object == null) {
-			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
+			throw new SpikeifyError("Error: parameter 'object' must not be null");
 		}
 
 		Map<String, Object> props = mapper.getProperties(object);
@@ -216,12 +216,11 @@ public class SingleKeyUpdater<T, K> {
 			case KEY:
 				return (K) key;
 			case LONG:
-				Long longKey = key.userKey.toLong();
-				return (K) longKey;
+				return (K) (Long) key.userKey.toLong();
 			case STRING:
 				return (K) key.userKey.toString();
 			default:
-				throw new IllegalStateException("Error: unsupported ket type. Must be one of: Key, Long or String"); // should not happen
+				throw new IllegalStateException("Error: unsupported key type. Must be one of: Key, Long or String"); // should not happen
 		}
 	}
 }

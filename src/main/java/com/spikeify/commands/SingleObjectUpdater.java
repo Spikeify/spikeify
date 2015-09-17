@@ -160,6 +160,10 @@ public class SingleObjectUpdater<T> {
 		}
 
 		synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+
+		// set LDT fields
+		mapper.setBigDatatypeFields(object, synClient, key);
+
 		return key;
 	}
 }
