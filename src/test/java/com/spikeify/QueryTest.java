@@ -6,6 +6,10 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.*;
+import com.spikeify.annotations.BinName;
+import com.spikeify.annotations.Generation;
+import com.spikeify.annotations.Indexed;
+import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
 import org.junit.Assert;
@@ -400,5 +404,28 @@ public class QueryTest {
 		while (list.size() > 0);
 
 		return ids;
+	}
+
+	public static class LongEntity {
+		@UserKey
+		public String id;
+
+		@Generation
+		public Integer generation;
+
+		@Indexed
+		@BinName("sKey")
+		public String sourceBucketAndKey;
+	}
+
+	@Test
+	public void testTooLongFieldNameForIndex() {
+		SpikeifyService.register(LongEntity.class);
+		// test fails because index creation does not check for annotation @BinName
+
+		// this filter by actual field name should be replaced with name in annotation @BinName
+		ResultSet<LongEntity> entities2 = sfy.query(LongEntity.class)
+				.filter("sourceBucketAndKey", "content")
+				.now();
 	}
 }
