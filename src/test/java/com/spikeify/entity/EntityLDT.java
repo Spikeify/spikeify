@@ -12,7 +12,7 @@ public class EntityLDT {
 
 	public int one;
 
-	public BigIndexedList list;
+	public BigIndexedList<Long> list;
 
 
 }

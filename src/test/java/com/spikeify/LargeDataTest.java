@@ -1,18 +1,18 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Bin;
-import com.aerospike.client.Key;
-import com.aerospike.client.Value;
-import com.aerospike.client.large.LargeList;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityLDT;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 
 public class LargeDataTest {
 
@@ -34,66 +34,6 @@ public class LargeDataTest {
 		sfy.truncateNamespace(namespace);
 	}
 
-
-	@Test
-	public void testLargeList() {
-
-		Random rnd = new Random();
-
-		WritePolicy wp = new WritePolicy();
-		wp.recordExistsAction = RecordExistsAction.UPDATE;
-
-		Key key1 = new Key(namespace, setName, userKey1);
-
-		int step = 100;
-
-		Bin[] bins = new Bin[1];
-		bins[0] = new Bin("one", rnd.nextLong());
-		client.put(wp, key1, bins);
-
-		LargeList llist = new LargeList(client, wp, key1, "lmap");
-
-		for (int n = 0; n < 1; n++) {
-
-			System.out.println("loop:" + n);
-			List values = new ArrayList();
-			for (int i = 0; i < step; i++) {
-				int key = step * n + i;
-				Map valmap = new HashMap();
-				valmap.put("key", key);
-				valmap.put("value", 1_000_000 + key);
-				values.add(Value.get(valmap));
-				if (i % 100 == 0) {
-					System.out.println(" key:"+key);
-					llist.add(values);
-					values.clear();
-				}
-			}
-			llist.add(values);
-		}
-
-		System.out.println("RANGE:");
-		List range = llist.range(Value.get(15), Value.get(25));
-		for (Object r : range) {
-			System.out.print(" " + r);
-		}
-		System.out.println();
-
-		System.out.println("find: " + llist.find(Value.get(25)));
-
-		llist.remove(Value.get(25), Value.get(35));
-
-//			System.out.println("capacity:" + lmap.getCapacity());
-
-		System.out.println();
-		System.out.println("----------------------------------");
-
-		Map confmap = llist.getConfig();
-		for (Object key : confmap.keySet()) {
-			System.out.println(key + " : " + confmap.get(key));
-		}
-	}
-
 	@Test
 	public void testBigIndexedList() {
 
@@ -102,61 +42,139 @@ public class LargeDataTest {
 		WritePolicy wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
 
-		Key key1 = new Key(namespace, setName, userKey1);
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
 
-		int step = 100;
+		int count = 1000;
+		long offset = 1_000_000L;
+
+		List<Long> data = new ArrayList<>(count);
+		for (int i = 0; i < count; i++) {
+			data.add(i + offset);
+		}
+		entity.list.addAll(data);
+
+		// get map config, check count setting
+		Map confmap = entity.list.getInnerConfig();
+		Assert.assertEquals((long) count, confmap.get("PropItemCount"));
+		Assert.assertEquals((long) entity.list.size(), confmap.get("PropItemCount"));
+//		for (Object key : confmap.keySet()) {
+//			System.out.println(key + " : " + confmap.get(key));
+//		}
+
+		Assert.assertEquals(offset + 100L, (long) entity.list.get(100));
+		Assert.assertEquals(offset + 999L, (long) entity.list.get(999));
+		Assert.assertTrue(entity.list.exists(0));
+		Assert.assertTrue(entity.list.exists(count - 1));
+		Assert.assertFalse(entity.list.exists(-1));  // invalid index
+		Assert.assertFalse(entity.list.exists(count));  // out of range
+
+		// test range
+		List<Long> range = entity.list.range(100, 104);
+		Assert.assertEquals(5, range.size());
+		Assert.assertEquals(offset + 100L, (long) range.get(0));
+		Assert.assertEquals(offset + 104L, (long) range.get(4));
+
+		// test range & trim & add back
+		List<Long> rangeTrim = entity.list.range(995, 999);
+		Assert.assertEquals(5, rangeTrim.size());
+		Assert.assertEquals(offset + 995, (long) rangeTrim.get(0));
+		Assert.assertEquals(offset + 999, (long) rangeTrim.get(4));
+		// data exists, trim the list now
+		int removed = entity.list.trim(995);
+		Assert.assertEquals(5, removed);
+		rangeTrim = entity.list.range(995, 999);
+		Assert.assertTrue(rangeTrim.isEmpty());
+		Assert.assertEquals(count - 5, entity.list.size());
+		// add back
+		for (int i = 995; i < 1000; i++) {
+			entity.list.add(i + offset);
+		}
+		Assert.assertEquals(count, entity.list.size());
+		rangeTrim = entity.list.range(995, 999);
+		Assert.assertEquals(5, rangeTrim.size());
+		Assert.assertEquals(offset + 995, (long) rangeTrim.get(0));
+		Assert.assertEquals(offset + 996, (long) rangeTrim.get(1));
+		Assert.assertEquals(offset + 997, (long) rangeTrim.get(2));
+		Assert.assertEquals(offset + 998, (long) rangeTrim.get(3));
+		Assert.assertTrue(entity.list.exists(999));
+	}
+
+	@Test
+	public void testBigIndexedListAddEmpty() {
 
 		EntityLDT entity = new EntityLDT();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
-		System.out.println();
+		List<Long> emptyList = new ArrayList<>(0);
 
-//		for (int n = 0; n < 1; n++) {
-//
-//			System.out.println("loop:" + n);
-//			List values = new ArrayList();
-//			for (int i = 0; i < step; i++) {
-//				int key = step * n + i;
-//				Map valmap = new HashMap();
-//				valmap.put("key", key);
-//				valmap.put("value", 1_000_000 + key);
-//				values.add(Value.get(valmap));
-//				if (i % 100 == 0) {
-//					System.out.println(" key:"+key);
-//					llist.add(values);
-//					values.clear();
-//				}
-//			}
-//			llist.add(values);
-//		}
-//
-//		System.out.println("RANGE:");
-//		List range = llist.range(Value.get(15), Value.get(25));
-//		for (Object r : range) {
-//			System.out.print(" " + r);
-//		}
-//		System.out.println();
-//
-//		System.out.println("find: " + llist.find(Value.get(25)));
-//
-//		llist.remove(Value.get(25), Value.get(35));
-//
-////			System.out.println("capacity:" + lmap.getCapacity());
-//
-//		System.out.println();
-//		System.out.println("----------------------------------");
-//
-//		Map confmap = llist.getConfig();
-//		for (Object key : confmap.keySet()) {
-//			System.out.println(key + " : " + confmap.get(key));
-//		}
+		entity.list.addAll(emptyList);
+		Assert.assertTrue(entity.list.isEmpty());
+		Assert.assertEquals(0, entity.list.size());
 	}
 
 
 	@Test
-	public void countRec() {
-		int recCount = sfy.info().getRecordCount("test", "User");
-		System.out.println("count:" + recCount);
+	public void testOutOfRange() {
+
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		List<Long> sample = new ArrayList<>(10);
+		for (int i = 0; i < 10; i++) {
+			sample.add((long) i);
+		}
+
+		entity.list.addAll(sample);
+		Assert.assertEquals(10, entity.list.size());
+
+		// request an out of bounds range - does not complain
+		List<Long> range = entity.list.range(5, 15);
+		// only five elements found
+		Assert.assertEquals(5, range.size());
+
 	}
+
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testInvertedRange() {
+
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		List<Long> sample = new ArrayList<>(10);
+		for (int i = 0; i < 10; i++) {
+			sample.add((long) i);
+		}
+
+		entity.list.addAll(sample);
+		Assert.assertEquals(10, entity.list.size());
+
+		// request with reversed indexes - throws exseption
+		List<Long> range = entity.list.range(5, 0);
+	}
+
+	@Test(expected = IndexOutOfBoundsException.class)
+	public void testTrimOutOfBounds() {
+
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		List<Long> sample = new ArrayList<>(10);
+		for (int i = 0; i < 10; i++) {
+			sample.add((long) i);
+		}
+
+		entity.list.addAll(sample);
+		Assert.assertEquals(10, entity.list.size());
+
+		// request with reversed indexes - throws exseption
+		entity.list.trim(15);
+	}
+
 }
