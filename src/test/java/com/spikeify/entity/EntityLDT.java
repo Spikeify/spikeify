@@ -13,6 +13,6 @@ public class EntityLDT {
 	public int one;
 
 	public BigIndexedList<Long> list;
-
+	public BigIndexedList<EntitySubJson> jsonList;
 
 }

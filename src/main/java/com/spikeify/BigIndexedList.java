@@ -105,7 +105,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			throw new IllegalStateException("List consistency error: list should only contain one value for each index.");
 		}
 
-		return (T) ((Map<String, Object>) found.get(0)).get("value");
+		if (converter != null) {
+			return (T) converter.fromProperty(((Map<String, Object>) found.get(0)).get("value"));
+		} else {
+			return (T) ((Map<String, Object>) found.get(0)).get("value");
+		}
 	}
 
 	/**
@@ -129,8 +133,13 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 		List<T> results = new ArrayList<>(found.size());
 		for (Object obj : found) {
-			T val = (T) ((Map<String, Object>) obj).get("value");
-			results.add(val);
+			Object val = ((Map<String, Object>) obj).get("value");
+			if (converter != null) {
+				results.add((T) converter.fromProperty(val));
+			} else {
+				results.add((T) val);
+			}
+
 		}
 		return results;
 	}

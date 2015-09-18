@@ -4,15 +4,13 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityLDT;
+import com.spikeify.entity.EntitySubJson;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class LargeDataTest {
 
@@ -175,6 +173,37 @@ public class LargeDataTest {
 
 		// request with reversed indexes - throws exseption
 		entity.list.trim(15);
+	}
+
+	@Test
+	public void testAddingJson() {
+
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		List<EntitySubJson> sample = new ArrayList<>(10);
+		for (int i = 0; i < 10; i++) {
+			sample.add(new EntitySubJson(i, "text" + i, new Date(i * 10000)));
+		}
+
+		entity.jsonList.addAll(sample);
+		Assert.assertEquals(10, entity.jsonList.size());
+
+		for (int i = 0; i < 10; i++) {
+			EntitySubJson json = entity.jsonList.get(i);
+			Assert.assertEquals(i, json.first);
+			Assert.assertEquals("text" + i, json.second);
+			Assert.assertEquals(null, json.date);
+		}
+
+		List<EntitySubJson> range = entity.jsonList.range(0, 9);
+		for (int i = 0; i < 10; i++) {
+			EntitySubJson json = range.get(i);
+			Assert.assertEquals(i, json.first);
+			Assert.assertEquals("text" + i, json.second);
+			Assert.assertEquals(null, json.date);
+		}
 	}
 
 }
