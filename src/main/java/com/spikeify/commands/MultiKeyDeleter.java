@@ -13,7 +13,7 @@ import java.util.*;
  * A command chain for deleting multiple objects from database.
  * This class is not intended to be instantiated by user.
  */
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unchecked"})
 public class MultiKeyDeleter {
 
 	/**

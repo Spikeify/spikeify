@@ -2,19 +2,14 @@ package com.spikeify;
 
 import com.aerospike.client.*;
 import com.aerospike.client.policy.WritePolicy;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spikeify.commands.InfoFetcher;
 import com.spikeify.entity.*;
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * This test tests the new double support introduced in Aerospike Client 3.1.4

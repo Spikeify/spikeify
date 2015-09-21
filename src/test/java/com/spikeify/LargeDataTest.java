@@ -1,8 +1,6 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.policy.RecordExistsAction;
-import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityLDT;
 import com.spikeify.entity.EntitySubJson;
 import org.junit.After;

@@ -37,6 +37,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this map is assigned
 	 */
+	@SuppressWarnings("unchecked")
 	void init(AerospikeClient client, Key key, String binName, Field field) {
 		this.valueType = TypeUtils.getBigMapValueType(field);
 		if (valueType != null) {
@@ -59,6 +60,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	 * @param key   key with which the specified value is to be associated
 	 * @param value value to be associated with the specified key
 	 */
+	@SuppressWarnings("unchecked")
 	public void put(K key, V value) {
 		if (value == null) {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
@@ -76,6 +78,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	 *
 	 * @param map mappings to be stored in this map
 	 */
+	@SuppressWarnings("unchecked")
 	public void put(Map<K, V> map) {
 		if (map == null) {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
@@ -114,6 +117,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	 * @return the value to which the specified key is mapped, or
 	 * {@code null} if this map contains no mapping for the key
 	 */
+	@SuppressWarnings("unchecked")
 	public V get(K key) {
 		List found = inner.find(Value.get(key));
 

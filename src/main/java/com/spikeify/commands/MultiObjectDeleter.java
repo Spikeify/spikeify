@@ -47,7 +47,7 @@ public class MultiObjectDeleter {
 		if (meta.userKeyString != null) {
 			return new Key(meta.namespace, meta.setName, meta.userKeyString);
 		} else {
-			return new Key(meta.namespace, meta.setName, meta.userKeyLong.longValue());
+			return new Key(meta.namespace, meta.setName, meta.userKeyLong);
 		}
 	}
 

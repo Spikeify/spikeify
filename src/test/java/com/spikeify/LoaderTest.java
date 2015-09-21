@@ -55,7 +55,7 @@ public class LoaderTest {
 		String unmapped2 = "something";
 		Float unmapped3 = 666.6f;
 
-		EntitySub sub = new EntitySub(333, "something", new Date(1234567l));
+		EntitySub sub = new EntitySub(333, "something", new Date(1234567L));
 
 		Bin binOne = new Bin("one", one);
 		Bin binTwo = new Bin("two", two);
@@ -169,13 +169,13 @@ public class LoaderTest {
 
 	@Test
 	public void loadNonExisting() {
-		EntityOne res = sfy.get(EntityOne.class).namespace(namespace).key(0l).now();
+		EntityOne res = sfy.get(EntityOne.class).namespace(namespace).key(0L).now();
 		Assert.assertNull(res);
 	}
 
 	@Test
 	public void loadAllNonExisting() {
-		Map<Long, EntityOne> recs = sfy.getAll(EntityOne.class, 0l, 1l).namespace(namespace).now();
+		Map<Long, EntityOne> recs = sfy.getAll(EntityOne.class, 0L, 1L).namespace(namespace).now();
 		assertTrue(recs.isEmpty());
 	}
 
@@ -201,14 +201,14 @@ public class LoaderTest {
 	public void mapTooLongFieldName() {
 		EntityTooLongFieldName ent = new EntityTooLongFieldName();
 		ent.thisIsAFieldWithATooLongName = "something";
-		sfy.create(123l, ent).now();
+		sfy.create(123L, ent).now();
 	}
 
 	@Test(expected = SpikeifyError.class)
 	public void mapTooLongBinName() {
 		EntityTooLongBinName ent = new EntityTooLongBinName();
 		ent.thisIsAFieldWithATooLongName = "something";
-		sfy.create(123l, ent).now();
+		sfy.create(123L, ent).now();
 	}
 
 

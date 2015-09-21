@@ -67,7 +67,7 @@ public class AerospikeClientMock implements IAerospikeClient {
 				} else if (obj.getClass().equals(String.class)) {
 					bins.put(newBin.name, obj);
 				} else if (obj.getClass().equals(Boolean.class)) {
-					bins.put(newBin.name, (Boolean) obj ? 1l : 0l);
+					bins.put(newBin.name, (Boolean) obj ? 1L : 0L);
 				} else if (obj.getClass().equals(Short.class)) {
 					bins.put(newBin.name, Long.valueOf((Short) obj));
 				} else if (obj.getClass().equals(Byte.class)) {

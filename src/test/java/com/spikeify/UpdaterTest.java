@@ -55,12 +55,12 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 		entity.eleven = EntityEnum.SECOND;
-		entity.unmapped.put("unmap1", 123l);
+		entity.unmapped.put("unmap1", 123L);
 		entity.unmapped.put("unmap2", "unmapped string");
 		entity.unmapped.put("unmap3", 3.14d);
 		entity.thirteen = new byte[]{1, 2, 3, 4, 5};
 
-		entity.sub = new EntitySub(333, "something", new Date(1234567l));
+		entity.sub = new EntitySub(333, "something", new Date(1234567L));
 
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -133,7 +133,7 @@ public class UpdaterTest {
 		entity.seven = true;
 		entity.eight = new Date(1420070400);
 		entity.eleven = EntityEnum.SECOND;
-		entity.sub = new EntitySub(333, "something", new Date(1234567l));
+		entity.sub = new EntitySub(333, "something", new Date(1234567L));
 		Key key1 = new Key(namespace, setName, userKeyString);
 
 		// we did not provide namespace on purpose - let default kick in
@@ -275,19 +275,19 @@ public class UpdaterTest {
 		List aList = new ArrayList();
 		aList.add("test1");
 		aList.add("test2");
-		aList.add(1234l);
+		aList.add(1234L);
 		aList.add(123.0d);
 
 		Set aSet = new HashSet();
 		aSet.add("test1");
 		aSet.add("test2");
-		aSet.add(1234l);
+		aSet.add(1234L);
 		aSet.add(123.0d);
 
 		Map aMap = new HashMap();
 		aMap.put("1", "testX");
 		aMap.put("2", "testY");
-		aMap.put("3", 456l);
+		aMap.put("3", 456L);
 		aMap.put("4", 456.0d);
 
 		EntityOne entityOne = new EntityOne();
@@ -367,7 +367,7 @@ public class UpdaterTest {
 	@Test
 	public void testSkipCacheObjectUpdating() {
 		EntityOne entity1 = new EntityOne();
-		entity1.userId = 1234l;
+		entity1.userId = 1234L;
 		entity1.one = 123;
 		entity1.two = "a test";
 
@@ -393,12 +393,12 @@ public class UpdaterTest {
 	@Test
 	public void testSkipCacheObjectMultiUpdating() {
 		EntityOne entity1 = new EntityOne();
-		entity1.userId = 1234l;
+		entity1.userId = 1234L;
 		entity1.one = 123;
 		entity1.two = "a test";
 
 		EntityOne entity2 = new EntityOne();
-		entity2.userId = 12345l;
+		entity2.userId = 12345L;
 		entity2.one = 123;
 		entity2.two = "a test";
 

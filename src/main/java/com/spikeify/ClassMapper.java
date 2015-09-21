@@ -234,7 +234,7 @@ public class ClassMapper<TYPE> {
 			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
 			// to java epoch time in milliseconds
 			long now = System.currentTimeMillis();
-			recordExpiration = (int) ((javaExpiration - now) / 1000l);
+			recordExpiration = (int) ((javaExpiration - now) / 1000L);
 		}
 		return recordExpiration;
 	}

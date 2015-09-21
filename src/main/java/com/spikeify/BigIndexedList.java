@@ -37,6 +37,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this list is assigned
 	 */
+	@SuppressWarnings("unchecked")
 	void init(AerospikeClient client, Key key, String binName, Field field) {
 		this.valueType = TypeUtils.getBigListValueType(field);
 		if (valueType != null) {
@@ -64,8 +65,9 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	/**
 	 * Add object to the end of list
 	 *
-	 * @param value
+	 * @param value Value
 	 */
+	@SuppressWarnings("unchecked")
 	public void add(T value) {
 		if (value == null) {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
@@ -84,6 +86,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 *
 	 * @param list A list of object to be added to the end of list.
 	 */
+	@SuppressWarnings("unchecked")
 	public void addAll(List<T> list) {
 
 		if (list == null) {
@@ -122,6 +125,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param index Index
 	 * @return A value at requested indexes.
 	 */
+	@SuppressWarnings("unchecked")
 	public T get(int index) {
 		List found = inner.find(Value.get(index));
 
@@ -147,6 +151,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param to   Ending position
 	 * @return A list of values between requested positions.
 	 */
+	@SuppressWarnings("unchecked")
 	public List<T> range(int from, int to) {
 
 		if (to < from) {

@@ -139,6 +139,7 @@ public class SingleKeyCommander<T> {
 	 * @param fieldName  Name of the mapped field.
 	 * @param fieldValue Field value to be saved to the bin.
 	 */
+	@SuppressWarnings("unchecked")
 	public SingleKeyCommander<T> set(String fieldName, Object fieldValue) {
 		String binName = mapper.getBinName(fieldName);
 		Object propertyValue = mapper.getFieldMapper(fieldName).converter.fromField(fieldValue);

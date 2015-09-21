@@ -20,8 +20,8 @@ public class RecordCacheTest {
 		props1.put("two", "test");
 		props1.put("five", null); // null should be ignored
 		List<Long> longs1 = new ArrayList<>();  // add a list of longs
-		longs1.add(1l);
-		longs1.add(2l);
+		longs1.add(1L);
+		longs1.add(2L);
 		props1.put("longs", longs1);
 		Set<String> updateResult1 = cache.update(key1, props1, false);
 		Assert.assertEquals(props1.keySet(), updateResult1);
@@ -42,7 +42,7 @@ public class RecordCacheTest {
 		props1.put("one", 2);
 		props1.put("two", "test"); // same value - should not be updated
 		props1.put("three", 1.1d);
-		longs1.add(3l);  // add another long
+		longs1.add(3L);  // add another long
 		props1.put("longs", longs1);
 		Set<String> updateResult12 = cache.update(key1, props1, false);
 		Assert.assertEquals(3, updateResult12.size());
@@ -71,7 +71,7 @@ public class RecordCacheTest {
 		props1 = new HashMap<>(5);
 		props1.put("one", "test"); // same value - but should be updated, because key was removed from cache
 		props1.put("two", 15);
-		props1.put("three", 12345l);
+		props1.put("three", 12345L);
 		Set<String> updateResult14 = cache.update(key1, props1, false);
 		Assert.assertEquals(3, updateResult14.size());
 

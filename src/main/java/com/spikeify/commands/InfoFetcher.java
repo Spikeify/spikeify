@@ -8,10 +8,7 @@ import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
 import com.spikeify.IndexingService;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A command chain for fetching various information from database.
@@ -149,9 +146,7 @@ public class InfoFetcher {
 		for (Node node : nodes) {
 			String nodeNsNames = Info.request(new InfoPolicy(), node, CONFIG_NAMESPACES_PARAM);
 			String[] nsNamesArray = nodeNsNames.split(";");
-			for (String nsName : nsNamesArray) {
-				nsNames.add(nsName);
-			}
+			Collections.addAll(nsNames, nsNamesArray);
 		}
 		return nsNames;
 	}

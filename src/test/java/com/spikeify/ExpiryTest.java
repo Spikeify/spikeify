@@ -38,7 +38,7 @@ public class ExpiryTest {
 		long defaultTTLmsec = 1000 * sfy.info().getDefaultTTL(namespace);
 
 		EntityExpires entity = new EntityExpires();
-		entity.expires = 0l;
+		entity.expires = 0L;
 		Key key1 = new Key(namespace, setName, userKey1);
 
 		Key saveKey = sfy
@@ -54,7 +54,7 @@ public class ExpiryTest {
 	@Test
 	public void doesNotExpire() {
 		EntityExpires entity = new EntityExpires();
-		entity.expires = -1l;
+		entity.expires = -1L;
 		Key key1 = new Key(namespace, setName, userKey1);
 
 		// we did not provide namespace on purpose - let default kick in
@@ -64,16 +64,16 @@ public class ExpiryTest {
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
 		Assert.assertEquals(entity.expires, reloaded.expires);
-		Assert.assertEquals(-1l, reloaded.expires.longValue());
+		Assert.assertEquals(-1L, reloaded.expires.longValue());
 	}
 
 	@Test
 	public void setExpires() {
 		EntityExpires entity = new EntityExpires();
 
-		long milliSecDay = 24l * 60l * 60l * 1000l;
-		long milliSecYear = 365l * milliSecDay;
-		long futureDate = new Date().getTime() + 5l * milliSecYear;
+		long milliSecDay = 24L * 60L * 60L * 1000L;
+		long milliSecYear = 365L * milliSecDay;
+		long futureDate = new Date().getTime() + 5L * milliSecYear;
 		entity.expires = futureDate;
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -84,7 +84,7 @@ public class ExpiryTest {
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
 		Assert.assertEquals(futureDate, entity.expires.longValue());
 		Assert.assertEquals(entity.expires, reloaded.expires, 5000);
-		Assert.assertEquals(futureDate, reloaded.expires.longValue(), 5000);
+		Assert.assertEquals(futureDate, reloaded.expires, 5000);
 	}
 
 }
