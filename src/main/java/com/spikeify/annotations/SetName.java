@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface SetName {
 	/**
-	 * The SetName used for this Class.
+	 * @return The SetName used for this Class. If empty, the short class name is used as default.
 	 */
 	String value() default "";
 }

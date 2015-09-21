@@ -12,13 +12,12 @@ import java.lang.annotation.Target;
 public @interface Indexed {
 
 	/**
-	 * specific index name
-	 * if not given index name is generated automatically
+	 * @return Specific index name. Default is an automatically-generated value.
 	 */
 	String name() default "";
 
 	/**
-	 * Index collection type
+	 * @return Type of index. The default is IndexCollectionType.DEFAULT, indicating a scalar type.
 	 */
 	IndexCollectionType collection() default IndexCollectionType.DEFAULT;
 }

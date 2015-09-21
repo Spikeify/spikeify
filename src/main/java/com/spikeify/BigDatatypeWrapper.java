@@ -7,6 +7,6 @@ import java.lang.reflect.Field;
 
 public abstract class BigDatatypeWrapper {
 
-	public abstract void init(AerospikeClient client, Key key, String binName, Field field);
+	abstract void init(AerospikeClient client, Key key, String binName, Field field);
 
 }

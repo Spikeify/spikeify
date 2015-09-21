@@ -12,8 +12,8 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Namespace {
 	/**
-	 * The namespace used in the DB.
+	 * @return The namespace used in the DB.
 	 */
-	String value() default "";
+	String value();
 }
 

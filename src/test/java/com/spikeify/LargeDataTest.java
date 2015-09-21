@@ -35,11 +35,6 @@ public class LargeDataTest {
 	@Test
 	public void testBigIndexedList() {
 
-		Random rnd = new Random();
-
-		WritePolicy wp = new WritePolicy();
-		wp.recordExistsAction = RecordExistsAction.UPDATE;
-
 		EntityLDT entity = new EntityLDT();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
@@ -57,9 +52,6 @@ public class LargeDataTest {
 		Map confmap = entity.list.getInnerConfig();
 		Assert.assertEquals((long) count, confmap.get("PropItemCount"));
 		Assert.assertEquals((long) entity.list.size(), confmap.get("PropItemCount"));
-//		for (Object key : confmap.keySet()) {
-//			System.out.println(key + " : " + confmap.get(key));
-//		}
 
 		Assert.assertEquals(offset + 100L, (long) entity.list.get(100));
 		Assert.assertEquals(offset + 999L, (long) entity.list.get(999));
@@ -152,7 +144,7 @@ public class LargeDataTest {
 		entity.list.addAll(sample);
 		Assert.assertEquals(10, entity.list.size());
 
-		// request with reversed indexes - throws exseption
+		// request with reversed indexes - throws exception
 		List<Long> range = entity.list.range(5, 0);
 	}
 
@@ -171,7 +163,7 @@ public class LargeDataTest {
 		entity.list.addAll(sample);
 		Assert.assertEquals(10, entity.list.size());
 
-		// request with reversed indexes - throws exseption
+		// request with reversed indexes - throws exception
 		entity.list.trim(15);
 	}
 

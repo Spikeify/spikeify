@@ -15,17 +15,29 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A type-safe wrapper for a native {@link LargeList}, exposing its interface as a List.
+ *
+ * @param <T> the type of elements in this list
+ */
 public class BigIndexedList<T> extends BigDatatypeWrapper {
 
-	private String binName;
 	private Type valueType;
 	private Converter converter;
 	private LargeList inner;
 	private final int step = 100;
 	boolean isEmpty = true;
 
-	public void init(AerospikeClient client, Key key, String binName, Field field) {
-		this.binName = binName;
+	/**
+	 * Internal function - must be called before this list can be used.
+	 * This function is called during a setup of mapping relation between this class and mapped field.
+	 *
+	 * @param client  The underlying Aerospike client
+	 * @param key     The record key under which this list is saved in DB
+	 * @param binName The bin name under which this list is saved in DB
+	 * @param field   The field in the object to which this list is assigned
+	 */
+	void init(AerospikeClient client, Key key, String binName, Field field) {
 		this.valueType = TypeUtils.getBigListValueType(field);
 		if (valueType != null) {
 			Class valueClass = (Class) valueType;
@@ -40,6 +52,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		this.inner = new LargeList(client, null, key, binName);
 	}
 
+	/**
+	 * Size of list, i.e. a number of elements in the list
+	 *
+	 * @return Number of elements in the list
+	 */
 	public int size() {
 		return isEmpty ? 0 : inner.size();
 	}
@@ -62,6 +79,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		inner.add(Value.get(valMap));
 	}
 
+	/**
+	 * Add a List of objects to the end of list
+	 *
+	 * @param list A list of object to be added to the end of list.
+	 */
 	public void addAll(List<T> list) {
 
 		if (list == null) {
@@ -94,6 +116,12 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		}
 	}
 
+	/**
+	 * Returns a value at given position in the list.
+	 *
+	 * @param index Index
+	 * @return A value at requested indexes.
+	 */
 	public T get(int index) {
 		List found = inner.find(Value.get(index));
 
@@ -113,11 +141,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	}
 
 	/**
-	 * Returns a range of values between from an to indexes.
+	 * Returns a range of values between from an to positions.
 	 *
-	 * @param from Starting index
-	 * @param to   Ending index
-	 * @return
+	 * @param from Starting position
+	 * @param to   Ending position
+	 * @return A list of values between requested positions.
 	 */
 	public List<T> range(int from, int to) {
 
@@ -146,7 +174,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 
 	/**
-	 * Removes values from start index to the end of list.
+	 * Removes values from start position to the end of list.
 	 *
 	 * @param from Starting index of trim (inclusive)
 	 * @return Number of items removed
@@ -163,12 +191,10 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * Does value exist?
 	 *
 	 * @param index index of the value to check existance for
+	 * @return True if  value at given index exists
 	 */
 	public boolean exists(int index) throws AerospikeException {
-		if (index < 0) {
-			return false;
-		}
-		return inner.exists(Value.get(index));
+		return index >= 0 && inner.exists(Value.get(index));
 	}
 
 	/**
@@ -177,7 +203,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @return True if list is empty
 	 */
 	public boolean isEmpty() {
-		return isEmpty ? true : inner.size() == 0;
+		return isEmpty || inner.size() == 0;
 	}
 
 	/**

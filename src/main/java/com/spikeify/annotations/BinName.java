@@ -13,6 +13,7 @@ import java.lang.annotation.Target;
 public @interface BinName {
 	/**
 	 * The bin name to which this filed is mapped
+	 * @return Name of the bin. Default value is empty string indicating to use the field name as bin name.
 	 */
 	String value() default "";
 }
