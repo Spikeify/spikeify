@@ -7,6 +7,7 @@ import com.aerospike.client.query.Filter;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.RecordSet;
 import com.aerospike.client.query.Statement;
+import com.spikeify.annotations.BinName;
 import com.spikeify.annotations.Indexed;
 import com.spikeify.commands.InfoFetcher;
 
@@ -16,6 +17,7 @@ import java.lang.reflect.Field;
 public class Scanner<T> {
 
 	protected final Class<T> type;
+
 	protected final IAerospikeClient synClient;
 	protected final IAsyncClient asyncClient;
 	protected final ClassConstructor classConstructor;
@@ -23,6 +25,7 @@ public class Scanner<T> {
 	protected final ClassMapper<T> mapper;
 
 	protected String fieldName;
+	protected Field field;
 	protected String indexName;
 	protected String namespace;
 	protected String setName;
@@ -51,7 +54,7 @@ public class Scanner<T> {
 
 		this.setName = setName;
 
-		if (indexName != null && fieldName != null) {
+		if (indexName != null && field != null) {
 			// set name has changed ... index name must be refreshed
 			setIndexName(type, setName, namespace, fieldName);
 		}
@@ -107,8 +110,8 @@ public class Scanner<T> {
 			throw new SpikeifyError("Error: SetName not defined.");
 		}
 
-		if (indexName == null && fieldName != null) {
-			setIndexName(type, setName, namespace, fieldName);
+		if (indexName == null && field != null) {
+			setIndexName(type, setName, namespace, field.getName());
 		}
 
 		if (indexName == null) {
@@ -116,24 +119,11 @@ public class Scanner<T> {
 		}
 	}
 
-	public Scanner<T> filter(String fieldName, String fieldValue) {
+	public Scanner<T> filter(String nameOfField, String fieldValue) {
 
-		setIndexName(type, setName, namespace, fieldName);
+		setIndexName(type, setName, namespace, nameOfField);
 
-		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, fieldName);
-
-		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
-			return setFilters(Filter.equal(fieldName, fieldValue));
-		}
-
-		return setFilters(Filter.contains(fieldName, collectionType, fieldValue));
-	}
-
-	public Scanner<T> filter(String fieldName, long fieldValue) {
-
-		setIndexName(type, setName, namespace, fieldName);
-
-		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, fieldName);
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, field.getName());
 
 		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
 			return setFilters(Filter.equal(fieldName, fieldValue));
@@ -142,11 +132,24 @@ public class Scanner<T> {
 		return setFilters(Filter.contains(fieldName, collectionType, fieldValue));
 	}
 
-	public Scanner<T> filter(String fieldName, long begin, long end) {
+	public Scanner<T> filter(String nameOfField, long fieldValue) {
 
-		setIndexName(type, setName, namespace, fieldName);
+		setIndexName(type, setName, namespace, nameOfField);
 
-		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, fieldName);
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, field.getName());
+
+		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
+			return setFilters(Filter.equal(fieldName, fieldValue));
+		}
+
+		return setFilters(Filter.contains(fieldName, collectionType, fieldValue));
+	}
+
+	public Scanner<T> filter(String nameOfField, long begin, long end) {
+
+		setIndexName(type, setName, namespace, nameOfField);
+
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, field.getName());
 
 		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
 			return setFilters(Filter.range(fieldName, begin, end));
@@ -155,21 +158,39 @@ public class Scanner<T> {
 		return setFilters(Filter.range(fieldName, collectionType, begin, end));
 	}
 
-	private void setIndexName(Class<T> type, String setName, String namespace, String fieldName) {
+	private void setIndexName(Class<T> type, String setName, String namespace, String nameOfField) {
 
+		// set correct global field and index name
+		field = findField(nameOfField);
+		fieldName = IndexingService.getFieldName(field);
+		indexName = getIndexName(setName, namespace, type, field);
+	}
+
+	private Field findField(String nameOfField) {
+
+		Field foundField = null;
 		try {
-			Field field = type.getDeclaredField(fieldName);
-
-			if (field == null) {
-				throw new SpikeifyError("Can't query: no such field: '" + fieldName + "' in: '" + type.getName() + "'!");
-			}
-
-			this.fieldName = fieldName;
-			this.indexName = getIndexName(setName, namespace, type, field);
+			foundField = type.getDeclaredField(nameOfField);
 		}
 		catch (NoSuchFieldException e) {
-			throw new SpikeifyError("Can't query: no such field: '" + fieldName + "' in: '" + type.getName() + "'!");
+
+			// try again by binName ... if found
+			Field[] allFields = type.getDeclaredFields();
+			for (Field member : allFields) {
+				BinName found = member.getAnnotation(BinName.class);
+				if (found != null && nameOfField.equals(found.value())) {
+					// we have found the correct field ...
+					foundField = member;
+					break;
+				}
+			}
 		}
+
+		if (foundField == null) {
+			throw new SpikeifyError("Can't query: no such field: '" + nameOfField + "' in: '" + type.getName() + "'!");
+		}
+
+		return foundField;
 	}
 
 	/**
@@ -186,7 +207,7 @@ public class Scanner<T> {
 		if (setName != null) {
 			// explicit set name filtering (index was created manually) ... @Indexed annotation is ignored
 			// index name can not be resolved from annotations we must look up in information
-			InfoFetcher.IndexInfo info = IndexingService.findIndex(synClient, namespace, setName, field.getName());
+			InfoFetcher.IndexInfo info = IndexingService.findIndex(synClient, namespace, setName, field);
 
 			if (info == null) {
 				throw new SpikeifyError("Index in namespace: " + namespace + ", for set: " + setName + " and field: " + field.getName() + ", not found!");

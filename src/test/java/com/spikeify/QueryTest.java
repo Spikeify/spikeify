@@ -363,7 +363,7 @@ public class QueryTest {
 		List<EntityIndexed> list = sfy.query(EntityIndexed.class).filter("text", "B").now().toList();
 		assertEquals(ITEMS, list.size());
 
-		for (EntityIndexed item: list) {
+		for (EntityIndexed item : list) {
 			assertEquals("Item has been changed by two threads: " + item.key, 1, item.number);
 		}
 	}
@@ -392,7 +392,7 @@ public class QueryTest {
 							original.text = "B";
 							original.number = original.number + 1; // number of changes
 							sfy.update(original).now();
-						//	sfy.command(EntityIndexed.class).add("number", 1).now();
+							//	sfy.command(EntityIndexed.class).add("number", 1).now();
 						}
 
 						return original;
@@ -407,6 +407,7 @@ public class QueryTest {
 	}
 
 	public static class LongEntity {
+
 		@UserKey
 		public String id;
 
@@ -420,12 +421,37 @@ public class QueryTest {
 
 	@Test
 	public void testTooLongFieldNameForIndex() {
+
 		SpikeifyService.register(LongEntity.class);
-		// test fails because index creation does not check for annotation @BinName
+
+		LongEntity test = new LongEntity();
+		test.id = "1";
+		test.sourceBucketAndKey = "Bla";
+		sfy.create(test).now();
+
+		test = new LongEntity();
+		test.id = "2";
+		test.sourceBucketAndKey = "Bla";
+		sfy.create(test).now();
+
+		test = new LongEntity();
+		test.id = "3";
+		test.sourceBucketAndKey = "Blabla";
+		sfy.create(test).now();
 
 		// this filter by actual field name should be replaced with name in annotation @BinName
-		ResultSet<LongEntity> entities2 = sfy.query(LongEntity.class)
-				.filter("sourceBucketAndKey", "content")
-				.now();
+		List<LongEntity> list = sfy.query(LongEntity.class)
+								   .filter("sourceBucketAndKey", "Bla")
+								   .now()
+								   .toList();
+
+		assertEquals(2, list.size());
+
+		// query should also be possible by binName
+		list = sfy.query(LongEntity.class)
+				  .filter("sKey", "Blabla")
+				  .now()
+				  .toList();
+		assertEquals(1, list.size());
 	}
 }

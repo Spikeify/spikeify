@@ -73,10 +73,10 @@ public class IndexingService {
 					}
 
 					// check before creating new index
-					check(indexes, clazz, field.getName(), indexName, indexType, collectionType);
+					check(indexes, clazz, field, indexName, indexType, collectionType);
 
 					// we have all the data to create the index ... let's do it
-					createIndex(clazz, sfy.getClient(), policy, sfy.getNamespace(), indexName, field.getName(), indexType, collectionType);
+					createIndex(clazz, sfy.getClient(), policy, sfy.getNamespace(), indexName, field, indexType, collectionType);
 				}
 			}
 		}
@@ -147,15 +147,17 @@ public class IndexingService {
 	/**
 	 * Checks if existing index and to be created index are clashing!
 	 * @param indexes list of existing indexes in namespace
-	 * @param fieldName field name
+	 * @param field field name
 	 * @param indexName to be created index name
 	 * @param indexType to be created index type
 	 * @param collectionType  to be created index collection type
 	 */
-	private static void check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, String fieldName, String indexName, IndexType indexType, IndexCollectionType collectionType) {
+	private static void check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, Field field, String indexName, IndexType indexType, IndexCollectionType collectionType) {
 
 		String classSetName = getSetName(clazz);
 		InfoFetcher.IndexInfo found = indexes.get(indexName);
+
+		String fieldName = getFieldName(field);
 
 		if (found != null) {
 
@@ -197,7 +199,9 @@ public class IndexingService {
 	static String generateIndexName(Class<?> clazz, Field field) {
 
 		String setName = getSetName(clazz);
-		return "idx_" + setName + "_" + field.getName();
+		String fieldName = getFieldName(field);
+
+		return "idx_" + setName + "_" + fieldName;
 	}
 
 	/**
@@ -215,6 +219,16 @@ public class IndexingService {
 		return setName.value();
 	}
 
+	static String getFieldName(Field field) {
+
+		BinName binName = field.getAnnotation(BinName.class);
+		if (binName == null) {
+			return field.getName();
+		}
+
+		return binName.value();
+	}
+
 	/**
 	 * Creates index for entity field ...
 	 *
@@ -223,7 +237,7 @@ public class IndexingService {
 	 * @param policy policy
 	 * @param namespace namespace
 	 * @param indexName name of index
-	 * @param fieldName name of field
+	 * @param field name of field
 	 * @param indexType type of index
 	 * @param collectionType type of collection index
 	 * @return indexing task
@@ -233,7 +247,7 @@ public class IndexingService {
 										 Policy policy,
 										 String namespace,
 										 String indexName,
-										 String fieldName,
+										 Field field,
 										 IndexType indexType,
 										 IndexCollectionType collectionType) {
 
@@ -245,7 +259,7 @@ public class IndexingService {
 			collectionType = IndexCollectionType.DEFAULT;
 		}
 
-		return client.createIndex(policy, namespace, getSetName(entityType), indexName, fieldName, indexType, collectionType);
+		return client.createIndex(policy, namespace, getSetName(entityType), indexName, getFieldName(field), indexType, collectionType);
 	}
 
 	/**
@@ -275,13 +289,14 @@ public class IndexingService {
 	 * Finds index if set name was manually changed ... custom
 	 * @param synClient client
 	 * @param namespace namespace
-	 * @param fieldName field name
+	 * @param field field
 	 * @param setName to search for index
 	 * @return index information or null if not found
 	 */
-	public static InfoFetcher.IndexInfo findIndex(IAerospikeClient synClient, String namespace, String setName, String fieldName) {
+	public static InfoFetcher.IndexInfo findIndex(IAerospikeClient synClient, String namespace, String setName, Field field) {
 
 		InfoFetcher fetcher = new InfoFetcher(synClient);
+		String fieldName = getFieldName(field);
 		return fetcher.findIndex(namespace, setName, fieldName);
 	}
 }
