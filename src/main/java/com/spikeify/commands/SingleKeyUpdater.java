@@ -94,9 +94,9 @@ public class SingleKeyUpdater<T, K> {
 
 	/**
 	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
-	 * <br/>Internally the 'sendKey' property of the policy will always be set to true.
-	 * <br/> If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
-	 * <br/> The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
+	 * Internally the 'sendKey' property of the policy will always be set to true.
+	 * If this method is called within .transact() method then the 'generationPolicy' property will be set to GenerationPolicy.EXPECT_GEN_EQUAL
+	 * The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
 	 *
 	 * @param policy The policy.
 	 */

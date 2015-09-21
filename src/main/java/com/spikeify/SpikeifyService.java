@@ -125,7 +125,7 @@ public class SpikeifyService {
 	}
 
 	/**
-	 * Checks if server supports saving double values. This is supported on servers >= 3.6.0
+	 * Checks if server supports saving double values. This is supported on servers higher or equal 3.6.0
 	 * @param client Native Aerospike client
 	 */
 	public static void checkDoubleSupport(IAerospikeClient client){

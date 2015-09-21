@@ -287,7 +287,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain to execute a series of atomic commands on a single Record.
 	 *
-	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param type The mapped class, used to derive namespace and setName.
 	 */
 	<T> SingleKeyCommander<T> command(Class<T> type);
 
@@ -310,7 +310,7 @@ public interface Spikeify {
 	/**
 	 * Chechs if a record with given key exists in the DB.
 	 *
-	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param type The mapped class, used to derive namespace and setName.
 	 * @param id   ID of the record to check existence of.
 	 * @return True if record exists, false otherwise
 	 */
@@ -319,7 +319,7 @@ public interface Spikeify {
 	/**
 	 * Checks if records for given keys exist in the DB.
 	 *
-	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param type The mapped class, used to derive namespace and setName.
 	 * @param ids  IDs of the records to check existence of.
 	 * @return Array of booleans representing if records exist
 	 */
@@ -328,7 +328,7 @@ public interface Spikeify {
 	/**
 	 * Chechs if a record with given key exists in the DB.
 	 *
-	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param type The mapped class, used to derive namespace and setName.
 	 * @param id   ID of the record to check existence of.
 	 * @return True if record exists, false otherwise
 	 */
@@ -337,7 +337,7 @@ public interface Spikeify {
 	/**
 	 * Checks if records for given keys exist in the DB.
 	 *
-	 * @param type The mapped class, used to derive namespace & setName.
+	 * @param type The mapped class, used to derive namespace and setName.
 	 * @param ids  IDs of the records to check existence of.
 	 * @return Array of booleans representing if records exist
 	 */
