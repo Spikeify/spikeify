@@ -141,7 +141,7 @@ public class SpikeifyService {
 	 *
 	 * @return Server build version as InfoFetcher.Build
 	 */
-	private static InfoFetcher.Build getServerBuild(IAerospikeClient client) {
+	public static InfoFetcher.Build getServerBuild(IAerospikeClient client) {
 		Node[] nodes = client.getNodes();
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");

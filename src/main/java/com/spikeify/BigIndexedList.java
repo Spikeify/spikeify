@@ -6,6 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 import com.spikeify.annotations.AsJson;
+import com.spikeify.commands.InfoFetcher;
 import com.spikeify.converters.JsonConverter;
 
 import java.lang.reflect.Field;
@@ -26,7 +27,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	private Converter converter;
 	private LargeList inner;
 	private final int step = 100;
-	boolean isEmpty = true;
+	private boolean isEmpty = true;
 
 	/**
 	 * Internal function - must be called before this list can be used.
@@ -51,6 +52,14 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			this.converter = null;
 		}
 		this.inner = new LargeList(client, null, key, binName);
+
+		if (!(new InfoFetcher(client).isUDFEnabled(key.namespace))) {
+			throw new SpikeifyError("Error: LDT support not enabled on namespace '" + key.namespace + "'. Please add 'ldt-enabled true' to namespace section in your aerospike.conf file.");
+		}
+
+		if (client.get(null, key, binName) == null) {
+			isEmpty = true;
+		}
 	}
 
 	/**

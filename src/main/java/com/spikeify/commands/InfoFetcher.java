@@ -85,6 +85,16 @@ public class InfoFetcher {
 		return Long.valueOf(parseConfigString(config, "default-ttl", "0"));
 	}
 
+	public boolean isUDFEnabled(String namespace) {
+		Node[] nodes = synClient.getNodes();
+		if (nodes == null || nodes.length == 0) {
+			throw new IllegalStateException("No Aerospike nodes found.");
+		}
+		String[] config = Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
+
+		return Boolean.valueOf(parseConfigString(config, "ldt-enabled", "false"));
+	}
+
 	public int getReplicationFactor(String namespace) {
 		Node[] nodes = synClient.getNodes();
 		if (nodes == null || nodes.length == 0) {
