@@ -57,6 +57,7 @@ public class LargeDataTest {
 		Assert.assertTrue(entity.list.exists(count - 1));
 		Assert.assertFalse(entity.list.exists(-1));  // invalid index
 		Assert.assertFalse(entity.list.exists(count));  // out of range
+		Assert.assertEquals(null, entity.list.get(count));  // out of range, returns null
 
 		// test range
 		List<Long> range = entity.list.range(100, 104);
