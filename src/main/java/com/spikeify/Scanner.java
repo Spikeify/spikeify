@@ -132,6 +132,24 @@ public class Scanner<T> {
 		return setFilters(Filter.contains(fieldName, collectionType, fieldValue));
 	}
 
+	public Scanner<T> filter(String nameOfField, boolean fieldValue) {
+
+		setIndexName(type, setName, namespace, nameOfField);
+
+		if (!field.getType().isAssignableFrom(boolean.class) &&
+			!field.getType().isAssignableFrom(Boolean.class)) {
+			throw new SpikeifyError("Can't query with boolean filter on: " + type + "#" + nameOfField + ", not a boolean field!");
+		}
+
+		IndexCollectionType collectionType = IndexingService.getIndexCollectionType(type, field.getName());
+
+		if (IndexCollectionType.DEFAULT.equals(collectionType)) {
+			return setFilters(Filter.equal(fieldName, fieldValue ? 1 : 0));
+		}
+
+		return setFilters(Filter.contains(fieldName, collectionType, fieldValue ? 1 : 0));
+	}
+
 	public Scanner<T> filter(String nameOfField, long fieldValue) {
 
 		setIndexName(type, setName, namespace, nameOfField);

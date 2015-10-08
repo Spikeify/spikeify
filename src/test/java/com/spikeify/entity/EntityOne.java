@@ -27,7 +27,10 @@ public class EntityOne {
 	public float four;
 	private short five;
 	private byte six;
+
+	@Indexed
 	public boolean seven;
+
 	public Date eight;
 
 	@Indexed

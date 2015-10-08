@@ -162,7 +162,7 @@ public class IndexingService {
 		if (found != null) {
 
 			if (!classSetName.equals(found.setName)) {
-				throw new SpikeifyError("Index: '" + indexName + "' is already indexing entity: '" + found.setName+ "', can not bind to: '" + clazz.getName() + "'");
+				throw new SpikeifyError("Index: '" + indexName + "' is already indexing entity: '" + found.setName + "', can not bind to: '" + clazz.getName() + "'");
 			}
 
 			if (!fieldName.equals(found.fieldName)) {
@@ -174,7 +174,7 @@ public class IndexingService {
 			}
 
 			if (!collectionType.equals(found.collectionType)) {
-				throw new SpikeifyError("Index: '" + indexName + "' can not change index collection type from: '" + found.collectionType+ "', to: '" + collectionType + "', remove index manually!");
+				throw new SpikeifyError("Index: '" + indexName + "' can not change index collection type from: '" + found.collectionType + "', to: '" + collectionType + "', remove index manually!");
 			}
 		}
 

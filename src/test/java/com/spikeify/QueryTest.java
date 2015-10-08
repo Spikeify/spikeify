@@ -454,4 +454,63 @@ public class QueryTest {
 				  .toList();
 		assertEquals(1, list.size());
 	}
+
+	@Test
+	public void booleanFilterTest() {
+
+		SpikeifyService.register(EntityOne.class);
+
+		EntityOne test = new EntityOne();
+		test.userId = 1L;
+		test.seven = true;
+		sfy.create(test).now();
+
+		test = new EntityOne();
+		test.userId = 2L;
+		test.seven = false;
+		sfy.create(test).now();
+
+		test = new EntityOne();
+		test.userId = 3L;
+		test.seven = true;
+		sfy.create(test).now();
+
+		List<EntityOne> list = sfy.query(EntityOne.class).filter("seven", true).now().toList();
+		assertEquals(2, list.size());
+		assertEquals(1L, list.get(0).userId.longValue());
+		assertEquals(3L, list.get(1).userId.longValue());
+
+		list = sfy.query(EntityOne.class).filter("seven", false).now().toList();
+		assertEquals(1, list.size());
+		assertEquals(2L, list.get(0).userId.longValue());
+	}
+
+	@Test(expected = SpikeifyError.class)
+	public void booleanFilterOnNonBooleanFieldTest() {
+
+		SpikeifyService.register(EntityOne.class);
+
+		EntityOne test = new EntityOne();
+		test.userId = 1L;
+		test.seven = true;
+		sfy.create(test).now();
+
+		test = new EntityOne();
+		test.userId = 2L;
+		test.seven = false;
+		sfy.create(test).now();
+
+		test = new EntityOne();
+		test.userId = 3L;
+		test.seven = true;
+		sfy.create(test).now();
+
+		try {
+			sfy.query(EntityOne.class).filter("one", true).now().toList();
+		}
+		catch (SpikeifyError e) {
+			assertEquals("Can't query with boolean filter on: class com.spikeify.entity.EntityOne#one, not a boolean field!", e.getMessage());
+			throw e;
+		}
+	}
 }
