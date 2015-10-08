@@ -322,13 +322,9 @@ public class InfoFetcher {
 						break;
 
 					case "type":
-						if (value.equals("NUMERIC")) {
+						if (value.equals("NUMERIC") || value.startsWith("INT")) {
 							indexType = IndexType.NUMERIC;
-						} else if (value.startsWith("INT")) {
-							indexType = IndexType.NUMERIC;
-						} else if (value.equals("TEXT")) {
-							indexType = IndexType.STRING;
-						} else if (value.equals("STRING")) {
+						} else if (value.equals("TEXT") || value.equals("STRING")) {
 							indexType = IndexType.STRING;
 						} else {
 							throw new IllegalStateException("Unknown index type: " + value);
