@@ -485,6 +485,42 @@ public class QueryTest {
 		assertEquals(2L, list.get(0).userId.longValue());
 	}
 
+	@Test
+	public void nullableBooleanFilterTest() {
+
+		SpikeifyService.register(EntityIndexed.class);
+
+		EntityIndexed test = new EntityIndexed();
+		test.key = "1";
+		test.aBoolean = false;
+		sfy.create(test).now();
+
+		test = new EntityIndexed();
+		test.key = "2";
+		test.aBoolean = true;
+		sfy.create(test).now();
+
+		test = new EntityIndexed();
+		test.key = "3";
+		test.aBoolean = false;
+		sfy.create(test).now();
+
+		test = new EntityIndexed();
+		test.key = "4";
+		test.aBoolean = true;
+		sfy.create(test).now();
+
+		List<EntityIndexed> list = sfy.query(EntityIndexed.class).filter("aBoolean", true).now().toList();
+		assertEquals(2, list.size());
+		assertEquals("2", list.get(0).key);
+		assertEquals("4", list.get(1).key);
+
+		list = sfy.query(EntityIndexed.class).filter("aBoolean", false).now().toList();
+		assertEquals(2, list.size());
+		assertEquals("1", list.get(0).key);
+		assertEquals("3", list.get(1).key);
+	}
+
 	@Test(expected = SpikeifyError.class)
 	public void booleanFilterOnNonBooleanFieldTest() {
 
