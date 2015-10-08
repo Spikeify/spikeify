@@ -304,51 +304,56 @@ public class InfoFetcher {
 			for (String key : chunks.keySet()) {
 				String value = chunks.get(key);
 
-				switch (key) {
-					case "ns":
-						namespace = value;
-						break;
+				if (value != null) { // prevent null pointer if nothing found
+					switch (key) {
+						case "ns":
+							namespace = value;
+							break;
 
-					case "set":
-						setName = value;
-						break;
+						case "set":
+							setName = value;
+							break;
 
-					case "indexname":
-						name = value;
-						break;
+						case "indexname":
+							name = value;
+							break;
 
-					case "path":
-						fieldName = value;
-						break;
+						case "path":
+							fieldName = value;
+							break;
 
-					case "type":
-						if (value.equals("NUMERIC") || value.startsWith("INT")) {
-							indexType = IndexType.NUMERIC;
-						} else if (value.equals("TEXT") || value.equals("STRING")) {
-							indexType = IndexType.STRING;
-						} else {
-							throw new IllegalStateException("Unknown index type: " + value);
-						}
-						break;
+						case "type":
+							if (value.equals("NUMERIC") || value.startsWith("INT")) {
+								indexType = IndexType.NUMERIC;
+							}
+							else if (value.equals("TEXT") || value.equals("STRING")) {
+								indexType = IndexType.STRING;
+							}
+							else {
+								throw new IllegalStateException("Unknown index type: " + value);
+							}
+							break;
 
-					case "indextype":
+						case "indextype":
 
-						try {
-							collectionType = IndexCollectionType.valueOf(value);
-						} catch (IllegalArgumentException e) {
-							collectionType = IndexCollectionType.DEFAULT;
-						}
+							try {
+								collectionType = IndexCollectionType.valueOf(value);
+							}
+							catch (IllegalArgumentException e) {
+								collectionType = IndexCollectionType.DEFAULT;
+							}
 
-						break;
+							break;
 
-					case "sync_state":
-						synced = "synced".equals(value);
-						break;
+						case "sync_state":
+							synced = "synced".equals(value);
+							break;
 
-					case "state":
-						canRead = value.contains("R");
-						canWrite = value.contains("W");
-						break;
+						case "state":
+							canRead = value.contains("R");
+							canWrite = value.contains("W");
+							break;
+					}
 				}
 			}
 		}
