@@ -7,6 +7,7 @@ import com.aerospike.client.Record;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.*;
 import org.junit.Assert;
 import org.junit.Before;
@@ -211,5 +212,37 @@ public class LoaderTest {
 		sfy.create(123L, ent).now();
 	}
 
+	public static class NormalObject {
+		@UserKey
+		public String id;
 
+		public String something;
+	}
+
+	public static class NormalObjectChanged {
+		@UserKey
+		public String id;
+
+		public String something;
+
+		public SomethingEnum somethingEnum = SomethingEnum.somewhere;
+	}
+
+	public enum SomethingEnum {
+		something,
+		somewhere
+	}
+
+	@Test
+	public void testReadingJavaDefinedDefaultValue() {
+		NormalObject normalObject = new NormalObject();
+		normalObject.id = "1";
+		normalObject.something = "test";
+		sfy.create(normalObject).now();
+
+		NormalObjectChanged out = sfy.get(NormalObjectChanged.class).setName(NormalObject.class.getSimpleName()).key("1").now();
+		Assert.assertEquals(out.id, "1");
+		Assert.assertEquals(out.something, "test");
+		Assert.assertEquals(out.somethingEnum, SomethingEnum.somewhere);
+	}
 }
