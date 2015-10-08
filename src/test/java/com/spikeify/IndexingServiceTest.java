@@ -47,7 +47,7 @@ public class IndexingServiceTest {
 
 		// check if index exists ...
 		Map<String, InfoFetcher.IndexInfo> indexes = sfy.info().getIndexes(namespace, EntityOne.class);
-		assertEquals(3, indexes.size());
+		assertEquals(4, indexes.size());
 
 		InfoFetcher.IndexInfo info = indexes.get("index_one");
 		assertNotNull(info);
@@ -78,6 +78,18 @@ public class IndexingServiceTest {
 		assertEquals(IndexType.STRING, info.indexType);
 		assertEquals(IndexCollectionType.LIST, info.collectionType);
 		assertEquals("idx_EntityOne_nine", info.name);
+		assertEquals("EntityOne", info.setName);
+		assertEquals(namespace, info.namespace);
+		assertTrue(info.canRead);
+		assertTrue(info.canWrite);
+		assertTrue(info.synced);
+
+		//
+		info = indexes.get("idx_EntityOne_seven");
+		assertNotNull(info);
+		assertEquals(IndexType.NUMERIC, info.indexType);
+		assertEquals(IndexCollectionType.DEFAULT, info.collectionType);
+		assertEquals("idx_EntityOne_seven", info.name);
 		assertEquals("EntityOne", info.setName);
 		assertEquals(namespace, info.namespace);
 		assertTrue(info.canRead);
