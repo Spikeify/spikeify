@@ -5,8 +5,8 @@ import com.aerospike.client.policy.ScanPolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A command chain for getting all records from database.
@@ -127,7 +127,7 @@ public class ScanLoader<T> {
 	 */
 	public List<T> now() {
 
-		final List<T> list = new ArrayList<>();
+		final List<T> list = new CopyOnWriteArrayList<>(); // ArrayList<>();
 
 		try {
 
@@ -178,7 +178,7 @@ public class ScanLoader<T> {
 	 */
 	public List<Value> keys() {
 
-		final List<Value> list = new ArrayList<>();
+		final List<Value> list = new CopyOnWriteArrayList<>();
 
 		try {
 
