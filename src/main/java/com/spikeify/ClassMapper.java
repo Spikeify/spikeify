@@ -156,7 +156,9 @@ public class ClassMapper<TYPE> {
 		for (FieldMapper fieldMapper : mappers.values()) {
 			Object prop = mappedProps.get(fieldMapper.propName);
 			mappedProps.remove(fieldMapper.propName);
-			fieldMapper.setFieldValue(object, prop);
+			if (prop != null) {
+				fieldMapper.setFieldValue(object, prop);
+			}
 		}
 
 		// at this point mappedProps should only contain unmapped properties
