@@ -14,9 +14,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.*;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
 public class UpdaterTest {
@@ -607,5 +605,39 @@ public class UpdaterTest {
 		assertNotNull(check.userId);
 		assertNotNull(check.value);
 		assertEquals("Should be zero ... as null can't be set", 0L, check.longValue);
+	}
+
+	@Test
+	public void longToMinusAndBackToZeroTest() {
+
+		EntityIndexed test = new EntityIndexed();
+		test.key = "Bla";
+		sfy.create(test).now();
+
+		EntityIndexed compare = sfy.get(EntityIndexed.class).key("Bla").now();
+		assertEquals(0, compare.along);
+
+		// set to 1
+		test.along = 1;
+		sfy.update(test).now();
+
+		compare = sfy.get(EntityIndexed.class).key("Bla").now();
+		assertEquals(1, compare.along);
+
+
+		// set to -1
+		test.along = -1;
+		sfy.update(test).now();
+
+		compare = sfy.get(EntityIndexed.class).key("Bla").now();
+		assertEquals(-1, compare.along);
+
+
+		// back to 0
+		test.along = 0;
+		sfy.update(test).now();
+
+		compare = sfy.get(EntityIndexed.class).key("Bla").now();
+		assertEquals(0, compare.along);
 	}
 }
