@@ -119,4 +119,21 @@ public class ResultSet<T> implements Iterable<T> {
 
 		return output;
 	}
+
+	/**
+	 * Helper method to return only first item in result set or null if not found
+	 * @return first item in list or null if no item present
+	 */
+	public T getFirst() {
+
+		Iterator<T> iterator = iterator();
+
+		if (iterator.hasNext()) {
+			close();
+			return iterator.next();
+		}
+
+		close();
+		return null;
+	}
 }
