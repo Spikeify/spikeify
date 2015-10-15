@@ -197,14 +197,20 @@ public class JsonCollectionsTest {
 		demoMapAsJson.id = "1";
 		demoMapAsJson.data = new HashMap<>();
 		demoMapAsJson.data.put("test", new DemoMapAsJson.CustomObject(timestamp));
+		demoMapAsJson.listData = new HashMap<>();
+		List<String> listData = new ArrayList<>();
+		listData.add("krneki");
+		listData.add("seneki");
+		demoMapAsJson.listData.put("one", listData);
 		Key saveKey = sfy.create(demoMapAsJson).now();
 		Assert.assertEquals(demoMapAsJson.data.get("test").timestamp, timestamp);
 
 		Record record = client.get(null, saveKey);
 
-
 		DemoMapAsJson out = sfy.get(DemoMapAsJson.class).key("1").now();
 		Assert.assertEquals(out.data.get("test").timestamp, timestamp);
+		Assert.assertEquals(out.listData.get("one").get(0), "krneki");
+		Assert.assertEquals(out.listData.get("one").get(1), "seneki");
 	}
 
 	public static class DemoMapAsJson {
@@ -216,6 +222,9 @@ public class JsonCollectionsTest {
 
 		@AsJson
 		public Map<String, CustomObject> data;
+
+		@AsJson
+		public Map<String, List<String>> listData;
 
 		public static class CustomObject {
 			public Long timestamp;
