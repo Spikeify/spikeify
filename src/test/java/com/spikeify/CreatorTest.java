@@ -1,6 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.spikeify.entity.EntityExists;
 import com.spikeify.entity.EntityNull;
 import com.spikeify.entity.EntityOne;
@@ -16,6 +18,7 @@ public class CreatorTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final Long userKey2 = new Random().nextLong();
+	private final Long userKey3 = new Random().nextLong();
 	private final String namespace = "test";
 	private final String setName = "newTestSet";
 	private Spikeify sfy;
@@ -47,7 +50,7 @@ public class CreatorTest {
 		entity.nine = new ArrayList<>();
 		entity.nine.add("one");
 		entity.nine.add("two");
-		entity.thirteen = new byte[]{1,2,3,4,5};
+		entity.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		// set Metadata fields
 		entity.userId = userKey1;
@@ -82,10 +85,47 @@ public class CreatorTest {
 		EntityNull entity = new EntityNull();
 		entity.userId = userKey1;
 
-		// throws an error
-		Key saveKey = sfy
-				.create(entity)
-				.now();
+		Key key = sfy.create(entity).now();
+	}
+
+	@Test
+	public void nullCreateUpdate() {
+
+		EntityNull entity = new EntityNull();
+		entity.userId = userKey1;
+		entity.longValue = 123L;
+		entity.value = "krneki";
+
+		Key key = sfy.create(entity).now();
+		EntityNull reload = sfy.get(EntityNull.class).key(userKey1).now();
+		Assert.assertEquals(reload, entity);
+
+		reload.longValue = null;
+		sfy.update(reload).forceReplace().now();
+		reload = sfy.get(EntityNull.class).key(userKey1).now();
+		Assert.assertNull(reload.longValue);
+		// check via client that bin does not exist
+		Record record = sfy.getClient().get(null, key);
+		Assert.assertEquals(1, record.bins.size());
+		Assert.assertEquals("krneki", record.bins.get("value"));
+		Assert.assertFalse(record.bins.containsKey("longValue"));
+
+		reload.value = null;
+		key = sfy.update(reload).now();
+		reload = sfy.get(EntityNull.class).key(userKey1).now();
+		Assert.assertNull(reload);
+		// check via client that bin does not exist
+		boolean exists = sfy.getClient().exists(null, key);
+		Assert.assertFalse(exists);
+	}
+
+	@Test
+	public void nullCreateNative() {
+
+		Key key = new Key(namespace, setName, userKey1);
+		sfy.getClient().put(null, key, new Bin[0]);
+		boolean exists = sfy.getClient().exists(null, key);
+		Assert.assertFalse(exists); // aerospike DB does not save empty records
 	}
 
 	@Test
@@ -103,7 +143,7 @@ public class CreatorTest {
 		entity1.nine = new ArrayList<>();
 		entity1.nine.add("one");
 		entity1.nine.add("two");
-		entity1.thirteen = new byte[]{1,2,3,4,5};
+		entity1.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		EntityOne entity2 = new EntityOne();
 		entity2.one = 123;
@@ -117,7 +157,7 @@ public class CreatorTest {
 		entity2.nine = new ArrayList<>();
 		entity2.nine.add("one");
 		entity2.nine.add("two");
-		entity2.thirteen = new byte[]{1,2,3,4,5};
+		entity2.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		Map<Key, Object> saveKeys = sfy
 				.createAll(new Long[]{userKey1, userKey2}, new Object[]{entity1, entity2})
@@ -126,7 +166,7 @@ public class CreatorTest {
 				.now();
 
 		// reload entity and check that only two properties were updated
-		Map<Long, EntityOne> reloaded = sfy.getAll(EntityOne.class, userKey1, userKey2)
+		Map<Long, EntityOne> reloaded = sfy.getAll(EntityOne.class, userKey1, userKey2, userKey3)
 				.namespace(namespace)
 				.setName(setName)
 				.now();
@@ -151,7 +191,7 @@ public class CreatorTest {
 		entity.nine = new ArrayList<>();
 		entity.nine.add("one");
 		entity.nine.add("two");
-		entity.thirteen = new byte[]{1,2,3,4,5};
+		entity.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		sfy.create(userKey1, entity)
 				.namespace(namespace)
@@ -182,7 +222,7 @@ public class CreatorTest {
 		entity.twelve = new HashSet();
 		entity.twelve.add("one");
 		entity.twelve.add("two");
-		entity.thirteen = new byte[]{1,2,3,4,5};
+		entity.thirteen = new byte[]{1, 2, 3, 4, 5};
 
 		Long saveKey = sfy
 				.create(userKey1, entity)

@@ -224,6 +224,9 @@ public class MultiKeyUpdater {
 			throw new SpikeifyError("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
+		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
+		boolean isReplace = this.policy.recordExistsAction == RecordExistsAction.REPLACE;
+
 		Map<Key, Object> result = new HashMap<>(objects.length);
 
 		for (int i = 0; i < objects.length; i++) {
@@ -247,7 +250,7 @@ public class MultiKeyUpdater {
 			for (String propName : changedProps) {
 				Object value = props.get(propName);
 				if (value == null) {
-					if (!forceReplace) {
+					if (!isReplace) {
 						bins.add(Bin.asNull(propName));
 					}
 				} else if (value instanceof List<?>) {
@@ -265,19 +268,9 @@ public class MultiKeyUpdater {
 			// must be set so that user key can be retrieved in queries
 			this.policy.sendKey = true;
 
-			// type of operation: create or update?
-			if (create) {
-				this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-				if (!nonNullField) {
-					throw new SpikeifyError("Error: cannot create object with no writable properties. " +
-									"At least one object property other then UserKey must be different from NULL.");
-				}
-			} else {
-				if (forceReplace) {
-					this.policy.recordExistsAction = RecordExistsAction.REPLACE;
-				} else {
-					this.policy.recordExistsAction = RecordExistsAction.UPDATE;
-				}
+			if (!nonNullField && props.size() == changedProps.size()) {
+				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
+						"At least one object property other then UserKey must be different from NULL.");
 			}
 
 			// is version checking necessary
@@ -287,7 +280,7 @@ public class MultiKeyUpdater {
 				if (generation != null) {
 					policy.generation = generation;
 				} else {
-					throw new SpikeifyError("Error: missing @Generation field in class "+object.getClass()+
+					throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
 							". When using transact(..) you must have @Generation annotation on a field in the entity class.");
 				}
 			}

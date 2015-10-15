@@ -103,6 +103,9 @@ public class SingleObjectUpdater<T> {
 
 		Key key = collectKey(object);
 
+		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
+		boolean isReplace = this.policy.recordExistsAction == RecordExistsAction.REPLACE;
+
 		Map<String, Object> props = mapper.getProperties(object);
 		Set<String> changedProps = recordsCache.update(key, props, forceReplace);
 
@@ -111,7 +114,7 @@ public class SingleObjectUpdater<T> {
 		for (String propName : changedProps) {
 			Object value = props.get(propName);
 			if (value == null) {
-				if (!forceReplace) {
+				if (!isReplace) {
 					bins.add(Bin.asNull(propName));
 				}
 			} else if (value instanceof List<?>) {
@@ -129,18 +132,10 @@ public class SingleObjectUpdater<T> {
 		// must be set so that user key can be retrieved in queries
 		this.policy.sendKey = true;
 
-		if (create) {
-			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-			if (!nonNullField) {
-				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
-								"At least one object property other then UserKey must be different from NULL.");
-			}
-		} else {
-			if (forceReplace) {
-				this.policy.recordExistsAction = RecordExistsAction.REPLACE;
-			} else {
-				this.policy.recordExistsAction = RecordExistsAction.UPDATE;
-			}
+
+		if (!nonNullField && props.size() == changedProps.size()) {
+			throw new SpikeifyError("Error: cannot create object with no writable properties. " +
+					"At least one object property other then UserKey must be different from NULL.");
 		}
 
 		Integer recordExpiration = mapper.getRecordExpiration(object);
@@ -155,7 +150,7 @@ public class SingleObjectUpdater<T> {
 				policy.generation = generation;
 			} else {
 				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
-								". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
 			}
 		}
 
