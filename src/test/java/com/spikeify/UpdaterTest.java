@@ -617,6 +617,10 @@ public class UpdaterTest {
 		EntityIndexed compare = sfy.get(EntityIndexed.class).key("Bla").now();
 		assertEquals(0, compare.along);
 
+		long result = (1L ^ (1L >>> 32));
+		long result2 = (0L ^ (0L >>> 32));
+		assertNotEquals(result, result2);
+
 		// set to 1
 		test.along = 1;
 		sfy.update(test).now();

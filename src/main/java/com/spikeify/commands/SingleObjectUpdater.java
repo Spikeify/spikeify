@@ -101,6 +101,10 @@ public class SingleObjectUpdater<T> {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 
+		if (create && IdGenerator.shouldGenerateId(object)) {
+			IdGenerator.generateId(object);
+		}
+
 		Key key = collectKey(object);
 
 		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;

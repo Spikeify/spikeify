@@ -153,22 +153,6 @@ public class MultiLoader<T, K> {
 				// set LDT wrappers
 				mapper.setBigDatatypeFields(object, synClient, key);
 
-				/*// set UserKey field
-				switch (key.userKey.getType()) {
-					case ParticleType.STRING:
-						mapper.setUserKey(object, key.userKey.toString());
-						break;
-					case ParticleType.INTEGER:
-						mapper.setUserKey(object, key.userKey.toLong());
-						break;
-				}
-
-				// set meta-fields on the entity: @Namespace, @SetName, @Expiration..
-				mapper.setMetaFieldValues(object, key.namespace, key.setName, record.generation, record.expiration);
-
-				// set field values
-				mapper.setFieldValues(object, record.bins);*/
-
 				switch (keyType) {
 					case KEY:
 						result.put((K) key, object);
