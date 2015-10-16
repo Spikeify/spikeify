@@ -85,6 +85,7 @@ public class MultiKeyDeleter {
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
 	 *
 	 * @param namespace The namespace.
+	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter namespace(String namespace) {
 		this.namespace = namespace;
@@ -95,6 +96,7 @@ public class MultiKeyDeleter {
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 *
 	 * @param setName The name of the set.
+	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter setName(String setName) {
 		this.setName = setName;
@@ -105,6 +107,7 @@ public class MultiKeyDeleter {
 	 * Sets the keys of the records to be loaded.
 	 *
 	 * @param keys Array of keys
+	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter key(String... keys) {
 		this.stringKeys = keys;
@@ -117,6 +120,7 @@ public class MultiKeyDeleter {
 	 * Sets the keys of the records to be loaded.
 	 *
 	 * @param keys Array of keys
+	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter key(Long... keys) {
 		this.longKeys = keys;
@@ -129,6 +133,7 @@ public class MultiKeyDeleter {
 	 * Sets the keys of the records to be loaded.
 	 *
 	 * @param keys Array of keys
+	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter key(Key... keys) {
 		this.keys = Arrays.asList(keys);

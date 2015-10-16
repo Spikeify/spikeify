@@ -22,6 +22,13 @@ public class MultiObjectUpdater {
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Object...)} method.
+	 * @param isTx transaction enabled
+	 * @param synClient synchrone native aerospike client
+	 * @param asyncClient asynchrone native aerospike client
+	 * @param recordsCache cache
+	 * @param create true create record, false update record
+	 * @param defaultNamespace default namespace
+	 * @param objects list of objects to be created or updated
 	 */
 	public MultiObjectUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                          RecordsCache recordsCache, boolean create, String defaultNamespace, Object... objects) {
@@ -50,6 +57,7 @@ public class MultiObjectUpdater {
 	 * The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
 	 *
 	 * @param policy The policy.
+	 * @return multi object updater instance
 	 */
 	public MultiObjectUpdater policy(WritePolicy policy) {
 		this.policy = policy;
@@ -60,6 +68,7 @@ public class MultiObjectUpdater {
 	 * Sets updater to skip cache check for object changes. This causes that all
 	 * object properties will be written to database. It also deletes previous saved
 	 * properties in database and now not mapped to object.
+	 * @return multi object updater instance
 	 */
 	public MultiObjectUpdater forceReplace() {
 		this.forceReplace = true;

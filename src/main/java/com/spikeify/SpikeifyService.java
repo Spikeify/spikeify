@@ -56,6 +56,7 @@ public class SpikeifyService {
 	/**
 	 * A Spikeify that uses a mock AerospikeClient
 	 *
+	 * @param client Native Aerospike client
 	 * @return A mock Spikeify instance
 	 */
 	public static Spikeify mock(IAerospikeClient client) {
@@ -119,6 +120,7 @@ public class SpikeifyService {
 	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
 	 *
 	 * @param clazz to be registered (Aerospike entity)
+	 * @param policy usage policy
 	 */
 	public static void register(Class<?> clazz, Policy policy) {
 		IndexingService.createIndex(sfy(), policy, clazz);
@@ -139,6 +141,7 @@ public class SpikeifyService {
 	/**
 	 * Private helper method to get servers build number.
 	 *
+	 * @param client Native Aerospike client
 	 * @return Server build version as InfoFetcher.Build
 	 */
 	public static InfoFetcher.Build getServerBuild(IAerospikeClient client) {

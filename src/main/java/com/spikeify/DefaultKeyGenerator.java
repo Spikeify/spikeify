@@ -15,7 +15,7 @@ public class DefaultKeyGenerator implements UserKeyGenerator {
 
 	/**
 	 * Generates random string from ELEMENTS set of chars and numbers
-	 * @param length desired length of key > 0
+	 * @param length desired length of key greater than 0
 	 * @return random string of desired length (min 1, max 100 characters long)
 	 */
 	@Override
@@ -36,7 +36,7 @@ public class DefaultKeyGenerator implements UserKeyGenerator {
 
 	/**
 	 * Generates non negative long key of maximum length 18
-	 * @param length desired length of key > 0 (must consider max possible length of a long value)
+	 * @param length desired length of key grater than 0 (must consider max possible length of a long value)
 	 * @return long key (min 1, max 19 digits long)
 	 */
 	@Override
