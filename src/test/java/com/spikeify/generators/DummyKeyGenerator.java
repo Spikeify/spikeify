@@ -1,4 +1,4 @@
-package com.spikeify.entity;
+package com.spikeify.generators;
 
 import com.spikeify.UserKeyGenerator;
 

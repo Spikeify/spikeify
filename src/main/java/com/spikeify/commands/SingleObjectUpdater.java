@@ -26,12 +26,15 @@ public class SingleObjectUpdater<T> {
 	private final T object;
 	private boolean forceReplace = false;
 
+	static final int MAX_CREATE_GENERATE_RETRIES = 5;
+
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
 	 */
 	public SingleObjectUpdater(boolean isTx, Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                           RecordsCache recordsCache, boolean create, String defaultNamespace, T object) {
+							   RecordsCache recordsCache, boolean create, String defaultNamespace, T object) {
+
 		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
@@ -77,13 +80,14 @@ public class SingleObjectUpdater<T> {
 		return this;
 	}
 
-	protected Key collectKey(Object obj) {
+	protected static Key collectKey(Object obj, String namespace) {
 
 		// get metadata for object
-		ObjectMetadata meta = MapperService.getMapper(obj.getClass()).getRequiredMetadata(obj, defaultNamespace);
+		ObjectMetadata meta = MapperService.getMapper(obj.getClass()).getRequiredMetadata(obj, namespace);
 		if (meta.userKeyString != null) {
 			return new Key(meta.namespace, meta.setName, meta.userKeyString);
-		} else {
+		}
+		else {
 			return new Key(meta.namespace, meta.setName, meta.userKeyLong);
 		}
 	}
@@ -101,11 +105,12 @@ public class SingleObjectUpdater<T> {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 
-		if (create && IdGenerator.shouldGenerateId(object)) {
+		boolean generatedId = create && IdGenerator.shouldGenerateId(object);
+		if (generatedId) {
 			IdGenerator.generateId(object);
 		}
 
-		Key key = collectKey(object);
+		Key key = collectKey(object, defaultNamespace);
 
 		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
 		boolean isReplace = this.policy.recordExistsAction == RecordExistsAction.REPLACE;
@@ -158,7 +163,28 @@ public class SingleObjectUpdater<T> {
 			}
 		}
 
-		synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+		if (generatedId) {
+			// retry 5 times in case same id is generated ...
+			for (int count = 1; count <= SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES; count++) {
+				try {
+					synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+					break;
+				}
+				catch (AerospikeException e) {
+					// let's retry or not ?
+					if (e.getResultCode() != ResultCode.KEY_EXISTS_ERROR ||
+						SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES == count) {
+						throw e;
+					}
+					// regenerate key ...
+					IdGenerator.generateId(object);
+					key = SingleObjectUpdater.collectKey(object, defaultNamespace);
+				}
+			}
+		}
+		else {
+			synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+		}
 
 		// set LDT fields
 		mapper.setBigDatatypeFields(object, synClient, key);

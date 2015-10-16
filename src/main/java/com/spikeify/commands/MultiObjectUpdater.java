@@ -1,8 +1,6 @@
 package com.spikeify.commands;
 
-import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
-import com.aerospike.client.Key;
+import com.aerospike.client.*;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
@@ -18,7 +16,7 @@ import java.util.*;
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiObjectUpdater {
 
-	private final Object[] objects;
+	final Object[] objects;
 	private boolean forceReplace = false;
 
 	/**
@@ -73,8 +71,13 @@ public class MultiObjectUpdater {
 		List<Key> keys = new ArrayList<>(objects.length);
 
 		// check if entities have @UserKey entity
-		keys.clear();
+		// keys.clear();
 		for (Object object : objects) {
+
+			if (create && IdGenerator.shouldGenerateId(object)) {
+				IdGenerator.generateId(object);
+			}
+			
 			ObjectMetadata metadata = MapperService.getMapper(object.getClass()).getRequiredMetadata(object, namespace);
 			if (metadata.userKeyString != null) {
 				Key objectKey = new Key(metadata.namespace, metadata.setName, metadata.userKeyString);
@@ -170,7 +173,28 @@ public class MultiObjectUpdater {
 						"At least one object property other then UserKey must be different from NULL.");
 			}
 
-			synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+			if (create && IdGenerator.shouldGenerateId(object)) {
+				// retry 5 times in case same id is generated ...
+				for (int count = 1; count <= SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES; count++) {
+					try {
+						synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+						break;
+					}
+					catch (AerospikeException e) {
+						// let's retry or not ?
+						if (e.getResultCode() != ResultCode.KEY_EXISTS_ERROR ||
+							SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES == count) {
+							throw e;
+						}
+						// regenerate key ...
+						IdGenerator.generateId(object);
+						key = SingleObjectUpdater.collectKey(object, namespace);
+					}
+				}
+			}
+			else {
+				synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+			}
 
 			// set LDT fields
 			mapper.setBigDatatypeFields(object, synClient, key);

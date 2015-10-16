@@ -16,7 +16,7 @@ public class IdGeneratorTest {
 		EntityOne one = new EntityOne();
 		assertFalse(IdGenerator.shouldGenerateId(one));
 
-		EntityAutoKey auto = new EntityAutoKey();
+		EntityAutoKey auto = new EntityAutoKey("A");
 		assertTrue(IdGenerator.shouldGenerateId(auto));
 	}
 
@@ -24,21 +24,21 @@ public class IdGeneratorTest {
 	public void generateId() {
 
 		// 0
-		EntityAutoKey auto = new EntityAutoKey();
+		EntityAutoKey auto = new EntityAutoKey("A");
 		IdGenerator.generateId(auto);
 
 		assertNotNull(auto.key);
 		assertEquals(10, auto.key.length());
 
 		// 1
-		EntityAutoKey2 auto2 = new EntityAutoKey2();
+		EntityAutoKey2 auto2 = new EntityAutoKey2("A");
 		IdGenerator.generateId(auto2);
 
 		assertNotNull(auto2.key);
 		assertEquals(2, auto2.key.toString().length());
 
 		// 2
-		EntityAutoKeyToFail auto3 = new EntityAutoKeyToFail();
+		EntityAutoKeyToFail auto3 = new EntityAutoKeyToFail("A");
 		IdGenerator.generateId(auto3);
 
 		assertNotNull(auto3.key);
