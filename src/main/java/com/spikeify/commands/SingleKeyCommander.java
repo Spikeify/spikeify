@@ -126,7 +126,7 @@ public class SingleKeyCommander<T> {
 	 * @param fieldName Name of the bin or, if mapped Class was provided, name of the mapped field
 	 * @param value     Value to add to the bin value.
 	 */
-	public SingleKeyCommander<T> add(String fieldName, int value) {
+	public SingleKeyCommander<T> add(String fieldName, long value) {
 		String binName = mapper != null ? mapper.getBinName(fieldName) : fieldName;
 		operations.add(Operation.add(new Bin(binName, value)));
 		return this;

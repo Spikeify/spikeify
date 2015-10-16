@@ -52,7 +52,9 @@ public class CommandsTest {
 				@Override
 				public void run() {
 					for (int i = 0; i < innerIncrease; i++) {
-						sfy.command(EntityOne.class).setName(setName).key(ent.userId).add("one", 1).now();  // decrement field 'one' by -1
+						sfy.command(EntityOne.class).setName(setName).key(ent.userId)
+								.add("one", 1)
+								.now();  // increment field 'one' by -1
 					}
 				}
 			});
