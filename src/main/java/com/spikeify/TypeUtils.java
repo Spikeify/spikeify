@@ -13,6 +13,7 @@ public class TypeUtils {
 	/**
 	 * Returns the erasure of the given type.
 	 * @param type class type
+	 * @return erased class
 	 */
 	public static Class<?> erase(Type type) {
 		if (type instanceof Class) {
