@@ -246,7 +246,7 @@ public class LargeDataTest {
 	}
 
 	@Test
-	public void testRangeOnEmptyList() {
+	public void testEmptyList() {
 		EntityLDT entity = new EntityLDT();
 		entity.userId = userKey1;
 		entity.list = new BigIndexedList<>();
@@ -255,19 +255,12 @@ public class LargeDataTest {
 		EntityLDT entityCheck = sfy.get(EntityLDT.class).key(userKey1).now();
 		Assert.assertNotNull(entityCheck);
 
-		entityCheck.list.range(0, 100);
+		Assert.assertTrue(entityCheck.list.range(0, 100).isEmpty());
+		Assert.assertFalse(entityCheck.list.exists(0));
+		Assert.assertEquals(0, entityCheck.list.size());
+		Assert.assertEquals(0, entityCheck.list.trim(0));
+		Assert.assertTrue(entityCheck.list.isEmpty());
 	}
 
-	@Test
-	public void testTrimOnEmptyList() {
-		EntityLDT entity = new EntityLDT();
-		entity.userId = userKey1;
-		entity.list = new BigIndexedList<>();
-		sfy.create(entity).now();
 
-		EntityLDT entityCheck = sfy.get(EntityLDT.class).key(userKey1).now();
-		Assert.assertNotNull(entityCheck);
-
-		entityCheck.list.trim(10);
-	}
 }

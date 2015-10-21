@@ -68,7 +68,14 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @return Number of elements in the list
 	 */
 	public int size() {
-		return isEmpty ? 0 : inner.size();
+		try {
+			return isEmpty ? 0 : inner.size();
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return 0;
+			}
+			throw ae;
+		}
 	}
 
 	/**
@@ -136,20 +143,30 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 */
 	@SuppressWarnings("unchecked")
 	public T get(int index) {
-		List found = inner.find(Value.get(index));
 
-		if (found == null || found.isEmpty()) {
-			return null;
-		}
+		try {
 
-		if (found.size() > 1) {
-			throw new IllegalStateException("List consistency error: list should only contain one value for each index.");
-		}
+			List found = inner.find(Value.get(index));
 
-		if (converter != null) {
-			return (T) converter.fromProperty(((Map<String, Object>) found.get(0)).get("value"));
-		} else {
-			return (T) ((Map<String, Object>) found.get(0)).get("value");
+			if (found == null || found.isEmpty()) {
+				return null;
+			}
+
+			if (found.size() > 1) {
+				throw new IllegalStateException("List consistency error: list should only contain one value for each index.");
+			}
+
+			if (converter != null) {
+				return (T) converter.fromProperty(((Map<String, Object>) found.get(0)).get("value"));
+			} else {
+				return (T) ((Map<String, Object>) found.get(0)).get("value");
+			}
+
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return null;
+			}
+			throw ae;
 		}
 	}
 
@@ -167,7 +184,17 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			throw new IllegalArgumentException("Inverted range: 'to' is smaller then 'from'");
 		}
 
-		List found = inner.range(Value.get(from), Value.get(to));
+
+		List found = null;
+
+		try {
+			found = inner.range(Value.get(from), Value.get(to));
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return new ArrayList<>();
+			}
+			throw ae;
+		}
 
 		if (found == null || found.isEmpty()) {
 			return new ArrayList<>(0);  // return empty list if no results
@@ -194,11 +221,20 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @return Number of items removed
 	 */
 	public int trim(int from) {
-		int to = inner.size() - 1;
-		if (to < from) {
-			throw new IndexOutOfBoundsException("Parameter 'from' is out of range.");
+
+		try {
+			int to = inner.size() - 1;
+			if (to < from) {
+				throw new IndexOutOfBoundsException("Parameter 'from' is out of range.");
+			}
+			return inner.remove(Value.get(from), Value.get(to));
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return 0;
+			}
+			throw ae;
 		}
-		return inner.remove(Value.get(from), Value.get(to));
+
 	}
 
 	/**
@@ -208,7 +244,14 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @return True if  value at given index exists
 	 */
 	public boolean exists(int index) throws AerospikeException {
-		return index >= 0 && inner.exists(Value.get(index));
+		try {
+			return index >= 0 && inner.exists(Value.get(index));
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return false;
+			}
+			throw ae;
+		}
 	}
 
 	/**
@@ -217,7 +260,14 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @return True if list is empty
 	 */
 	public boolean isEmpty() {
-		return isEmpty || inner.size() == 0;
+		try {
+			return isEmpty || inner.size() == 0;
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return true;
+			}
+			throw ae;
+		}
 	}
 
 	/**
