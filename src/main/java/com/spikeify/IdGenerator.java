@@ -34,16 +34,19 @@ public final class IdGenerator {
 
 					if (field.getType().isAssignableFrom(String.class)) {
 						String id = generator.generateString(annotation.keyLength());
+						field.setAccessible(true);
 						field.set(object, id);
 					}
 
 					if (field.getType().isAssignableFrom(long.class)) {
 						long id = generator.generateLong(annotation.keyLength());
+						field.setAccessible(true);
 						field.setLong(object, id);
 					}
 
 					if (field.getType().isAssignableFrom(Long.class)) {
-						Long id =  generator.generateLong(annotation.keyLength());
+						Long id = generator.generateLong(annotation.keyLength());
+						field.setAccessible(true);
 						field.set(object, id);
 					}
 
