@@ -257,4 +257,17 @@ public class LargeDataTest {
 
 		entityCheck.list.range(0, 100);
 	}
+
+	@Test
+	public void testTrimOnEmptyList() {
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		entity.list = new BigIndexedList<>();
+		sfy.create(entity).now();
+
+		EntityLDT entityCheck = sfy.get(EntityLDT.class).key(userKey1).now();
+		Assert.assertNotNull(entityCheck);
+
+		entityCheck.list.trim(10);
+	}
 }
