@@ -6,15 +6,15 @@ package com.spikeify;
 public interface UserKeyGenerator {
 
 	/**
-	 * Generates string key of given length > 0
-	 * @param length desired length of key > 0
+	 * Generates string key of given length greater than 0
+	 * @param length desired length of key greater than 0
 	 * @return generated key
 	 */
 	String generateString(int length);
 
 	/**
-	 * Generates long value of given length > 0
-	 * @param length desired length of key > 0 (must consider max possible length of a long value)
+	 * Generates long value of given length greater than 0
+	 * @param length desired length of key greater than 0 (must consider max possible length of a long value)
 	 * @return generated key
 	 */
 	long generateLong(int length);
