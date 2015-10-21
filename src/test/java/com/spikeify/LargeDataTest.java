@@ -1,6 +1,11 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.AerospikeException;
+import com.aerospike.client.Key;
+import com.aerospike.client.Value;
+import com.aerospike.client.large.LargeList;
+import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityLDT;
 import com.spikeify.entity.EntityListOfBytes;
 import com.spikeify.entity.EntitySubJson;
@@ -260,6 +265,18 @@ public class LargeDataTest {
 		Assert.assertEquals(0, entityCheck.list.size());
 		Assert.assertEquals(0, entityCheck.list.trim(0));
 		Assert.assertTrue(entityCheck.list.isEmpty());
+	}
+
+	@Test(expected = AerospikeException.class)
+	public void testNativeLdtAdd(){
+
+		LargeList ll = new LargeList(client, new WritePolicy(), new Key(namespace, setName, userKey1), "ldt");
+
+		Map<String, Object> valMap = new HashMap<>(2);
+		valMap.put("key", 1);
+		valMap.put("value", Value.get(123L));
+		ll.add(Value.get(valMap));
+		ll.add(Value.get(valMap));
 	}
 
 

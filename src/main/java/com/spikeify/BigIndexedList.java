@@ -11,10 +11,7 @@ import com.spikeify.converters.JsonConverter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * A type-safe wrapper for a native {@link LargeList}, exposing its interface as a List.
@@ -84,41 +81,58 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param value Value
 	 */
 	@SuppressWarnings("unchecked")
-	public void add(T value) {
+	public int add(T value) {
 		if (value == null) {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
 		}
 		int lastIndex = isEmpty ? 0 : inner.size();
 		isEmpty = false;
 
-		Map<String, Object> valMap = new HashMap<>(2);
-		valMap.put("key", lastIndex);
-		valMap.put("value", converter == null ? value : converter.fromField(value));
-		inner.add(Value.get(valMap));
+		boolean success = false;
+		int retries = 10;
+
+		while (!success && retries > 0) {
+			Map<String, Object> valMap = new HashMap<>(2);
+			valMap.put("key", lastIndex);
+			valMap.put("value", converter == null ? value : converter.fromField(value));
+			try {
+				inner.add(Value.get(valMap));
+				success = true;
+				return lastIndex;
+			} catch (AerospikeException ae) {
+				if (ae.getResultCode() == 1402) {
+					retries--;
+				} else {
+					throw ae;
+				}
+			}
+		}
+
+		throw new SpikeifyError("Concurrency error: could not add to LargeList due to too-high conncurent updates.");
 	}
 
 	/**
 	 * Add a List of objects to the end of list
 	 *
-	 * @param list A list of object to be added to the end of list.
+	 * @param collection A collection of object to be added to the end of list.
 	 */
 	@SuppressWarnings("unchecked")
-	public void addAll(List<T> list) {
+	public int addAll(Collection<T> collection) {
 
-		if (list == null) {
+		if (collection == null) {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
 		}
 
-		if (list.isEmpty()) {
-			return;
+		if (collection.isEmpty()) {
+			return 0;
 		}
 
-		List<Value> values = new ArrayList<>(list.size());
+		List<Value> values = new ArrayList<>(collection.size());
 		int inLoop = 0;
 		int lastIndex = isEmpty ? 0 : inner.size();
 		isEmpty = false;
 
-		for (T value : list) {
+		for (T value : collection) {
 			inLoop++;
 			Map<String, Object> valMap = new HashMap<>(2);
 			valMap.put("key", lastIndex);
@@ -126,12 +140,33 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			values.add(Value.get(valMap));
 			lastIndex++;
 			if (inLoop % step == 0) {
-				inner.add(values); // add in chunks
+				addTransactionally(values); // add in chunks
 				values.clear();
 			}
 		}
 		if (!values.isEmpty()) {
-			inner.add(values);  // add remaining chunk
+			addTransactionally(values);  // add remaining chunk
+			return lastIndex;
+		} else {
+			return lastIndex;
+		}
+	}
+
+	private void addTransactionally(List<Value> values) {
+		int retries = 10;
+
+		// retry loop in case of clashing indexes
+		while (retries > 0) {
+			try {
+				inner.add(values);
+				return;
+			} catch (AerospikeException ae) {
+				if (ae.getResultCode() == 1402) {
+					retries--;
+				} else {
+					throw ae;
+				}
+			}
 		}
 	}
 
