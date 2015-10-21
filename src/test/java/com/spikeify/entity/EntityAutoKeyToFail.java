@@ -12,7 +12,12 @@ public class EntityAutoKeyToFail {
 	}
 
 	@UserKey(generate = true, keyLength = 10, generator = DummyKeyGenerator.class)
-	public long key;
+	protected long key;
 
 	public String value;
+
+	public long getKey() {
+
+		return key;
+	}
 }

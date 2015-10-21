@@ -11,7 +11,12 @@ public class EntityAutoKey2 {
 	}
 
 	@UserKey(generate = true, keyLength = 2)
-	public Long key;
+	protected Long key;
 
 	public String value;
+
+	public Long getKey() {
+
+		return key;
+	}
 }

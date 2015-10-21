@@ -11,7 +11,12 @@ public class EntityAutoKey {
 	}
 
 	@UserKey(generate = true)
-	public String key;
+	protected String key;
 
 	public String value;
+
+	public String getKey() {
+
+		return key;
+	}
 }

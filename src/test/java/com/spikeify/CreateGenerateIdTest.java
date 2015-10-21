@@ -46,8 +46,8 @@ public class CreateGenerateIdTest {
 
 		Set<String> keys = new HashSet<>();
 		for (EntityAutoKey item: list) {
-			assertEquals(10, item.key.length());
-			keys.add(item.key);
+			assertEquals(10, item.getKey().length());
+			keys.add(item.getKey());
 		}
 
 		assertEquals(2, keys.size());
@@ -59,15 +59,15 @@ public class CreateGenerateIdTest {
 		// keys are assigned from a pool with duplicated keys
 		EntityAutoKeyBucket entity = new EntityAutoKeyBucket("A");
 		sfy.create(entity).now();
-		assertEquals("A", entity.key);
+		assertEquals("A", entity.getKey());
 
 		EntityAutoKeyBucket entity2 = new EntityAutoKeyBucket("B");
 		sfy.create(entity2).now();
-		assertEquals("B", entity2.key);
+		assertEquals("B", entity2.getKey());
 
 		EntityAutoKeyBucket entity3 = new EntityAutoKeyBucket("C");
 		sfy.create(entity3).now();
-		assertEquals("C", entity3.key);
+		assertEquals("C", entity3.getKey());
 	}
 
 	@Test(expected = AerospikeException.class)
@@ -95,10 +95,10 @@ public class CreateGenerateIdTest {
 		EntityAutoKeyToFail four = new EntityAutoKeyToFail("A");
 		sfy.createAll(one, two, three, four).now();
 
-		EntityAutoKeyToFail compare4 = sfy.get(EntityAutoKeyToFail.class).key(four.key).now();
-		EntityAutoKey compare1 = sfy.get(EntityAutoKey.class).key(one.key).now();
-		EntityAutoKey2 compare2 = sfy.get(EntityAutoKey2.class).key(two.key).now();
-		EntityAutoKeyBucket compare3 = sfy.get(EntityAutoKeyBucket.class).key(three.key).now();
+		EntityAutoKeyToFail compare4 = sfy.get(EntityAutoKeyToFail.class).key(four.getKey()).now();
+		EntityAutoKey compare1 = sfy.get(EntityAutoKey.class).key(one.getKey()).now();
+		EntityAutoKey2 compare2 = sfy.get(EntityAutoKey2.class).key(two.getKey()).now();
+		EntityAutoKeyBucket compare3 = sfy.get(EntityAutoKeyBucket.class).key(three.getKey()).now();
 
 		assertEquals("A", compare1.value);
 		assertEquals("A", compare2.value);

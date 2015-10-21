@@ -12,7 +12,12 @@ public class EntityAutoKeyBucket {
 	}
 
 	@UserKey(generate = true, generator = BucketKeyGenerator.class)
-	public String key;
+	protected String key;
 
 	public String value;
+
+	public String getKey() {
+
+		return key;
+	}
 }
