@@ -93,7 +93,7 @@ public class Scanner<T> {
 
 		RecordSet recordSet = synClient.query(policy, statement);
 
-		return new ResultSet<>(mapper, classConstructor, recordsCache, recordSet);
+		return new ResultSet<>(mapper, classConstructor, recordsCache, recordSet, synClient);
 	}
 
 	protected void collectMetaData() {

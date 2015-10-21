@@ -24,7 +24,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	private Converter converter;
 	private LargeList inner;
 	private final int step = 100;
-	private boolean isEmpty = true;
+	private boolean isEmpty = false;
 
 	/**
 	 * Internal function - must be called before this list can be used.
@@ -54,9 +54,14 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			throw new SpikeifyError("Error: LDT support not enabled on namespace '" + key.namespace + "'. Please add 'ldt-enabled true' to namespace section in your aerospike.conf file.");
 		}
 
-		if (client.get(null, key, binName) == null) {
-			isEmpty = true;
+		try {
+			inner.size();
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				isEmpty = true;
+			}
 		}
+
 	}
 
 	/**

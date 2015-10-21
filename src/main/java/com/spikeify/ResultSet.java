@@ -1,5 +1,7 @@
 package com.spikeify;
 
+import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.command.ParticleType;
@@ -16,16 +18,18 @@ public class ResultSet<T> implements Iterable<T> {
 	private final ClassConstructor classConstructor;
 	private final RecordsCache recordsCache;
 	public final RecordSet recordSet;
+	private IAerospikeClient client;
 
 	private Boolean hasNext;
 	private T nextRecord;
 
 	protected ResultSet(ClassMapper<T> mapper, ClassConstructor classConstructor,
-	                    RecordsCache recordsCache, RecordSet recordSet) {
+	                    RecordsCache recordsCache, RecordSet recordSet, IAerospikeClient client) {
 		this.mapper = mapper;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.recordSet = recordSet;
+		this.client = client;
 	}
 
 	public final Key getKey() {
@@ -58,6 +62,10 @@ public class ResultSet<T> implements Iterable<T> {
 
 		// set field values
 		mapper.setFieldValues(object, record.bins);
+
+
+		// set LDT fields
+		mapper.setBigDatatypeFields(object, client, key);
 
 		return object;
 	}

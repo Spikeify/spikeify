@@ -211,6 +211,22 @@ public class LargeDataTest {
 			assertEquals("text" + i, json.second);
 			assertEquals(null, json.date);
 		}
+
+		EntityLDT reloaded = sfy.get(EntityLDT.class).key(userKey1).now();
+		List<EntitySubJson> sample2 = new ArrayList<>(10);
+		for (int i = 0; i < 10; i++) {
+			sample2.add(new EntitySubJson(i, "text" + i, new Date(i * 10000)));
+		}
+		for (EntitySubJson entitySubJson : sample2) {
+			reloaded.jsonList.add(entitySubJson);
+		}
+		reloaded.jsonList.addAll(sample2);
+
+		Assert.assertEquals(30, reloaded.jsonList.size());
+
+		reloaded = sfy.get(EntityLDT.class).key(userKey1).now();
+		Assert.assertEquals(30, reloaded.jsonList.size());
+
 	}
 
 	@Test
@@ -231,12 +247,11 @@ public class LargeDataTest {
 
 		entity.data.add(bytes);
 
-
 		List<EntityListOfBytes> list = sfy.query(EntityListOfBytes.class).filter("name", "test").now().toList();
 		assertEquals(1, list.size());
 
 		EntityListOfBytes compare = list.get(0);
-		assertEquals(0, compare.data.size());
+		assertEquals(1, compare.data.size());
 
 		// update entity loaded with query ...
 		compare.name = "newName";
