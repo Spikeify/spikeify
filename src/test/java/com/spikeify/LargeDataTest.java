@@ -31,7 +31,6 @@ public class LargeDataTest {
 
 		SpikeifyService.globalConfig(namespace, 3000, "localhost");
 		sfy = SpikeifyService.sfy();
-		sfy.truncateNamespace(namespace);
 
 		client = new AerospikeClient("localhost", 3000);
 	}
@@ -47,7 +46,6 @@ public class LargeDataTest {
 		EntityLDT entity = new EntityLDT();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
-
 
 		List<EntityLDT> list = sfy.scanAll(EntityLDT.class).now();
 		assertEquals(1, list.size());
@@ -104,6 +102,28 @@ public class LargeDataTest {
 		assertEquals(offset + 997, (long) rangeTrim.get(2));
 		assertEquals(offset + 998, (long) rangeTrim.get(3));
 		Assert.assertTrue(entity.list.exists(999));
+
+	}
+
+	@Test
+	public void testGetAll() {
+
+		EntityLDT entity = new EntityLDT();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		int count = 10_000;
+		long offset = 1_000_000L;
+
+		List<Long> data = new ArrayList<>(count);
+		for (int i = 0; i < count; i++) {
+			data.add(i + offset);
+		}
+		entity.list.addAll(data);
+
+		// get all
+		List<Long> allList = entity.list.getAll();
+		Assert.assertEquals(count, allList.size());
 	}
 
 	@Test
@@ -241,8 +261,8 @@ public class LargeDataTest {
 		sfy.create(entity).now();
 
 		byte[] bytes = new byte[10];
-		for (int index = 0; index < 10; index ++) {
-			bytes[index] = (byte)index;
+		for (int index = 0; index < 10; index++) {
+			bytes[index] = (byte) index;
 		}
 
 		entity.data.add(bytes);
@@ -260,8 +280,8 @@ public class LargeDataTest {
 		// check list
 		EntityListOfBytes found = sfy.get(EntityListOfBytes.class).key(userKey1).now();
 
-		for (int index = 0; index < found.data.size(); index ++) {
-			assertEquals((byte)index, found.data.get(0)[index]);
+		for (int index = 0; index < found.data.size(); index++) {
+			assertEquals((byte) index, found.data.get(0)[index]);
 		}
 	}
 
@@ -283,7 +303,7 @@ public class LargeDataTest {
 	}
 
 	@Test(expected = AerospikeException.class)
-	public void testNativeLdtAdd(){
+	public void testNativeLdtAdd() {
 
 		LargeList ll = new LargeList(client, new WritePolicy(), new Key(namespace, setName, userKey1), "ldt");
 

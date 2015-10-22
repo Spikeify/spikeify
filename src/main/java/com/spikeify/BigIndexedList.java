@@ -23,7 +23,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	private Type valueType;
 	private Converter converter;
 	private LargeList inner;
-	private final int step = 100;
+	private final int step = 1000;
 	private boolean isEmpty = false;
 
 	/**
@@ -91,7 +91,6 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
 		}
 		int lastIndex = isEmpty ? 0 : inner.size();
-		isEmpty = false;
 
 		boolean success = false;
 		int retries = 10;
@@ -103,6 +102,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			try {
 				inner.add(Value.get(valMap));
 				success = true;
+				isEmpty = false;
 				return lastIndex;
 			} catch (AerospikeException ae) {
 				if (ae.getResultCode() == 1402) {
@@ -135,7 +135,6 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		List<Value> values = new ArrayList<>(collection.size());
 		int inLoop = 0;
 		int lastIndex = isEmpty ? 0 : inner.size();
-		isEmpty = false;
 
 		for (T value : collection) {
 			inLoop++;
@@ -164,6 +163,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		while (retries > 0) {
 			try {
 				inner.add(values);
+				isEmpty = false;
 				return;
 			} catch (AerospikeException ae) {
 				if (ae.getResultCode() == 1402) {
@@ -208,6 +208,42 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			}
 			throw ae;
 		}
+	}
+
+	/**
+	 * Returns a list of all values.
+	 *
+	 * @return A list of all values.
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> getAll() {
+
+		List found = null;
+
+		try {
+			found = inner.scan();
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return new ArrayList<>(0);
+			}
+			throw ae;
+		}
+
+		if (found == null || found.isEmpty()) {
+			return new ArrayList<>(0);  // return empty list if no results
+		}
+
+		List<T> results = new ArrayList<>(found.size());
+		for (Object obj : found) {
+			Object val = ((Map<String, Object>) obj).get("value");
+			if (converter != null) {
+				results.add((T) converter.fromProperty(val));
+			} else {
+				results.add((T) val);
+			}
+
+		}
+		return results;
 	}
 
 	/**
