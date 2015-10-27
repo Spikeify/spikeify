@@ -285,4 +285,13 @@ public class CreatorTest {
 		Assert.assertTrue(existsByIds.get(in1.userId));
 		Assert.assertTrue(existsByIds.get(in2.userId));
 	}
+
+	@Test
+	public void binNamesTest() {
+
+		Map<String, String> binMappings = MapperUtils.getBinMappings(EntityOne.class);
+
+		Assert.assertEquals(13, binMappings.size());
+		Assert.assertEquals("three", binMappings.get("third"));
+	}
 }

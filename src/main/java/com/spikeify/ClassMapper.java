@@ -130,7 +130,7 @@ public class ClassMapper<TYPE> {
 		Map<String, Object> props = new HashMap<>(mappers.size());
 		for (FieldMapper fieldMapper : mappers.values()) {
 			Object propertyValue = fieldMapper.getPropertyValue(object);
-			props.put(fieldMapper.propName, propertyValue);
+			props.put(fieldMapper.binName, propertyValue);
 		}
 
 		// find unmapped properties
@@ -154,8 +154,8 @@ public class ClassMapper<TYPE> {
 		Map<String, Object> mappedProps = new HashMap<>(properties);
 
 		for (FieldMapper fieldMapper : mappers.values()) {
-			Object prop = mappedProps.get(fieldMapper.propName);
-			mappedProps.remove(fieldMapper.propName);
+			Object prop = mappedProps.get(fieldMapper.binName);
+			mappedProps.remove(fieldMapper.binName);
 			if (prop != null) {
 				fieldMapper.setFieldValue(object, prop);
 			}
@@ -204,8 +204,8 @@ public class ClassMapper<TYPE> {
 		Map<String, Object> fieldValues = new HashMap<>();
 
 		for (FieldMapper fieldMapper : mappers.values()) {
-			if (properties.containsKey(fieldMapper.propName)) {
-				Object propValue = properties.get(fieldMapper.propName);
+			if (properties.containsKey(fieldMapper.binName)) {
+				Object propValue = properties.get(fieldMapper.binName);
 				fieldValues.put(fieldMapper.field.getName(), fieldMapper.getFieldValue(propValue));
 			}
 		}

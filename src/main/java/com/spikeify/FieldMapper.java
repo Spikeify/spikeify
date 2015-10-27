@@ -7,8 +7,8 @@ import java.lang.reflect.Field;
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class FieldMapper<F, P> {
 
-	public FieldMapper(String propName, Converter<F, P> converter, Field field) {
-		this.propName = propName;
+	public FieldMapper(String binName, Converter<F, P> converter, Field field) {
+		this.binName = binName;
 		this.converter = converter;
 		this.field = field;
 
@@ -20,6 +20,14 @@ public class FieldMapper<F, P> {
 		} catch (ReflectiveOperationException e) {
 			throw new SpikeifyError(e);
 		}
+	}
+
+	public String getBinName() {
+		return binName;
+	}
+
+	public String getFieldName() {
+		return field.getName();
 	}
 
 	public P getPropertyValue(Object object) {
@@ -49,7 +57,7 @@ public class FieldMapper<F, P> {
 		return converter.fromProperty(propertyValue);
 	}
 
-	public final String propName;
+	public final String binName;
 	//	public Class<P> propType;
 	public final Converter<F, P> converter;
 

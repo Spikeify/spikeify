@@ -33,8 +33,6 @@ public class MapperUtils {
 			new ListConverterFactory(),
 			new MapConverterFactory(),
 			new EnumConverterFactory()
-//			,
-//			new JsonConverterFactory()
 	);
 
 	public static Converter findConverter(Field field) {
@@ -55,7 +53,17 @@ public class MapperUtils {
 		return null;
 	}
 
-	public static Map<String, FieldMapper> getFieldMappers(Class clazz) {
+	public static Map<String /** bin name **/, String /** field name **/> getBinMappings(Class clazz){
+		Map<String, FieldMapper> fieldMappers = getFieldMappers(clazz);
+
+		Map<String, String> binMappings = new HashMap<>(fieldMappers.size());
+		for (Map.Entry<String, FieldMapper> fieldMapperEntry : fieldMappers.entrySet()) {
+			binMappings.put(fieldMapperEntry.getValue().binName, fieldMapperEntry.getKey());
+		}
+		return binMappings;
+	}
+
+	public static Map<String /** field name **/, FieldMapper> getFieldMappers(Class clazz) {
 
 		Map<String, FieldMapper> mappers = new HashMap<>();
 
