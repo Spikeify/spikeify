@@ -14,3 +14,5 @@ Status: Spikeify is currently in Alpha, which means that API can still change.
 What works: object-record mapping, basic synchronous commands (get, create, update, delete, query, add/append/prepend, automatic index creation) and transactions are working.
 
 What is not available yet: async operations, custom field serializers, queries on float/double values...
+
+This project uses the excellent [YourKit Java profiler](https://www.yourkit.com/features/).
