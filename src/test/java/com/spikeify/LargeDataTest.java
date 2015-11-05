@@ -103,6 +103,11 @@ public class LargeDataTest {
 		assertEquals(offset + 998, (long) rangeTrim.get(3));
 		Assert.assertTrue(entity.list.exists(999));
 
+		Long originalValue = -1L;
+		entity.list.update(995, originalValue);
+		Assert.assertEquals(originalValue.longValue(),entity.list.get(995).longValue());
+		Assert.assertEquals(offset + 996L, entity.list.get(996).longValue());
+		Assert.assertEquals(offset + 994L, entity.list.get(994).longValue());
 	}
 
 	@Test

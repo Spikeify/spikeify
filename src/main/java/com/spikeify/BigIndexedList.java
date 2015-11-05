@@ -101,14 +101,14 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			valMap.put("value", converter == null ? value : converter.fromField(value));
 			try {
 				inner.add(Value.get(valMap));
-				success = true;
+				success = true;  // only happens if inner.add() did not throw exception
 				isEmpty = false;
 				return lastIndex;
 			} catch (AerospikeException ae) {
 				if (ae.getResultCode() == 1402) {
 					retries--;
 				} else {
-					throw ae;
+					throw ae;  // re-throw the exception
 				}
 			}
 		}
@@ -173,6 +173,48 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Update value at given position in the list.
+	 *
+	 * @param index Index
+	 * @return A value at requested indexes.
+	 */
+	@SuppressWarnings("unchecked")
+	public void update(int index, T value) {
+
+		if (value == null) {
+			throw new IllegalArgumentException("Can not add 'null' to BigList.");
+		}
+		int lastIndex = isEmpty ? 0 : inner.size();
+
+		if(index > lastIndex){
+			throw  new IllegalArgumentException("Error: index out of bounds. Can not add value past the end of list.");
+		}
+
+		boolean success = false;
+		int retries = 10;
+
+		while (retries > 0) {
+			Map<String, Object> valMap = new HashMap<>(2);
+			valMap.put("key", index);
+			valMap.put("value", converter == null ? value : converter.fromField(value));
+			try {
+				inner.update(Value.get(valMap));
+				isEmpty = false;
+				return;
+			} catch (AerospikeException ae) {
+				if (ae.getResultCode() == 1402) {
+					retries--;
+				} else {
+					throw ae;  // re-throw the exception
+				}
+			}
+		}
+
+		throw new SpikeifyError("Concurrency error: could not add to LargeList due to too-high conncurent updates.");
+
 	}
 
 	/**
