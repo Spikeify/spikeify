@@ -179,7 +179,6 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * Update value at given position in the list.
 	 *
 	 * @param index Index
-	 * @return A value at requested indexes.
 	 */
 	@SuppressWarnings("unchecked")
 	public void update(int index, T value) {
@@ -189,8 +188,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		}
 		int lastIndex = isEmpty ? 0 : inner.size();
 
-		if(index > lastIndex){
-			throw  new IllegalArgumentException("Error: index out of bounds. Can not add value past the end of list.");
+		if (index > lastIndex) {
+			throw new IllegalArgumentException("Error: index out of bounds. Can not add value past the end of list.");
 		}
 
 		boolean success = false;
