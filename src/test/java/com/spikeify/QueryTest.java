@@ -1,9 +1,6 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.Bin;
-import com.aerospike.client.Key;
-import com.aerospike.client.Record;
+import com.aerospike.client.*;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.*;
 import com.spikeify.annotations.BinName;
@@ -12,14 +9,12 @@ import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.generators.IdGenerator;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -54,8 +49,8 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
-										   .filter("two", "content")
-										   .now();
+						.filter("two", "content")
+						.now();
 
 		int count = 0;
 		for (EntityOne entity : entities) {
@@ -66,8 +61,8 @@ public class QueryTest {
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
-											.filter("two", "content")
-											.now();
+						.filter("two", "content")
+						.now();
 
 		int count2 = 0;
 		for (EntityOne entity2 : entities2) {
@@ -150,8 +145,7 @@ public class QueryTest {
 
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			}
-			else {
+			} else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -159,9 +153,9 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-			.query(EntityOne.class)
-			.filter("nine", "content")
-			.now();
+						.query(EntityOne.class)
+						.filter("nine", "content")
+						.now();
 
 		// query should return 10 records
 		List<EntityOne> list = results.toList();
@@ -193,8 +187,7 @@ public class QueryTest {
 
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			}
-			else {
+			} else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -202,10 +195,10 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-			.query(EntityOne.class)
-			.setName(setName)
-			.filter("nine", "content")
-			.now();
+						.query(EntityOne.class)
+						.setName(setName)
+						.filter("nine", "content")
+						.now();
 
 		// query should return 50 records
 		List<EntityOne> list = results.toList();
@@ -213,10 +206,10 @@ public class QueryTest {
 
 		// 2. ... set name after filter ...
 		results = sfy
-			.query(EntityOne.class)
-			.filter("nine", "content")
-			.setName(setName)
-			.now();
+						.query(EntityOne.class)
+						.filter("nine", "content")
+						.setName(setName)
+						.now();
 
 		list = results.toList();
 		assertEquals(50, list.size());
@@ -253,8 +246,8 @@ public class QueryTest {
 
 		// 1. equals
 		ResultSet<EntityIndexed> entities = sfy.query(EntityIndexed.class)
-											   .filter("text", "content")
-											   .now();
+						.filter("text", "content")
+						.now();
 
 
 		int count = 0;
@@ -267,8 +260,8 @@ public class QueryTest {
 
 		// 2. range
 		entities = sfy.query(EntityIndexed.class)
-					  .filter("number", 10, 20)
-					  .now();
+						.filter("number", 10, 20)
+						.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -280,8 +273,8 @@ public class QueryTest {
 
 		// 2. list
 		entities = sfy.query(EntityIndexed.class)
-					  .filter("list", "bla")
-					  .now();
+						.filter("list", "bla")
+						.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -441,17 +434,17 @@ public class QueryTest {
 
 		// this filter by actual field name should be replaced with name in annotation @BinName
 		List<LongEntity> list = sfy.query(LongEntity.class)
-								   .filter("sourceBucketAndKey", "Bla")
-								   .now()
-								   .toList();
+						.filter("sourceBucketAndKey", "Bla")
+						.now()
+						.toList();
 
 		assertEquals(2, list.size());
 
 		// query should also be possible by binName
 		list = sfy.query(LongEntity.class)
-				  .filter("sKey", "Blabla")
-				  .now()
-				  .toList();
+						.filter("sKey", "Blabla")
+						.now()
+						.toList();
 		assertEquals(1, list.size());
 	}
 
@@ -543,10 +536,106 @@ public class QueryTest {
 
 		try {
 			sfy.query(EntityOne.class).filter("one", true).now().toList();
-		}
-		catch (SpikeifyError e) {
+		} catch (SpikeifyError e) {
 			assertEquals("Can't query with boolean filter on: class com.spikeify.entity.EntityOne#one, not a boolean field!", e.getMessage());
 			throw e;
 		}
+	}
+
+	public void createUniqueIndexIfItDoesNotExist(List<String> keys) throws InterruptedException {
+		for (int i = 0; i < 10; i++) {
+			for (String key : keys) {
+				Thread.sleep(new Random().nextInt(100));
+				if (sfy.query(UniqueIndex.class).filter("key", key).now().toList().size() == 0) {
+					UniqueIndex obj = new UniqueIndex();
+					obj.key = key;
+					boolean created = false;
+					do {
+						obj.id = IdGenerator.generateKey();
+						try {
+							sfy.create(obj).now();
+							created = true;
+						} catch (AerospikeException ignored) {
+						}
+					} while (!created);
+				}
+			}
+		}
+
+
+	}
+
+	@Test
+	public void testQueryingByIndex() throws InterruptedException {
+		Spikeify sfy = this.sfy;
+		SpikeifyService.register(UniqueIndex.class);
+		int WORKERS = 5;
+
+		final List<String> keys = Arrays.asList("test1", "test2", "test3", "test4", "test5", "test6", "test7", "test8", "test9", "test10");
+		// create threads
+		Thread[] threads = new Thread[WORKERS];
+
+		for (int i = 0; i < WORKERS; i++) {
+
+			Runnable runnable = new Runnable() {
+				@Override
+				public void run() {
+
+					try {
+						createUniqueIndexIfItDoesNotExist(keys);
+					} catch (InterruptedException ignored) {
+					}
+				}
+			};
+
+			threads[i] = new Thread(runnable);
+		}
+
+		for (int i = 0; i < WORKERS; i++) {
+			threads[i].start();
+		}
+		for (int i = 0; i < WORKERS; i++) {
+			threads[i].join();
+		}
+
+		List<UniqueIndex> list = new ArrayList<>();
+		int counter = 10;
+		do {
+			Thread.sleep(100);
+			list = sfy.scanAll(UniqueIndex.class).now();
+			counter--;
+		} while (list.size() != 10 && counter > 0);
+		Assert.assertEquals(10, list.size());
+		for (String key : keys) {
+			Assert.assertNotNull(sfy.query(UniqueIndex.class).filter("key", key).now().getFirst());
+		}
+		for (int i = 0; i < 10; i++) {
+			for (String key : keys) {
+				if (sfy.query(UniqueIndex.class).filter("key", key).now().toList().size() == 0) {
+					UniqueIndex obj = new UniqueIndex();
+					obj.key = key;
+					boolean created = false;
+					do {
+						obj.id = IdGenerator.generateKey();
+						try {
+							sfy.create(obj).now();
+							created = true;
+						} catch (AerospikeException ignored) {
+						}
+					} while (!created);
+				}
+			}
+		}
+		Assert.assertEquals(list.size(), 10);
+		for (String key : keys) {
+			Assert.assertNotNull(sfy.query(UniqueIndex.class).filter("key", key).now().getFirst());
+		}
+	}
+
+	public static class UniqueIndex {
+		@UserKey
+		public String id;
+		@Indexed
+		public String key;
 	}
 }
