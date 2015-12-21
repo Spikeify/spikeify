@@ -23,7 +23,7 @@ public class JsonConverter<T> implements Converter<T, String> {
 	private final JavaType type;
 
 	public JsonConverter(Class<T> type) {
-		this.type = SimpleType.construct(type);
+		this.type = TypeFactory.defaultInstance().constructType(type);
 	}
 
 	public JsonConverter(Field field) {

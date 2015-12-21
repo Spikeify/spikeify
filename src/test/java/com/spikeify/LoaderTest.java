@@ -5,14 +5,20 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.policy.WritePolicy;
+import com.aerospike.client.query.IndexCollectionType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spikeify.annotations.AsJson;
+import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.*;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -244,5 +250,70 @@ public class LoaderTest {
 		Assert.assertEquals(out.id, "1");
 		Assert.assertEquals(out.something, "test");
 		Assert.assertEquals(out.somethingEnum, SomethingEnum.somewhere);
+	}
+
+	@Test
+	public void testFieldWithMapAndValueAsJson() throws IOException {
+		ObjectMapper objectMapper = new ObjectMapper();
+		String jsonTest = "{\"platform\":\"ios\"}";
+		JsonInfo out = objectMapper.readValue(jsonTest, objectMapper.getTypeFactory().constructType(JsonInfo.class));
+		Assert.assertEquals(out.platform, Platform.ios);
+
+		SpikeifyService.register(EntityWithJSON.class);
+		EntityWithJSON obj = new EntityWithJSON();
+		obj.id = "test1";
+		obj.map = new HashMap<>();
+		JsonInfo json = new JsonInfo();
+		json.name = "name";
+		json.value = "test";
+		json.platform = Platform.ios;
+		obj.map.put("HASH", json);
+		sfy.create(obj).now();
+
+		EntityWithJSON test = sfy.get(EntityWithJSON.class).key(obj.id).now();
+		Assert.assertNotNull(test);
+		Assert.assertNotNull(test.map);
+		Assert.assertNotNull(test.map.get("HASH"));
+		Assert.assertEquals(test.map.get("HASH").name, "name");
+		Assert.assertEquals(test.map.get("HASH").value, "test");
+		Assert.assertEquals(test.map.get("HASH").platform, Platform.ios);
+		Assert.assertNull(test.map.get("HASH").bool);
+
+		obj.map.get("HASH").platform = Platform.android;
+		obj.map.get("HASH").name = "name2";
+		obj.map.get("HASH").bool = true;
+		sfy.update(obj).now();
+
+		test = sfy.get(EntityWithJSON.class).key(obj.id).now();
+		Assert.assertNotNull(test);
+		Assert.assertNotNull(test.map);
+		Assert.assertNotNull(test.map.get("HASH"));
+		Assert.assertEquals(test.map.get("HASH").name, "name2");
+		Assert.assertEquals(test.map.get("HASH").value, "test");
+		Assert.assertEquals(test.map.get("HASH").platform, Platform.android);
+		Assert.assertTrue(test.map.get("HASH").bool);
+	}
+
+	public static class EntityWithJSON {
+		@UserKey
+		public String id;
+
+		@Indexed(collection = IndexCollectionType.MAPKEYS)
+		public Map<String, JsonInfo> map;
+	}
+
+	@AsJson
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	public static class JsonInfo {
+		public Platform platform;
+		public String name;
+		public String value;
+		public Boolean bool;
+	}
+
+	public enum Platform {
+		ios,
+		android
 	}
 }
