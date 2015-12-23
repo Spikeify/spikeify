@@ -109,6 +109,36 @@ public class AerospikeClientMock implements IAerospikeClient {
 
 
 	@Override
+	public Policy getReadPolicyDefault() {
+		return null;
+	}
+
+	@Override
+	public WritePolicy getWritePolicyDefault() {
+		return null;
+	}
+
+	@Override
+	public ScanPolicy getScanPolicyDefault() {
+		return null;
+	}
+
+	@Override
+	public QueryPolicy getQueryPolicyDefault() {
+		return null;
+	}
+
+	@Override
+	public BatchPolicy getBatchPolicyDefault() {
+		return null;
+	}
+
+	@Override
+	public InfoPolicy getInfoPolicyDefault() {
+		return null;
+	}
+
+	@Override
 	public void close() {
 		db = null;
 	}
