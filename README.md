@@ -15,4 +15,4 @@ What works: object-record mapping, basic synchronous commands (get, create, upda
 
 What is not available yet: async operations, custom field serializers, queries on float/double values...
 
-This project uses the excellent [YourKit Java profiler](https://www.yourkit.com/features/). ![YourKit](http://picresize.com/images/rsz_2yklogo.png)
+This project uses the excellent [YourKit Java profiler](https://www.yourkit.com/features/).
