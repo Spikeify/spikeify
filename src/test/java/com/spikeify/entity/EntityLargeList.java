@@ -3,7 +3,7 @@ package com.spikeify.entity;
 import com.spikeify.BigIndexedList;
 import com.spikeify.annotations.UserKey;
 
-public class EntityLDT {
+public class EntityLargeList {
 
 	@UserKey
 	public Long userId;

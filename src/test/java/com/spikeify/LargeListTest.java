@@ -6,7 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 import com.aerospike.client.policy.WritePolicy;
-import com.spikeify.entity.EntityLDT;
+import com.spikeify.entity.EntityLargeList;
 import com.spikeify.entity.EntityListOfBytes;
 import com.spikeify.entity.EntitySubJson;
 import org.junit.After;
@@ -18,7 +18,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class LargeDataTest {
+public class LargeListTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final String namespace = "test";
@@ -43,11 +43,11 @@ public class LargeDataTest {
 	@Test
 	public void testBigIndexedList() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
-		List<EntityLDT> list = sfy.scanAll(EntityLDT.class).now();
+		List<EntityLargeList> list = sfy.scanAll(EntityLargeList.class).now();
 		assertEquals(1, list.size());
 
 
@@ -113,7 +113,7 @@ public class LargeDataTest {
 	@Test
 	public void testGetAll() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
@@ -134,7 +134,7 @@ public class LargeDataTest {
 	@Test
 	public void testBigIndexedListAddEmpty() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
@@ -149,7 +149,7 @@ public class LargeDataTest {
 	@Test
 	public void testOutOfRange() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
@@ -172,7 +172,7 @@ public class LargeDataTest {
 	@Test(expected = IllegalArgumentException.class)
 	public void testInvertedRange() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
@@ -191,7 +191,7 @@ public class LargeDataTest {
 	@Test(expected = IndexOutOfBoundsException.class)
 	public void testTrimOutOfBounds() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
@@ -210,7 +210,7 @@ public class LargeDataTest {
 	@Test
 	public void testAddingJson() {
 
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
@@ -237,7 +237,7 @@ public class LargeDataTest {
 			assertEquals(null, json.date);
 		}
 
-		EntityLDT reloaded = sfy.get(EntityLDT.class).key(userKey1).now();
+		EntityLargeList reloaded = sfy.get(EntityLargeList.class).key(userKey1).now();
 		List<EntitySubJson> sample2 = new ArrayList<>(10);
 		for (int i = 0; i < 10; i++) {
 			sample2.add(new EntitySubJson(i, "text" + i, new Date(i * 10000)));
@@ -249,7 +249,7 @@ public class LargeDataTest {
 
 		Assert.assertEquals(30, reloaded.jsonList.size());
 
-		reloaded = sfy.get(EntityLDT.class).key(userKey1).now();
+		reloaded = sfy.get(EntityLargeList.class).key(userKey1).now();
 		Assert.assertEquals(30, reloaded.jsonList.size());
 
 	}
@@ -292,12 +292,12 @@ public class LargeDataTest {
 
 	@Test
 	public void testEmptyList() {
-		EntityLDT entity = new EntityLDT();
+		EntityLargeList entity = new EntityLargeList();
 		entity.userId = userKey1;
 		entity.list = new BigIndexedList<>();
 		sfy.create(entity).now();
 
-		EntityLDT entityCheck = sfy.get(EntityLDT.class).key(userKey1).now();
+		EntityLargeList entityCheck = sfy.get(EntityLargeList.class).key(userKey1).now();
 		Assert.assertNotNull(entityCheck);
 
 		Assert.assertTrue(entityCheck.list.range(0, 100).isEmpty());

@@ -20,14 +20,10 @@ import java.util.*;
  */
 public class BigIndexedList<T> extends BigDatatypeWrapper {
 
-	private Type valueType;
-	private Converter converter;
-	private LargeList inner;
-	private final int step = 1000;
-	private boolean isEmpty = false;
+	protected Type valueType;
 
 	/**
-	 * Internal function - must be called before this list can be used.
+	 * Internal function - must be called before this LDT can be used.
 	 * This function is called during a setup of mapping relation between this class and mapped field.
 	 *
 	 * @param client  The underlying Aerospike client
@@ -35,20 +31,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this list is assigned
 	 */
-	@SuppressWarnings("unchecked")
-	void init(AerospikeClient client, Key key, String binName, Field field) {
-		this.valueType = TypeUtils.getBigListValueType(field);
-		if (valueType != null) {
-			Class valueClass = (Class) valueType;
-			if (valueClass.isAnnotationPresent(AsJson.class)) {
-				this.converter = new JsonConverter<>(valueClass);
-			} else {
-				this.converter = MapperUtils.findConverter(valueClass);
-			}
-		} else {
-			this.converter = null;
-		}
-		this.inner = new LargeList(client, null, key, binName);
+	public void init(AerospikeClient client, Key key, String binName, Field field) {
+		valueType = TypeUtils.getBigListValueType(field);
+		setConverterForValueType(valueType);
+
+		inner = new LargeList(client, null, key, binName);
 
 		if (!(new InfoFetcher(client).isUDFEnabled(key.namespace))) {
 			throw new SpikeifyError("Error: LDT support not enabled on namespace '" + key.namespace + "'. Please add 'ldt-enabled true' to namespace section in your aerospike.conf file.");
@@ -60,23 +47,6 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			if (ae.getResultCode() == 1417) {
 				isEmpty = true;
 			}
-		}
-
-	}
-
-	/**
-	 * Size of list, i.e. a number of elements in the list
-	 *
-	 * @return Number of elements in the list
-	 */
-	public int size() {
-		try {
-			return isEmpty ? 0 : inner.size();
-		} catch (AerospikeException ae) {
-			if (ae.getResultCode() == 1417) {
-				return 0;
-			}
-			throw ae;
 		}
 	}
 
@@ -91,17 +61,16 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
 		}
 		int lastIndex = isEmpty ? 0 : inner.size();
-
-		boolean success = false;
 		int retries = 10;
 
-		while (!success && retries > 0) {
-			Map<String, Object> valMap = new HashMap<>(2);
-			valMap.put("key", lastIndex);
-			valMap.put("value", converter == null ? value : converter.fromField(value));
+		Map<String, Object> valMap = new HashMap<>(2);
+		valMap.put("key", lastIndex);
+		valMap.put("value", converter == null ? value : converter.fromField(value));
+
+		while (retries > 0) {
+
 			try {
 				inner.add(Value.get(valMap));
-				success = true;  // only happens if inner.add() did not throw exception
 				isEmpty = false;
 				return lastIndex;
 			} catch (AerospikeException ae) {
@@ -156,24 +125,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		}
 	}
 
-	private void addTransactionally(List<Value> values) {
-		int retries = 10;
 
-		// retry loop in case of clashing indexes
-		while (retries > 0) {
-			try {
-				inner.add(values);
-				isEmpty = false;
-				return;
-			} catch (AerospikeException ae) {
-				if (ae.getResultCode() == 1402) {
-					retries--;
-				} else {
-					throw ae;
-				}
-			}
-		}
-	}
 
 	/**
 	 * Update value at given position in the list.
@@ -212,7 +164,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			}
 		}
 
-		throw new SpikeifyError("Concurrency error: could not add to LargeList due to too-high conncurent updates.");
+		throw new SpikeifyError("Concurrency error: could not add to LargeList due to too-high concurrent updates.");
 
 	}
 
@@ -369,31 +321,6 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			}
 			throw ae;
 		}
-	}
-
-	/**
-	 * Is list empty?
-	 *
-	 * @return True if list is empty
-	 */
-	public boolean isEmpty() {
-		try {
-			return isEmpty || inner.size() == 0;
-		} catch (AerospikeException ae) {
-			if (ae.getResultCode() == 1417) {
-				return true;
-			}
-			throw ae;
-		}
-	}
-
-	/**
-	 * Exposes inner config settings of the underlying LargeList
-	 *
-	 * @return Map of setting name ,setting value pairs
-	 */
-	public Map getInnerConfig() {
-		return inner.getConfig();
 	}
 
 }

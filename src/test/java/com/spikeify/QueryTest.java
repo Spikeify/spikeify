@@ -1,7 +1,9 @@
 package com.spikeify;
 
 import com.aerospike.client.*;
+import com.aerospike.client.policy.CommitLevel;
 import com.aerospike.client.policy.Policy;
+import com.aerospike.client.policy.WritePolicy;
 import com.aerospike.client.query.*;
 import com.spikeify.annotations.BinName;
 import com.spikeify.annotations.Generation;
@@ -49,8 +51,8 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
-						.filter("two", "content")
-						.now();
+				.filter("two", "content")
+				.now();
 
 		int count = 0;
 		for (EntityOne entity : entities) {
@@ -61,8 +63,8 @@ public class QueryTest {
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
-						.filter("two", "content")
-						.now();
+				.filter("two", "content")
+				.now();
 
 		int count2 = 0;
 		for (EntityOne entity2 : entities2) {
@@ -153,9 +155,9 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-						.query(EntityOne.class)
-						.filter("nine", "content")
-						.now();
+				.query(EntityOne.class)
+				.filter("nine", "content")
+				.now();
 
 		// query should return 10 records
 		List<EntityOne> list = results.toList();
@@ -195,10 +197,10 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-						.query(EntityOne.class)
-						.setName(setName)
-						.filter("nine", "content")
-						.now();
+				.query(EntityOne.class)
+				.setName(setName)
+				.filter("nine", "content")
+				.now();
 
 		// query should return 50 records
 		List<EntityOne> list = results.toList();
@@ -206,10 +208,10 @@ public class QueryTest {
 
 		// 2. ... set name after filter ...
 		results = sfy
-						.query(EntityOne.class)
-						.filter("nine", "content")
-						.setName(setName)
-						.now();
+				.query(EntityOne.class)
+				.filter("nine", "content")
+				.setName(setName)
+				.now();
 
 		list = results.toList();
 		assertEquals(50, list.size());
@@ -246,8 +248,8 @@ public class QueryTest {
 
 		// 1. equals
 		ResultSet<EntityIndexed> entities = sfy.query(EntityIndexed.class)
-						.filter("text", "content")
-						.now();
+				.filter("text", "content")
+				.now();
 
 
 		int count = 0;
@@ -260,8 +262,8 @@ public class QueryTest {
 
 		// 2. range
 		entities = sfy.query(EntityIndexed.class)
-						.filter("number", 10, 20)
-						.now();
+				.filter("number", 10, 20)
+				.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -273,8 +275,8 @@ public class QueryTest {
 
 		// 2. list
 		entities = sfy.query(EntityIndexed.class)
-						.filter("list", "bla")
-						.now();
+				.filter("list", "bla")
+				.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -434,17 +436,17 @@ public class QueryTest {
 
 		// this filter by actual field name should be replaced with name in annotation @BinName
 		List<LongEntity> list = sfy.query(LongEntity.class)
-						.filter("sourceBucketAndKey", "Bla")
-						.now()
-						.toList();
+				.filter("sourceBucketAndKey", "Bla")
+				.now()
+				.toList();
 
 		assertEquals(2, list.size());
 
 		// query should also be possible by binName
 		list = sfy.query(LongEntity.class)
-						.filter("sKey", "Blabla")
-						.now()
-						.toList();
+				.filter("sKey", "Blabla")
+				.now()
+				.toList();
 		assertEquals(1, list.size());
 	}
 
@@ -553,7 +555,9 @@ public class QueryTest {
 					do {
 						obj.id = IdGenerator.generateKey();
 						try {
-							sfy.create(obj).now();
+							WritePolicy wp = new WritePolicy();
+							wp.commitLevel = CommitLevel.COMMIT_ALL;
+							sfy.create(obj).policy(wp).now();
 							created = true;
 						} catch (AerospikeException ignored) {
 						}
@@ -561,8 +565,6 @@ public class QueryTest {
 				}
 			}
 		}
-
-
 	}
 
 	@Test
@@ -577,13 +579,15 @@ public class QueryTest {
 
 		for (int i = 0; i < WORKERS; i++) {
 
+			final int index = i;
+
 			Runnable runnable = new Runnable() {
 				@Override
 				public void run() {
 
 					try {
 						createUniqueIndexIfItDoesNotExist(keys);
-					} catch (InterruptedException ignored) {
+					} catch (InterruptedException ignored){
 					}
 				}
 			};
@@ -603,8 +607,10 @@ public class QueryTest {
 		do {
 			Thread.sleep(100);
 			list = sfy.scanAll(UniqueIndex.class).now();
+			System.out.println("list:"+list.size());
 			counter--;
 		} while (list.size() != 10 && counter > 0);
+
 		Assert.assertEquals(10, list.size());
 		for (String key : keys) {
 			Assert.assertNotNull(sfy.query(UniqueIndex.class).filter("key", key).now().getFirst());
