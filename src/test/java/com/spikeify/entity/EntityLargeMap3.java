@@ -15,7 +15,7 @@ public class EntityLargeMap3 {
 	public String bla;
 
 	// we should be able to hide the property
-	@AsJson
+//	@AsJson
 	private BigMap<Long, EntitySubJson2> jsonMap;
 
 	public void put(long key, EntitySubJson2 value) {

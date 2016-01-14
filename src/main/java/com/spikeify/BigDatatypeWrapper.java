@@ -6,7 +6,6 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 import com.spikeify.annotations.AsJson;
-import com.spikeify.commands.InfoFetcher;
 import com.spikeify.converters.JsonConverter;
 
 import java.lang.reflect.Field;
@@ -21,7 +20,11 @@ public abstract class BigDatatypeWrapper {
 	protected boolean isEmpty = false;
 	protected final int step = 1000;
 
-	protected void setConverterForValueType(Type valueType){
+	public boolean isInitialized() {
+		return inner != null;
+	}
+
+	protected void setConverterForValueType(Type valueType) {
 		if (valueType != null) {
 			Class valueClass = (Class) valueType;
 			if (valueClass.isAnnotationPresent(AsJson.class)) {
@@ -62,7 +65,7 @@ public abstract class BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this list is assigned
 	 */
-	public abstract void init(AerospikeClient client, Key key, String binName, Field field) ;
+	public abstract void init(AerospikeClient client, Key key, String binName, Field field);
 
 	/**
 	 * Size of list, i.e. a number of elements in the list

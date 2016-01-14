@@ -10,6 +10,7 @@ import java.io.Serializable;
 /**
  *
  */
+@AsJson
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class EntitySubJson2 implements Serializable {

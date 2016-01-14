@@ -1,6 +1,5 @@
 package com.spikeify.entity;
 
-import com.spikeify.BigIndexedList;
 import com.spikeify.BigMap;
 import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;

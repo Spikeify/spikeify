@@ -183,10 +183,14 @@ public class ClassMapper<TYPE> {
 				// should not happen
 				throw new SpikeifyError("Field '" + entry.getKey() + "' on class " + object.getClass() + " not found!");
 			}
-			BigDatatypeWrapper wrapper = (new NoArgClassConstructor()).construct(entry.getValue());
-			wrapper.init(realClient, key, MapperUtils.getBinName(field), field);
+
 			try {
 				field.setAccessible(true); // to allow setting private fields
+				BigDatatypeWrapper wrapper = (BigDatatypeWrapper) field.get(object);
+				if (wrapper == null || !wrapper.isInitialized()) {
+					wrapper = (new NoArgClassConstructor()).construct(entry.getValue());
+					wrapper.init(realClient, key, MapperUtils.getBinName(field), field);
+				}
 				field.set(object, wrapper);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
@@ -294,7 +298,7 @@ public class ClassMapper<TYPE> {
 	public void setUserKey(TYPE object, Long userKey) {
 		if (userKeyFieldMapper != null) {
 			if (!userKeyFieldMapper.field.getType().isAssignableFrom(long.class) && // UserKey could be a long but given "userKey" will always be Long
-			    !userKeyFieldMapper.field.getType().isAssignableFrom(userKey.getClass())) {
+					!userKeyFieldMapper.field.getType().isAssignableFrom(userKey.getClass())) {
 				throw new SpikeifyError("Key type mismatch: @UserKey field '" +
 						userKeyFieldMapper.field.getDeclaringClass().getName() + "#" + userKeyFieldMapper.field.getName() +
 						"' has type '" + userKeyFieldMapper.field.getType() + "', while key has type 'Long'."

@@ -239,7 +239,6 @@ public class LargeMapTest {
 	public void testEmptyList() {
 		EntityLargeMap entity = new EntityLargeMap();
 		entity.userId = userKey1;
-		entity.map = new BigMap<>();
 		sfy.create(entity).now();
 
 		EntityLargeMap entityCheck = sfy.get(EntityLargeMap.class).key(userKey1).now();
@@ -259,8 +258,8 @@ public class LargeMapTest {
 		entity.bla = "Bla";
 		sfy.create(entity).now();
 
-		entity.jsonMap = new BigMap<>();
-		sfy.update(entity).now();
+//		entity.jsonMap = new BigMap<>();
+//		sfy.update(entity).now();
 
 		entity.jsonMap.put(10L, new EntitySubJson2("10"));
 		sfy.update(entity).now();
