@@ -6,10 +6,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 import com.aerospike.client.policy.WritePolicy;
-import com.spikeify.entity.EntityLargeList;
-import com.spikeify.entity.EntityLargeMap;
-import com.spikeify.entity.EntityMapOfBytes;
-import com.spikeify.entity.EntitySubJson;
+import com.spikeify.entity.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -254,4 +251,42 @@ public class LargeMapTest {
 		Assert.assertFalse(entityCheck.map.containsKey(0L));
 	}
 
+
+	@Test
+	public void testLargeMapLongObjectToJson() {
+
+		EntityLargeMap2 entity = new EntityLargeMap2();
+		entity.bla = "Bla";
+		sfy.create(entity).now();
+
+		entity.jsonMap = new BigMap<>();
+		sfy.update(entity).now();
+
+		entity.jsonMap.put(10L, new EntitySubJson2("10"));
+		sfy.update(entity).now();
+	}
+
+	@Test
+	public void testLargeMapLongObjectToJson2() {
+
+		EntityLargeMap2 entity = new EntityLargeMap2();
+		entity.bla = "Bla";
+		entity.jsonMap = new BigMap<>();
+		sfy.create(entity).now();
+
+		entity.jsonMap.put(10L, new EntitySubJson2("10"));
+
+		sfy.update(entity).now();
+	}
+
+	@Test
+	public void testLargeMapIsPrivateTest() {
+
+		EntityLargeMap3 entity = new EntityLargeMap3();
+		entity.bla = "Bla";
+		sfy.create(entity).now();
+
+		entity.put(10L, new EntitySubJson2("10"));
+		sfy.update(entity).now();
+	}
 }

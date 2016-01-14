@@ -178,7 +178,7 @@ public class ClassMapper<TYPE> {
 		for (Map.Entry<String, Class<? extends BigDatatypeWrapper>> entry : ldtMappers.entrySet()) {
 			Field field = null;
 			try {
-				field = object.getClass().getField(entry.getKey());
+				field = object.getClass().getDeclaredField(entry.getKey()); // to see all fields not just public ones
 			} catch (NoSuchFieldException e) {
 				// should not happen
 				throw new SpikeifyError("Field '" + entry.getKey() + "' on class " + object.getClass() + " not found!");
@@ -186,6 +186,7 @@ public class ClassMapper<TYPE> {
 			BigDatatypeWrapper wrapper = (new NoArgClassConstructor()).construct(entry.getValue());
 			wrapper.init(realClient, key, MapperUtils.getBinName(field), field);
 			try {
+				field.setAccessible(true); // to allow setting private fields
 				field.set(object, wrapper);
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
