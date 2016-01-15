@@ -59,7 +59,7 @@ public class IndexingService {
 				if (index != null) {
 
 					if (field.isAnnotationPresent(AsJson.class)) {
-						throw new SpikeifyError("Field : '" + field.getName() + "' can't index fields converted to JSON, add @AsJson to class declaration or @Index annotation!");
+						throw new SpikeifyError("Field : '" + field.getName() + "' can't index fields annotated with @AsJson. Add @AsJson to class declaration or remove @Indexed annotation!");
 					}
 
 					String indexName = index.name();
