@@ -1,12 +1,17 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
+import com.aerospike.client.Key;
+import com.aerospike.client.Value;
+import com.aerospike.client.large.LargeList;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.*;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.*;
 
 import static org.junit.Assert.assertEquals;
@@ -257,33 +262,39 @@ public class BigMapTest {
 	public void testLargeMapLongObjectToJson() {
 
 		EntityLargeMap2 entity = new EntityLargeMap2();
-		entity.bla = "Bla";
+		entity.bla = "Bla2";
 		sfy.create(entity).now();
 
-//		entity.jsonMap = new BigMap<>();
-//		sfy.update(entity).now();
+		entity.javaMap.put(10L, new EntitySubJava("10"));
+		entity.javaMap.put(20L, new EntitySubJava("20"));
 
-		entity.jsonMap.put(10L, new EntitySubJson2("10"));
+		LargeList reloaded = sfy.getClient().getLargeList(null, new Key(namespace, "EntityLargeMap2", entity.userId), "javaMap");
+
+		Map<String, Object> val1 = (Map<String, Object>) reloaded.find(Value.get(10L)).get(0);
+
+		Assert.assertEquals(10L, val1.get("key"));
+		Assert.assertEquals(EntitySubJava.class, val1.get("value").getClass());  // we get back Java object
+		Assert.assertEquals("10", ((EntitySubJava) val1.get("value")).getValue());
 	}
 
 	@Test
-	public void testLargeMapLongObjectToJson2() {
-
-		EntityLargeMap2 entity = new EntityLargeMap2();
-		entity.bla = "Bla";
-		entity.jsonMap = new BigMap<>();
-		sfy.create(entity).now();
-
-		entity.jsonMap.put(10L, new EntitySubJson2("10"));
-	}
-
-	@Test
-	public void testLargeMapIsPrivateTest() {
+	public void testLargeMapIsPrivateTest() throws IOException {
 
 		EntityLargeMap3 entity = new EntityLargeMap3();
 		entity.bla = "Bla";
 		sfy.create(entity).now();
 
-		entity.put(10L, new EntitySubJson2("10"));
+		entity.put(10L, new EntitySubJava("10"));
+		entity.put(20L, new EntitySubJava("20"));
+
+		LargeList reloaded = sfy.getClient().getLargeList(null, new Key(namespace, "EntityLargeMap3", entity.userId), "jsonMap");
+
+		Map<String, Object> val1 = (Map<String, Object>) reloaded.find(Value.get(10L)).get(0);
+
+		Assert.assertEquals(10L, val1.get("key"));
+		Assert.assertEquals(String.class, val1.get("value").getClass());  // we get back a String
+
+		Assert.assertEquals(new EntitySubJava("10"), new ObjectMapper().readValue(((String) val1.get("value")), EntitySubJava.class));
+
 	}
 }

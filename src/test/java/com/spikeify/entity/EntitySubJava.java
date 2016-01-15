@@ -7,21 +7,17 @@ import com.spikeify.annotations.AsJson;
 
 import java.io.Serializable;
 
-/**
- *
- */
-@AsJson
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class EntitySubJson2 implements Serializable {
+public class EntitySubJava implements Serializable {
 
 	private String value;
 
-	protected EntitySubJson2() {
+	protected EntitySubJava() {
 
 	}
 
-	public EntitySubJson2(String value) {
+	public EntitySubJava(String value) {
 
 		this.value = value;
 	}
@@ -37,5 +33,22 @@ public class EntitySubJson2 implements Serializable {
 	public String getValue() {
 
 		return value;
+	}
+
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+
+		EntitySubJava that = (EntitySubJava) o;
+
+		return value != null ? value.equals(that.value) : that.value == null;
+
+	}
+
+	@Override
+	public int hashCode() {
+		return value != null ? value.hashCode() : 0;
 	}
 }

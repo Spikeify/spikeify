@@ -47,7 +47,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 		}
 
 		valueType = TypeUtils.getBigMapValueType(field);
-		setConverterForValueType(valueType);
+		setConverterForValueType(field, valueType);
 
 		WritePolicy wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
@@ -219,7 +219,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	/**
 	 * Returns a count of key, values from the last position.
 	 *
-	 * @param count  	maximum number of values to return
+	 * @param count maximum number of values to return
 	 * @return A map of key, values from the last key value
 	 */
 	@SuppressWarnings("unchecked")
@@ -242,7 +242,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	/**
 	 * Returns a count of key, values from the last position.
 	 *
-	 * @param count  	maximum number of values to return
+	 * @param count maximum number of values to return
 	 * @return A map of key, values from the last key value
 	 */
 	@SuppressWarnings("unchecked")

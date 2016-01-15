@@ -18,7 +18,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class LargeListTest {
+public class BigListTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final String namespace = "test";

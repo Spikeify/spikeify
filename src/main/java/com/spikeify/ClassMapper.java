@@ -39,7 +39,7 @@ public class ClassMapper<TYPE> {
 		classSetName = setNameAnnotation != null ? setNameAnnotation.value() : null;
 
 		Map<String, FieldMapper> fieldMappers = MapperUtils.getFieldMappers(clazz);
-		fieldMappers.putAll(MapperUtils.getJsonMappers(clazz));
+//		fieldMappers.putAll(MapperUtils.getJsonMappers(clazz));
 		mappers = fieldMappers;
 
 		ldtMappers = MapperUtils.getLDTClasses(clazz);

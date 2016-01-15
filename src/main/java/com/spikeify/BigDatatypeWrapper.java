@@ -24,10 +24,13 @@ public abstract class BigDatatypeWrapper {
 		return inner != null;
 	}
 
-	protected void setConverterForValueType(Type valueType) {
+	protected void setConverterForValueType(Field field, Type valueType) {
+
 		if (valueType != null) {
 			Class valueClass = (Class) valueType;
-			if (valueClass.isAnnotationPresent(AsJson.class)) {
+
+			// field has @AsJson or Map value class has @AsJson
+			if (field.isAnnotationPresent(AsJson.class) || valueClass.isAnnotationPresent(AsJson.class)) {
 				this.converter = new JsonConverter<>(valueClass);
 			} else {
 				this.converter = MapperUtils.findConverter(valueClass);

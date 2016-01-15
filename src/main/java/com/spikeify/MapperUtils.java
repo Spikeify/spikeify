@@ -53,7 +53,7 @@ public class MapperUtils {
 		return null;
 	}
 
-	public static Map<String /** bin name **/, String /** field name **/> getBinMappings(Class clazz){
+	public static Map<String /** bin name **/, String /** field name **/> getBinMappings(Class clazz) {
 		Map<String, FieldMapper> fieldMappers = getFieldMappers(clazz);
 
 		Map<String, String> binMappings = new HashMap<>(fieldMappers.size());
@@ -68,8 +68,43 @@ public class MapperUtils {
 		Map<String, FieldMapper> mappers = new HashMap<>();
 
 		for (Field field : clazz.getDeclaredFields()) {
-			if (mappableField(field)) {
-				Class fieldType = field.getType();
+
+			AsJson asJson = field.getAnnotation(AsJson.class);
+			Class fieldType = field.getType();
+
+			// AsJson with default target are handled via JsonConverter
+			if (asJson != null && asJson.target() == ConversionTarget.DEFAULT) {
+
+				if (BigIndexedList.class.isAssignableFrom(fieldType) || BigMap.class.isAssignableFrom(fieldType)) {
+					throw new SpikeifyError("@AsJson(target=ConversionTarget.DEFAULT) can not be used on fields of type com.spikeify.BigMap or com.spikeify.BigIndexedList");
+				}
+
+				mappers.put(field.getName(), new FieldMapper(getBinName(field), new JsonConverter(field), field));
+			} else if (asJson != null && asJson.target() == ConversionTarget.MAPVALUES) {
+
+				// ConversionTarget.MAPVALUES must be used only on Maps
+				if (!Map.class.isAssignableFrom(fieldType) && !BigMap.class.isAssignableFrom(fieldType)) {
+					throw new SpikeifyError("@AsJson(target=ConversionTarget.MAPVALUES) can be used only on fields of type java.util.Map or com.spikeify.BigMap");
+				}
+
+				// BigIndexedList mapping is handled elsewhere
+				if(!BigMap.class.isAssignableFrom(fieldType)){
+					mappers.put(field.getName(), new FieldMapper(getBinName(field), new JsonConverter(field), field));
+				}
+			} else if (asJson != null && asJson.target() == ConversionTarget.LIST) {
+
+				// ConversionTarget.LIST must be used only on Lists
+				if (!List.class.isAssignableFrom(fieldType) && !BigIndexedList.class.isAssignableFrom(fieldType)) {
+					throw new SpikeifyError("@AsJson(target=ConversionTarget.LIST) can be used only on fields of typex java.util.List or com.spikeify.BigIndexedList");
+				}
+
+				// BigIndexedList mapping is handled elsewhere
+				if(!BigIndexedList.class.isAssignableFrom(fieldType)){
+					mappers.put(field.getName(), new FieldMapper(getBinName(field), new JsonConverter(field), field));
+				}
+
+			} else if (mappableField(field)) {
+
 				Converter fieldConverter = findConverter(field);
 
 				if (fieldConverter == null) {
@@ -82,7 +117,6 @@ public class MapperUtils {
 
 		return mappers;
 	}
-
 
 	public static Map<String, Class<? extends BigDatatypeWrapper>> getLDTClasses(Class clazz) {
 
@@ -98,17 +132,6 @@ public class MapperUtils {
 		}
 
 		return ldtMappers;
-	}
-
-	public static Map<String, FieldMapper> getJsonMappers(Class clazz) {
-		Map<String, FieldMapper> jsonMappers = new HashMap<>();
-
-		for (Field field : clazz.getDeclaredFields()) {
-			if (field.getAnnotation(AsJson.class) != null) {
-				jsonMappers.put(field.getName(), new FieldMapper(getBinName(field), new JsonConverter(field), field));
-			}
-		}
-		return jsonMappers;
 	}
 
 	public static String getBinName(Field field) {
@@ -218,7 +241,7 @@ public class MapperUtils {
 				&& !field.isAnnotationPresent(SetName.class)
 				&& !field.isAnnotationPresent(Namespace.class)
 				&& !field.isAnnotationPresent(AnyProperty.class)
-				&& !field.isAnnotationPresent(AsJson.class)
+//				&& !field.isAnnotationPresent(AsJson.class)
 				&& !field.isAnnotationPresent(Ignore.class)
 				&& !BigDatatypeWrapper.class.isAssignableFrom(field.getType()) // LDT fields are not handled via normal field mappers
 				&& (field.getModifiers() & IGNORED_FIELD_MODIFIERS) == 0

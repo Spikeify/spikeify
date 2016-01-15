@@ -1,6 +1,7 @@
 package com.spikeify.entity;
 
 import com.spikeify.BigMap;
+import com.spikeify.ConversionTarget;
 import com.spikeify.annotations.AsJson;
 import com.spikeify.annotations.UserKey;
 
@@ -14,16 +15,19 @@ public class EntityLargeMap3 {
 
 	public String bla;
 
-	// we should be able to hide the property
-//	@AsJson
-	private BigMap<Long, EntitySubJson2> jsonMap;
+	@AsJson(target = ConversionTarget.MAPVALUES)
+	private BigMap<Long, EntitySubJava> jsonMap;
 
-	public void put(long key, EntitySubJson2 value) {
+	public void put(long key, EntitySubJava value) {
 
 		if (jsonMap == null) {
 			jsonMap = new BigMap<>();
 		}
 
 		jsonMap.put(key, value);
+	}
+
+	public BigMap<Long, EntitySubJava> getMap(){
+		return jsonMap;
 	}
 }

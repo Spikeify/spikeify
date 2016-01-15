@@ -2,6 +2,7 @@ package com.spikeify.converters;
 
 import com.spikeify.Converter;
 import com.spikeify.ConverterFactory;
+import com.spikeify.SpikeifyError;
 import com.spikeify.TypeUtils;
 import com.spikeify.annotations.AsJson;
 

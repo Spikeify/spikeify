@@ -291,7 +291,7 @@ public class CreatorTest {
 
 		Map<String, String> binMappings = MapperUtils.getBinMappings(EntityOne.class);
 
-		Assert.assertEquals(13, binMappings.size());
+		Assert.assertEquals(14, binMappings.size());
 		Assert.assertEquals("three", binMappings.get("third"));
 	}
 }

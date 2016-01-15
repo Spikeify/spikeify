@@ -5,9 +5,7 @@ import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
-import com.spikeify.annotations.AsJson;
 import com.spikeify.commands.InfoFetcher;
-import com.spikeify.converters.JsonConverter;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
@@ -33,7 +31,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 */
 	public void init(AerospikeClient client, Key key, String binName, Field field) {
 		valueType = TypeUtils.getBigListValueType(field);
-		setConverterForValueType(valueType);
+		setConverterForValueType(field, valueType);
 
 		inner = new LargeList(client, null, key, binName);
 
