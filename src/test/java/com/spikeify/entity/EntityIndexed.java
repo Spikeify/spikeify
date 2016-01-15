@@ -94,6 +94,9 @@ public class EntityIndexed {
 	@Indexed(collection = IndexCollectionType.MAPVALUES)
 	public HashMap<String, String> mapValues;
 
+	@Indexed // (collection = IndexCollectionType.MAPKEYS) - is default
+	public HashMap<String, EntitySubJson> mapJson;
+
 	@Ignore
 	@Indexed // should be ignored
 	public String ignored;

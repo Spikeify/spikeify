@@ -11,6 +11,7 @@ import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntitySubJson;
 import com.spikeify.generators.IdGenerator;
 import org.junit.Assert;
 import org.junit.Before;
@@ -514,6 +515,16 @@ public class QueryTest {
 		assertEquals(2, list.size());
 		assertEquals("1", list.get(0).key);
 		assertEquals("3", list.get(1).key);
+
+
+		test.mapJson = new HashMap<>();
+		test.mapJson.put("K", new EntitySubJson(1, "2", new Date()));
+		test.mapJson.put("O", new EntitySubJson(1, "2", new Date()));
+		sfy.update(test).now();
+
+		list = sfy.query(EntityIndexed.class).filter("mapJson", "O").now().toList();
+		assertEquals(1, list.size());
+		assertEquals(2, list.get(0).mapJson.size());
 	}
 
 	@Test(expected = SpikeifyError.class)

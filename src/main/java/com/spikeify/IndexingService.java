@@ -34,8 +34,7 @@ public class IndexingService {
 	public static void createIndex(Spikeify sfy, Policy policy, Class<?> clazz) {
 
 		// skip registration if already registered
-		if (registeredEntities.contains(clazz))
-			return;
+		if (registeredEntities.contains(clazz)) { return; }
 
 		registeredEntities.add(clazz);
 
@@ -50,8 +49,8 @@ public class IndexingService {
 
 				// ignored fields and keys are skipped
 				if (field.isAnnotationPresent(Ignore.class) ||
-						field.isAnnotationPresent(Generation.class) ||
-						field.isAnnotationPresent(UserKey.class)) {
+					field.isAnnotationPresent(Generation.class) ||
+					field.isAnnotationPresent(UserKey.class)) {
 					continue;
 				}
 
@@ -92,29 +91,28 @@ public class IndexingService {
 	protected static IndexType getIndexType(Field field) {
 
 		if (Character.class.isAssignableFrom(field.getType()) ||
-				char.class.isAssignableFrom(field.getType()) ||
-				BigDecimal.class.isAssignableFrom(field.getType()) ||
-				BigInteger.class.isAssignableFrom(field.getType())) {
+			char.class.isAssignableFrom(field.getType()) ||
+			BigDecimal.class.isAssignableFrom(field.getType()) ||
+			BigInteger.class.isAssignableFrom(field.getType())) {
 			throw new SpikeifyError("Can't index field: " + field.getName() + ", indexing field type: " + field.getType() + " not supported!");
 		}
 
 		// others are Strings (char, enum or string)
 		if (boolean.class.isAssignableFrom(field.getType()) ||
-				int.class.isAssignableFrom(field.getType()) ||
-				long.class.isAssignableFrom(field.getType()) ||
-				byte.class.isAssignableFrom(field.getType()) ||
-				short.class.isAssignableFrom(field.getType()) ||
-				double.class.isAssignableFrom(field.getType()) ||
-				float.class.isAssignableFrom(field.getType()) ||
-				double.class.isAssignableFrom(field.getType()) ||
-				Boolean.class.isAssignableFrom(field.getType()) ||
-				Integer.class.isAssignableFrom(field.getType()) ||
-				Long.class.isAssignableFrom(field.getType()) ||
-				Double.class.isAssignableFrom(field.getType()) ||
-				Byte.class.isAssignableFrom(field.getType()) ||
-				Short.class.isAssignableFrom(field.getType()) ||
-				Float.class.isAssignableFrom(field.getType()))
-		{
+			int.class.isAssignableFrom(field.getType()) ||
+			long.class.isAssignableFrom(field.getType()) ||
+			byte.class.isAssignableFrom(field.getType()) ||
+			short.class.isAssignableFrom(field.getType()) ||
+			double.class.isAssignableFrom(field.getType()) ||
+			float.class.isAssignableFrom(field.getType()) ||
+			double.class.isAssignableFrom(field.getType()) ||
+			Boolean.class.isAssignableFrom(field.getType()) ||
+			Integer.class.isAssignableFrom(field.getType()) ||
+			Long.class.isAssignableFrom(field.getType()) ||
+			Double.class.isAssignableFrom(field.getType()) ||
+			Byte.class.isAssignableFrom(field.getType()) ||
+			Short.class.isAssignableFrom(field.getType()) ||
+			Float.class.isAssignableFrom(field.getType())) {
 			return IndexType.NUMERIC;
 		}
 
@@ -135,16 +133,16 @@ public class IndexingService {
 		}
 
 		if (List.class.isAssignableFrom(field.getType()) ||
-				Array.class.isAssignableFrom(field.getType()) ||
-				Set.class.isAssignableFrom(field.getType())) {
+			Array.class.isAssignableFrom(field.getType()) ||
+			Set.class.isAssignableFrom(field.getType())) {
 			return IndexCollectionType.LIST;
 		}
 
 		if (!Map.class.isAssignableFrom(field.getType())) {
 			return defaultType;
 		}
-		return IndexCollectionType.MAPKEYS;
 
+		return IndexCollectionType.MAPKEYS;
 	}
 
 	/**
@@ -186,10 +184,12 @@ public class IndexingService {
 		for (InfoFetcher.IndexInfo info : indexes.values()) {
 
 			if (info != null &&
-					info.setName.equals(classSetName) &&
-					info.fieldName.equals(fieldName) &&
-					!indexName.equals(info.name)) {
-				throw new SpikeifyError("Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz.getName() + "'!");
+				info.setName.equals(classSetName) &&
+				info.fieldName.equals(fieldName) &&
+				!indexName.equals(info.name)) {
+				throw new SpikeifyError(
+					"Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz
+						.getName() + "'!");
 			}
 		}
 	}
@@ -281,10 +281,10 @@ public class IndexingService {
 			Field field = type.getDeclaredField(fieldName);
 			Indexed indexed = field.getAnnotation(Indexed.class);
 
-			if (indexed != null)
-				return getIndexCollectionType(field, indexed.collection());
+			if (indexed != null) { return getIndexCollectionType(field, indexed.collection()); }
 
-		} catch (NoSuchFieldException e) {
+		}
+		catch (NoSuchFieldException e) {
 			throw new SpikeifyError("Field: '" + fieldName + "' is not present in Entity: " + type.getName());
 		}
 

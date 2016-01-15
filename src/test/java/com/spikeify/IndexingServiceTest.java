@@ -98,7 +98,7 @@ public class IndexingServiceTest {
 
 		// 3.
 		indexes = sfy.info().getIndexes(namespace, EntityIndexed.class);
-		assertEquals(19, indexes.size());
+		assertEquals(20, indexes.size());
 
 		info = indexes.get("idx_EntityIndexed_text");
 		assertNotNull(info);
