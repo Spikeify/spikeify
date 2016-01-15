@@ -27,9 +27,9 @@ public class IndexingService {
 	/**
 	 * Creates indexes upon information given in {@link Indexed} annotation
 	 *
-	 * @param sfy     configured spikeify service
-	 * @param policy  index policy if any
-	 * @param clazz   entity
+	 * @param sfy    configured spikeify service
+	 * @param policy index policy if any
+	 * @param clazz  entity
 	 */
 	public static void createIndex(Spikeify sfy, Policy policy, Class<?> clazz) {
 
@@ -50,8 +50,8 @@ public class IndexingService {
 
 				// ignored fields and keys are skipped
 				if (field.isAnnotationPresent(Ignore.class) ||
-					field.isAnnotationPresent(Generation.class) ||
-					field.isAnnotationPresent(UserKey.class)) {
+						field.isAnnotationPresent(Generation.class) ||
+						field.isAnnotationPresent(UserKey.class)) {
 					continue;
 				}
 
@@ -84,35 +84,37 @@ public class IndexingService {
 
 	/**
 	 * Resolved index type according to field type
-	 * @throws SpikeifyError in case indexing field type is not supported
+	 *
 	 * @param field to inspect
 	 * @return STRING or NUMERIC index type
+	 * @throws SpikeifyError in case indexing field type is not supported
 	 */
 	protected static IndexType getIndexType(Field field) {
 
-		if (field.getType().isAssignableFrom(Character.class) ||
-			field.getType().isAssignableFrom(char.class) ||
-			field.getType().isAssignableFrom(BigDecimal.class) ||
-			field.getType().isAssignableFrom(BigInteger.class)) {
+		if (Character.class.isAssignableFrom(field.getType()) ||
+				char.class.isAssignableFrom(field.getType()) ||
+				BigDecimal.class.isAssignableFrom(field.getType()) ||
+				BigInteger.class.isAssignableFrom(field.getType())) {
 			throw new SpikeifyError("Can't index field: " + field.getName() + ", indexing field type: " + field.getType() + " not supported!");
 		}
 
-			// others are Strings (char, enum or string)
-		if (field.getType().isAssignableFrom(boolean.class) ||
-			field.getType().isAssignableFrom(int.class) ||
-		    field.getType().isAssignableFrom(long.class) ||
-		    field.getType().isAssignableFrom(byte.class) ||
-		    field.getType().isAssignableFrom(short.class) ||
-		    field.getType().isAssignableFrom(double.class) ||
-		    field.getType().isAssignableFrom(float.class) ||
-		    field.getType().isAssignableFrom(double.class) ||
-		    field.getType().isAssignableFrom(Boolean.class) ||
-		    field.getType().isAssignableFrom(Integer.class) ||
-			field.getType().isAssignableFrom(Long.class) ||
-			field.getType().isAssignableFrom(Byte.class) ||
-			field.getType().isAssignableFrom(Short.class) ||
-			field.getType().isAssignableFrom(Float.class) ||
-			field.getType().isAssignableFrom(Double.class)) {
+		// others are Strings (char, enum or string)
+		if (boolean.class.isAssignableFrom(field.getType()) ||
+				int.class.isAssignableFrom(field.getType()) ||
+				long.class.isAssignableFrom(field.getType()) ||
+				byte.class.isAssignableFrom(field.getType()) ||
+				short.class.isAssignableFrom(field.getType()) ||
+				double.class.isAssignableFrom(field.getType()) ||
+				float.class.isAssignableFrom(field.getType()) ||
+				double.class.isAssignableFrom(field.getType()) ||
+				Boolean.class.isAssignableFrom(field.getType()) ||
+				Integer.class.isAssignableFrom(field.getType()) ||
+				Long.class.isAssignableFrom(field.getType()) ||
+				Double.class.isAssignableFrom(field.getType()) ||
+				Byte.class.isAssignableFrom(field.getType()) ||
+				Short.class.isAssignableFrom(field.getType()) ||
+				Float.class.isAssignableFrom(field.getType()))
+		{
 			return IndexType.NUMERIC;
 		}
 
@@ -121,7 +123,8 @@ public class IndexingService {
 
 	/**
 	 * Resolves index collection type according to field type
-	 * @param field to inspect
+	 *
+	 * @param field       to inspect
 	 * @param defaultType default type (override)
 	 * @return index collection type for given field
 	 */
@@ -131,26 +134,27 @@ public class IndexingService {
 			return defaultType;
 		}
 
-		if (field.getType().isAssignableFrom(List.class) ||
-			field.getType().isAssignableFrom(Array.class) ||
-			field.getType().isAssignableFrom(Set.class)) {
+		if (List.class.isAssignableFrom(field.getType()) ||
+				Array.class.isAssignableFrom(field.getType()) ||
+				Set.class.isAssignableFrom(field.getType())) {
 			return IndexCollectionType.LIST;
 		}
 
-		if (field.getType().isAssignableFrom(Map.class)) {
-			return IndexCollectionType.MAPKEYS;
+		if (!Map.class.isAssignableFrom(field.getType())) {
+			return defaultType;
 		}
+		return IndexCollectionType.MAPKEYS;
 
-		return defaultType;
 	}
 
 	/**
 	 * Checks if existing index and to be created index are clashing!
-	 * @param indexes list of existing indexes in namespace
-	 * @param field field name
-	 * @param indexName to be created index name
-	 * @param indexType to be created index type
-	 * @param collectionType  to be created index collection type
+	 *
+	 * @param indexes        list of existing indexes in namespace
+	 * @param field          field name
+	 * @param indexName      to be created index name
+	 * @param indexType      to be created index type
+	 * @param collectionType to be created index collection type
 	 */
 	private static void check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, Field field, String indexName, IndexType indexType, IndexCollectionType collectionType) {
 
@@ -179,12 +183,12 @@ public class IndexingService {
 		}
 
 		// reverse search ... is there some index on this field and set ?
-		for (InfoFetcher.IndexInfo info: indexes.values()) {
+		for (InfoFetcher.IndexInfo info : indexes.values()) {
 
 			if (info != null &&
-				info.setName.equals(classSetName) &&
-				info.fieldName.equals(fieldName) &&
-				!indexName.equals(info.name)) {
+					info.setName.equals(classSetName) &&
+					info.fieldName.equals(fieldName) &&
+					!indexName.equals(info.name)) {
 				throw new SpikeifyError("Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz.getName() + "'!");
 			}
 		}
@@ -192,6 +196,7 @@ public class IndexingService {
 
 	/**
 	 * Utility to generete index name from entity name and field name
+	 *
 	 * @param clazz entity
 	 * @param field name
 	 * @return index name
@@ -206,6 +211,7 @@ public class IndexingService {
 
 	/**
 	 * Return set name from annotation or class name if no annotation
+	 *
 	 * @param clazz to search for annotation @SetName
 	 * @return set name
 	 */
@@ -232,24 +238,24 @@ public class IndexingService {
 	/**
 	 * Creates index for entity field ...
 	 *
-	 * @param entityType entity class
-	 * @param client aerospike client
-	 * @param policy policy
-	 * @param namespace namespace
-	 * @param indexName name of index
-	 * @param field name of field
-	 * @param indexType type of index
+	 * @param entityType     entity class
+	 * @param client         aerospike client
+	 * @param policy         policy
+	 * @param namespace      namespace
+	 * @param indexName      name of index
+	 * @param field          name of field
+	 * @param indexType      type of index
 	 * @param collectionType type of collection index
 	 * @return indexing task
 	 */
 	private static IndexTask createIndex(Class entityType,
-										 IAerospikeClient client,
-										 Policy policy,
-										 String namespace,
-										 String indexName,
-										 Field field,
-										 IndexType indexType,
-										 IndexCollectionType collectionType) {
+	                                     IAerospikeClient client,
+	                                     Policy policy,
+	                                     String namespace,
+	                                     String indexName,
+	                                     Field field,
+	                                     IndexType indexType,
+	                                     IndexCollectionType collectionType) {
 
 		if (policy == null) {
 			policy = new Policy();
@@ -264,7 +270,8 @@ public class IndexingService {
 
 	/**
 	 * Gets index collection type from @Indexed annotation of given field in type
-	 * @param type to search for field
+	 *
+	 * @param type      to search for field
 	 * @param fieldName to find in type
 	 * @return index collection type or IndexCollectionType.DEFAULT if not found
 	 */
@@ -277,8 +284,7 @@ public class IndexingService {
 			if (indexed != null)
 				return getIndexCollectionType(field, indexed.collection());
 
-		}
-		catch (NoSuchFieldException e) {
+		} catch (NoSuchFieldException e) {
 			throw new SpikeifyError("Field: '" + fieldName + "' is not present in Entity: " + type.getName());
 		}
 
@@ -287,10 +293,11 @@ public class IndexingService {
 
 	/**
 	 * Finds index if set name was manually changed ... custom
+	 *
 	 * @param synClient client
 	 * @param namespace namespace
-	 * @param field field
-	 * @param setName to search for index
+	 * @param field     field
+	 * @param setName   to search for index
 	 * @return index information or null if not found
 	 */
 	public static InfoFetcher.IndexInfo findIndex(IAerospikeClient synClient, String namespace, String setName, Field field) {

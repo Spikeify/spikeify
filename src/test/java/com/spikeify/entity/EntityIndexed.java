@@ -6,9 +6,7 @@ import com.spikeify.annotations.Ignore;
 import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * For testing indexing service
@@ -85,16 +83,16 @@ public class EntityIndexed {
 
 
 	@Indexed // (collection = IndexCollectionType.LIST) - is default
-	public List<String> list;
+	public ArrayList<String> list;
 
 	@Indexed // (collection = IndexCollectionType.LIST) - is default
-	public Set<String> items;
+	public HashSet<String> items;
 
 	@Indexed // (collection = IndexCollectionType.MAPKEYS) - is default
-	public Map<String, String> mapKeys;
+	public HashMap<String, String> mapKeys;
 
 	@Indexed(collection = IndexCollectionType.MAPVALUES)
-	public Map<String, String> mapValues;
+	public HashMap<String, String> mapValues;
 
 	@Ignore
 	@Indexed // should be ignored

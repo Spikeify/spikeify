@@ -136,8 +136,7 @@ public class Scanner<T> {
 
 		setIndexName(type, setName, namespace, nameOfField);
 
-		if (!field.getType().isAssignableFrom(boolean.class) &&
-			!field.getType().isAssignableFrom(Boolean.class)) {
+		if (!boolean.class.isAssignableFrom(field.getType()) && !Boolean.class.isAssignableFrom(field.getType())) {
 			throw new SpikeifyError("Can't query with boolean filter on: " + type + "#" + nameOfField + ", not a boolean field!");
 		}
 
