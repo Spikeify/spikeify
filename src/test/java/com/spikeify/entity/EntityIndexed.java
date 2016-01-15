@@ -1,10 +1,7 @@
 package com.spikeify.entity;
 
 import com.aerospike.client.query.IndexCollectionType;
-import com.spikeify.annotations.Generation;
-import com.spikeify.annotations.Ignore;
-import com.spikeify.annotations.Indexed;
-import com.spikeify.annotations.UserKey;
+import com.spikeify.annotations.*;
 
 import java.util.*;
 

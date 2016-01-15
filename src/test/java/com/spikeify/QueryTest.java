@@ -11,6 +11,7 @@ import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntitySubJava;
 import com.spikeify.entity.EntitySubJson;
 import com.spikeify.generators.IdGenerator;
 import org.junit.Assert;
@@ -526,6 +527,7 @@ public class QueryTest {
 		assertEquals(1, list.size());
 		assertEquals(2, list.get(0).mapJson.size());
 	}
+
 
 	@Test(expected = SpikeifyError.class)
 	public void booleanFilterOnNonBooleanFieldTest() {
