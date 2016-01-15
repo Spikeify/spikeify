@@ -1,11 +1,6 @@
 package com.spikeify;
 
 import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.AerospikeException;
-import com.aerospike.client.Key;
-import com.aerospike.client.Value;
-import com.aerospike.client.large.LargeList;
-import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.*;
 import org.junit.After;
 import org.junit.Assert;
@@ -16,7 +11,7 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class LargeMapTest {
+public class BigMapTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final String namespace = "test";
@@ -39,7 +34,7 @@ public class LargeMapTest {
 	}
 
 	@Test
-	public void testBigIndexedList() {
+	public void testBigMap() {
 
 		EntityLargeMap entity = new EntityLargeMap();
 		entity.userId = userKey1;
@@ -70,6 +65,13 @@ public class LargeMapTest {
 		Assert.assertFalse(entity.map.containsKey((long) count));  // out of range
 		Assert.assertEquals(null, entity.map.get((long) count));  // out of range, returns null
 
+		Map<Long, Long> last = entity.map.findLast(2);
+		Assert.assertEquals(Long.valueOf(count - 2 + offset), last.get((long) count - 2));
+		Assert.assertEquals(Long.valueOf(count - 1 + offset), last.get((long) count - 1));
+
+		Map<Long, Long> first = entity.map.findFirst(2);
+		Assert.assertEquals(Long.valueOf(0 + offset), first.get(0L));
+		Assert.assertEquals(Long.valueOf(1 + offset), first.get(1L));
 	}
 
 	@Test
@@ -262,7 +264,6 @@ public class LargeMapTest {
 //		sfy.update(entity).now();
 
 		entity.jsonMap.put(10L, new EntitySubJson2("10"));
-		sfy.update(entity).now();
 	}
 
 	@Test
@@ -274,8 +275,6 @@ public class LargeMapTest {
 		sfy.create(entity).now();
 
 		entity.jsonMap.put(10L, new EntitySubJson2("10"));
-
-		sfy.update(entity).now();
 	}
 
 	@Test
@@ -286,6 +285,5 @@ public class LargeMapTest {
 		sfy.create(entity).now();
 
 		entity.put(10L, new EntitySubJson2("10"));
-		sfy.update(entity).now();
 	}
 }

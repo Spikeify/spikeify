@@ -187,10 +187,6 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 			throw ae;
 		}
 
-		if (found == null || found.isEmpty()) {
-			return new HashMap<>(0);  // return empty list if no results
-		}
-
 		return toTypedResults(found);
 	}
 
@@ -212,19 +208,64 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 			found = inner.range(fromValue, toValue);
 		} catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
-				return new HashMap<>();
+				return new HashMap<>(0);
 			}
 			throw ae;
 		}
 
-		if (found == null || found.isEmpty()) {
-			return new HashMap<>(0);  // return empty list if no results
+		return toTypedResults(found);
+	}
+
+	/**
+	 * Returns a count of key, values from the last position.
+	 *
+	 * @param count  	maximum number of values to return
+	 * @return A map of key, values from the last key value
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<K, V> findLast(int count) {
+
+
+		List found = null;
+		try {
+			found = inner.findLast(count);
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return new HashMap<>(0);
+			}
+			throw ae;
+		}
+
+		return toTypedResults(found);
+	}
+
+	/**
+	 * Returns a count of key, values from the last position.
+	 *
+	 * @param count  	maximum number of values to return
+	 * @return A map of key, values from the last key value
+	 */
+	@SuppressWarnings("unchecked")
+	public Map<K, V> findFirst(int count) {
+
+		List found = null;
+		try {
+			found = inner.findFirst(count);
+		} catch (AerospikeException ae) {
+			if (ae.getResultCode() == 1417) {
+				return new HashMap<>(0);
+			}
+			throw ae;
 		}
 
 		return toTypedResults(found);
 	}
 
 	private Map<K, V> toTypedResults(List untyped) {
+		if (untyped == null || untyped.isEmpty()) {
+			return new HashMap<>(0);  // return empty list if no results
+		}
+
 		Map<K, V> results = new HashMap<>(untyped.size());
 		for (Object obj : untyped) {
 			K key = (K) ((Map<String, Object>) obj).get("key");
