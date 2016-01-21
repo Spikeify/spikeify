@@ -109,8 +109,69 @@ public class ExpiryTest {
 				.now();
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
-		Assert.assertEquals(relativeDate, reloaded.expires, 5000); //test successed
-
+		Assert.assertEquals(relativeDate, reloaded.expires, 5000); //test succeeds
 	}
+
+	/**
+	 * sfy.command automatically sets expire to -1, which is wrong.
+	 */
+	@Test
+	public void setExpiresCommandRetrieveFlow() {
+		EntityExpires entity = new EntityExpires();
+
+		long milliSecDay = 24L * 60L * 60L * 1000L;
+		long milliSecYear = 365L * milliSecDay;
+		long futureDate = new Date().getTime() + 5L * milliSecYear;
+		entity.expires = futureDate;
+		final Key key1 = new Key(namespace, setName, userKey1);
+
+		Key saveKey = sfy
+				.update(key1, entity)
+				.now();
+
+		sfy.command(EntityExpires.class).key(key1).add("one", 1).now(); //Error: it sets expire to -1
+
+		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
+		Assert.assertEquals(futureDate, entity.expires.longValue());
+		Assert.assertEquals(entity.expires, reloaded.expires, 5000);
+		Assert.assertEquals(futureDate, reloaded.expires, 5000);
+	}
+
+	/**
+	 * sfy.update does change expire time, which is correct.
+	 */
+	@Test
+	public void setExpiresUpdateRetrieveFlow() {
+		EntityExpires entity = new EntityExpires();
+
+		long futureDate = new Date().getTime() + 10L * 1000L;
+		entity.expires = futureDate;
+		final Key key1 = new Key(namespace, setName, userKey1);
+
+		final Key saveKey = sfy
+				.update(key1, entity)
+				.now();
+
+		//update one field
+		sfy.transact(5, new Work<EntityExpires>() {
+			@Override
+			public EntityExpires run() {
+				EntityExpires obj = sfy.get(EntityExpires.class).key(key1).now();
+				if(obj != null){
+					obj.one++;
+					sfy.update(obj).now();
+				}
+				return obj;
+			}
+		});
+
+		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
+		Assert.assertEquals(reloaded.one, 1);
+		Assert.assertEquals(futureDate, entity.expires.longValue());
+		Assert.assertEquals(entity.expires, reloaded.expires, 5000);
+		Assert.assertEquals(futureDate, reloaded.expires, 5000);
+	}
+
+
 
 }
