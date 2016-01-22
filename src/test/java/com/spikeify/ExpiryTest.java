@@ -89,12 +89,11 @@ public class ExpiryTest {
 
 	/**
 	 * Set relative expiration date problem. Test is successful, but record will never expire.
-	 *
+	 * <p>
 	 * expire value is mapped correctly by Spikeify as 86400000.
 	 * But Spikeify saves the expire value in AS as -1453219341 and AS logs following warning:
 	 * WARNING (rw): (thr_rw.c::3136) {test} ttl 2841748150 exceeds 315360000 - set config value max-ttl to suppress this warning <Digest>:0x5da19e0a4e90067b2eada5a63afbfd21a71c44b4
 	 * So record will never expire.
-	 *
 	 */
 	@Test
 	public void setExpiresRelative() {
@@ -132,9 +131,10 @@ public class ExpiryTest {
 		sfy.command(EntityExpires.class).key(key1).add("one", 1).now(); //Error: it sets expire to -1
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
+
 		Assert.assertEquals(futureDate, entity.expires.longValue());
-		Assert.assertEquals(entity.expires, reloaded.expires, 5000);
-		Assert.assertEquals(futureDate, reloaded.expires, 5000);
+		Assert.assertEquals(entity.expires, reloaded.expires, 1);
+		Assert.assertEquals(futureDate, reloaded.expires, 1);
 	}
 
 	/**
@@ -144,7 +144,9 @@ public class ExpiryTest {
 	public void setExpiresUpdateRetrieveFlow() {
 		EntityExpires entity = new EntityExpires();
 
-		long futureDate = new Date().getTime() + 10L * 1000L;
+		long milliSecDay = 24L * 60L * 60L * 1000L;
+		long milliSecYear = 365L * milliSecDay;
+		long futureDate = new Date().getTime() + 5L * milliSecYear;
 		entity.expires = futureDate;
 		final Key key1 = new Key(namespace, setName, userKey1);
 
@@ -153,25 +155,33 @@ public class ExpiryTest {
 				.now();
 
 		//update one field
-		sfy.transact(5, new Work<EntityExpires>() {
-			@Override
-			public EntityExpires run() {
-				EntityExpires obj = sfy.get(EntityExpires.class).key(key1).now();
-				if(obj != null){
-					obj.one++;
-					sfy.update(obj).now();
+		for (int i = 0; i < 100; i++) {
+			sfy.transact(5, new Work<EntityExpires>() {
+				@Override
+				public EntityExpires run() {
+					EntityExpires obj = sfy.get(EntityExpires.class).key(key1).now();
+					if (obj != null) {
+						obj.one++;
+						sfy.update(obj).now();
+					}
+					return obj;
 				}
-				return obj;
-			}
-		});
+			});
+		}
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
-		Assert.assertEquals(reloaded.one, 1);
-		Assert.assertEquals(futureDate, entity.expires.longValue());
-		Assert.assertEquals(entity.expires, reloaded.expires, 5000);
-		Assert.assertEquals(futureDate, reloaded.expires, 5000);
-	}
 
+		System.out.println("original: " + new Date(entity.expires.longValue()));
+		System.out.println("reloaded: " + new Date(reloaded.expires.longValue()));
+		System.out.println("future: " + new Date(futureDate));
+
+		System.out.println("diff: " + (entity.expires.longValue() - reloaded.expires.longValue()));
+
+		Assert.assertEquals(reloaded.one, 100);
+		Assert.assertEquals(futureDate, entity.expires.longValue());
+		Assert.assertEquals(futureDate, reloaded.expires.longValue(), 500000);
+		Assert.assertEquals(entity.expires, reloaded.expires, 500000);
+	}
 
 
 }
