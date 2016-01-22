@@ -33,6 +33,15 @@ public class SpikeifyService {
 		SpikeifyService.defaultNamespace = defaultNamespace;
 	}
 
+	public static void globalConfig(String defaultNamespace, ClientPolicy policy, AsyncClientPolicy policyAsync, Host... hosts) {
+		synClient = new AerospikeClient(policy, hosts);
+		asyncClient = new AsyncClient(policyAsync, hosts);
+
+		checkDoubleSupport(synClient);
+
+		SpikeifyService.defaultNamespace = defaultNamespace;
+	}
+
 	private static IAerospikeClient synClient;
 	private static IAsyncClient asyncClient;
 	public static String defaultNamespace;
