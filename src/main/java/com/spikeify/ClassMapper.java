@@ -218,33 +218,7 @@ public class ClassMapper<TYPE> {
 		return fieldValues;
 	}
 
-	private long getJavaExpiration(int recordExpiration) {
-		long javaExpiration;
 
-		// Aerospike expiry settings are messed up: you put in -1 and get back 0
-		if (recordExpiration == 0) {
-			javaExpiration = -1; // default expiration setting: -1 - no expiration set
-		} else {
-			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
-			// to java epoch time in milliseconds
-			javaExpiration = 1000L * (1262304000L + recordExpiration);
-		}
-		return javaExpiration;
-	}
-
-	private int getRecordExpiration(long javaExpiration) {
-		int recordExpiration;
-
-		if (javaExpiration == 0 || javaExpiration == -1) {
-			recordExpiration = (int) javaExpiration; // default expiration settings: 0 - server default expiration, -1 - no expiration
-		} else {
-			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
-			// to java epoch time in milliseconds
-			long now = System.currentTimeMillis();
-			recordExpiration = (int) ((javaExpiration - now) / 1000L);
-		}
-		return recordExpiration;
-	}
 
 	public void setMetaFieldValues(Object object, String namespace, String setName, int generation, int recordExpiration) {
 
@@ -252,7 +226,7 @@ public class ClassMapper<TYPE> {
 			generationFieldMapper.setFieldValue(object, generation);
 		}
 		if (expirationFieldMapper != null) {
-			expirationFieldMapper.setFieldValue(object, getJavaExpiration(recordExpiration));
+			expirationFieldMapper.setFieldValue(object, ExpirationUtils.getExpirationMillisAbs(recordExpiration));
 		}
 		if (namespaceFieldMapper != null) {
 			namespaceFieldMapper.setFieldValue(object, namespace);
@@ -266,7 +240,7 @@ public class ClassMapper<TYPE> {
 		if (expirationFieldMapper == null) {
 			return null;
 		}
-		return getRecordExpiration(expirationFieldMapper.getPropertyValue(object));
+		return ExpirationUtils.getRecordExpiration(expirationFieldMapper.getPropertyValue(object));
 	}
 
 	/**

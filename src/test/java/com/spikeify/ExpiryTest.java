@@ -1,7 +1,9 @@
 package com.spikeify;
 
+import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
+import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityExpires;
 import org.junit.After;
 import org.junit.Assert;
@@ -46,9 +48,15 @@ public class ExpiryTest {
 				.now();
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
-		long now = new Date().getTime();
-		Assert.assertTrue(now > reloaded.expires - defaultTTLmsec);
-		Assert.assertTrue(reloaded.expires > now);
+
+		if (defaultTTLmsec == 0) {  // namespace is set to never expire
+			Assert.assertEquals(reloaded.expires.longValue(), -1L);
+		} else {
+			long now = new Date().getTime();
+			Assert.assertTrue(now > reloaded.expires - defaultTTLmsec);
+			Assert.assertTrue(reloaded.expires > now);
+		}
+
 	}
 
 	@Test
@@ -73,7 +81,7 @@ public class ExpiryTest {
 
 		long milliSecDay = 24L * 60L * 60L * 1000L;
 		long milliSecYear = 365L * milliSecDay;
-		long futureDate = new Date().getTime() + 5L * milliSecYear;
+		long futureDate = System.currentTimeMillis() + (5L * milliSecYear);
 		entity.expires = futureDate;
 		Key key1 = new Key(namespace, setName, userKey1);
 
@@ -85,6 +93,24 @@ public class ExpiryTest {
 		Assert.assertEquals(futureDate, entity.expires.longValue());
 		Assert.assertEquals(entity.expires, reloaded.expires, 5000);
 		Assert.assertEquals(futureDate, reloaded.expires, 5000);
+	}
+
+	@Test
+	public void setExpiresLowLevel() {
+
+		Bin binTest = new Bin("one", 111);
+
+		int expirationSec = 100;
+
+		Key key = new Key(namespace, setName, userKey1);
+		WritePolicy wp = new WritePolicy();
+		wp.expiration = expirationSec;
+		sfy.getClient().put(wp, key, binTest);
+
+		int absExp = sfy.getClient().get(null, key).expiration;
+		int relExp = ExpirationUtils.getExpiresRelative(absExp);
+
+		Assert.assertTrue(expirationSec - relExp < 5);
 	}
 
 	/**
