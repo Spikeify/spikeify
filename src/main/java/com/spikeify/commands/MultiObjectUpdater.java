@@ -38,7 +38,6 @@ public class MultiObjectUpdater {
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = defaultNamespace;
-		this.policy = new WritePolicy();
 		this.objects = objects;
 	}
 
@@ -48,7 +47,7 @@ public class MultiObjectUpdater {
 	protected final IAsyncClient asyncClient;
 	protected final RecordsCache recordsCache;
 	protected final boolean create;
-	protected WritePolicy policy;
+	protected WritePolicy overridePolicy;
 
 	/**
 	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
@@ -60,7 +59,7 @@ public class MultiObjectUpdater {
 	 * @return multi object updater instance
 	 */
 	public MultiObjectUpdater policy(WritePolicy policy) {
-		this.policy = policy;
+		this.overridePolicy = policy;
 		return this;
 	}
 
@@ -73,6 +72,16 @@ public class MultiObjectUpdater {
 	public MultiObjectUpdater forceReplace() {
 		this.forceReplace = true;
 		return this;
+	}
+
+	private WritePolicy getPolicy(){
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		// must be set in order for later queries to return record keys
+		writePolicy.sendKey = true;
+
+		writePolicy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
+
+		return writePolicy;
 	}
 
 	protected List<Key> collectKeys() {
@@ -116,8 +125,8 @@ public class MultiObjectUpdater {
 			throw new SpikeifyError("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
-		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
-		boolean isReplace = this.policy.recordExistsAction == RecordExistsAction.REPLACE;
+		WritePolicy usePolicy = getPolicy();
+		boolean isReplace = usePolicy.recordExistsAction == RecordExistsAction.REPLACE;
 
 		Map<Key, Object> result = new HashMap<>(objects.length);
 
@@ -158,19 +167,19 @@ public class MultiObjectUpdater {
 			}
 
 			// must be set so that user key can be retrieved in queries
-			this.policy.sendKey = true;
+			usePolicy.sendKey = true;
 
 			Integer recordExpiration = mapper.getRecordExpiration(object);
 			if (recordExpiration != null) {
-				policy.expiration = recordExpiration;
+				usePolicy.expiration = recordExpiration;
 			}
 
 			// enable version checking?
 			if (isTx) {
 				Integer generation = mapper.getGeneration(object);
-				policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+				usePolicy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
 				if (generation != null) {
-					policy.generation = generation;
+					usePolicy.generation = generation;
 				} else {
 					throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
 							". When using transact(..) you must have @Generation annotation on a field in the entity class.");
@@ -186,7 +195,7 @@ public class MultiObjectUpdater {
 				// retry 5 times in case same id is generated ...
 				for (int count = 1; count <= SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES; count++) {
 					try {
-						synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+						synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 						break;
 					}
 					catch (AerospikeException e) {
@@ -202,7 +211,7 @@ public class MultiObjectUpdater {
 				}
 			}
 			else {
-				synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+				synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 			}
 
 			// set LDT fields

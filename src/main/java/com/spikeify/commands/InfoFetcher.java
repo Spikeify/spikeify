@@ -3,7 +3,6 @@ package com.spikeify.commands;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Info;
 import com.aerospike.client.cluster.Node;
-import com.aerospike.client.policy.InfoPolicy;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
 import com.spikeify.IndexingService;
@@ -59,7 +58,7 @@ public class InfoFetcher {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		build = Info.request(new InfoPolicy(), nodes[0], CONFIG_BUILD);
+		build = Info.request(synClient.getInfoPolicyDefault(), nodes[0], CONFIG_BUILD);
 		String[] buildNumbers = build.split("\\.");
 
 		return new Build(Integer.valueOf(buildNumbers[0]), Integer.valueOf(buildNumbers[1]), Integer.valueOf(buildNumbers[2]));
@@ -72,7 +71,7 @@ public class InfoFetcher {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		return Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
+		return Info.request(synClient.getInfoPolicyDefault(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
 	}
 
 	public long getDefaultTTL(String namespace) {
@@ -80,7 +79,7 @@ public class InfoFetcher {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		String[] config = Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
+		String[] config = Info.request(synClient.getInfoPolicyDefault(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
 
 		return Long.valueOf(parseConfigString(config, "default-ttl", "0"));
 	}
@@ -90,7 +89,7 @@ public class InfoFetcher {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		String[] config = Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
+		String[] config = Info.request(synClient.getInfoPolicyDefault(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
 
 		return Boolean.valueOf(parseConfigString(config, "ldt-enabled", "false"));
 	}
@@ -100,7 +99,7 @@ public class InfoFetcher {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		String[] configStrings = Info.request(new InfoPolicy(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
+		String[] configStrings = Info.request(synClient.getInfoPolicyDefault(), nodes[0], CONFIG_NAMESPACE + namespace).split(";");
 		for (String configString : configStrings) {
 			String[] configLine = configString.split("=");
 			if (configLine.length == 2 && configLine[0].equals(REPLICATION_FACTOR)) {
@@ -138,7 +137,7 @@ public class InfoFetcher {
 		Node[] nodes = synClient.getNodes();
 		int nodeCount = nodes.length;
 		for (Node node : nodes) {
-			String[] nodeSets = Info.request(new InfoPolicy(), node, CONFIG_SET_PARAM + "/" + namespace + "/" + setName).split(":");
+			String[] nodeSets = Info.request(synClient.getInfoPolicyDefault(), node, CONFIG_SET_PARAM + "/" + namespace + "/" + setName).split(":");
 			count += Integer.valueOf(parseConfigString(nodeSets, CONFIG_RECORDS_COUNT, "0"));
 		}
 		return count / Math.min(replicationFactor, nodeCount);
@@ -154,7 +153,7 @@ public class InfoFetcher {
 		Set<String> nsNames = new HashSet<>();
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {
-			String nodeNsNames = Info.request(new InfoPolicy(), node, CONFIG_NAMESPACES_PARAM);
+			String nodeNsNames = Info.request(synClient.getInfoPolicyDefault(), node, CONFIG_NAMESPACES_PARAM);
 			String[] nsNamesArray = nodeNsNames.split(";");
 			Collections.addAll(nsNames, nsNamesArray);
 		}
@@ -172,7 +171,7 @@ public class InfoFetcher {
 
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {
-			String nodeSets = Info.request(new InfoPolicy(), node, CONFIG_SET_PARAM);
+			String nodeSets = Info.request(synClient.getInfoPolicyDefault(), node, CONFIG_SET_PARAM);
 			String[] set = nodeSets.split(";");
 			for (String setString : set) {
 				Map<String, String> config = parseConfigString(setString);
@@ -219,7 +218,7 @@ public class InfoFetcher {
 		Node[] nodes = synClient.getNodes();
 		for (Node node : nodes) {
 
-			String indexInfo = Info.request(new InfoPolicy(), node, CONFIG_SET_INDEXES + "/" + namespace);
+			String indexInfo = Info.request(synClient.getInfoPolicyDefault(), node, CONFIG_SET_INDEXES + "/" + namespace);
 			String[] set = indexInfo.split(";");
 
 			for (String setString : set) {
@@ -325,11 +324,9 @@ public class InfoFetcher {
 						case "type":
 							if (value.equals("NUMERIC") || value.startsWith("INT")) {
 								indexType = IndexType.NUMERIC;
-							}
-							else if (value.equals("TEXT") || value.equals("STRING")) {
+							} else if (value.equals("TEXT") || value.equals("STRING")) {
 								indexType = IndexType.STRING;
-							}
-							else {
+							} else {
 								throw new IllegalStateException("Unknown index type: " + value);
 							}
 							break;
@@ -338,8 +335,7 @@ public class InfoFetcher {
 
 							try {
 								collectionType = IndexCollectionType.valueOf(value);
-							}
-							catch (IllegalArgumentException e) {
+							} catch (IllegalArgumentException e) {
 								collectionType = IndexCollectionType.DEFAULT;
 							}
 

@@ -36,12 +36,14 @@ public class MultiKeyUpdater {
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = namespace;
-		this.policy = new WritePolicy();
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
 		this.keys = Arrays.asList(keys);
 		this.objects = objects;
+
+		// must be set in order for later queries to return record keys
+		this.synClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	/**
@@ -58,12 +60,14 @@ public class MultiKeyUpdater {
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = namespace;
-		this.policy = new WritePolicy();
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
 		this.longKeys = Arrays.asList(keys);
 		this.objects = objects;
+
+		// must be set in order for later queries to return record keys
+		this.synClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	/**
@@ -80,12 +84,14 @@ public class MultiKeyUpdater {
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = namespace;
-		this.policy = new WritePolicy();
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Error: keys and objects arrays must be of the same size");
 		}
 		this.stringKeys = Arrays.asList(keys);
 		this.objects = objects;
+
+		// must be set in order for later queries to return record keys
+		this.synClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	private final Object[] objects;
@@ -99,7 +105,7 @@ public class MultiKeyUpdater {
 	protected final IAsyncClient asyncClient;
 	protected final RecordsCache recordsCache;
 	protected final boolean create;
-	protected WritePolicy policy;
+	protected WritePolicy overridePolicy;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
@@ -175,7 +181,7 @@ public class MultiKeyUpdater {
 	 * @param policy The policy.
 	 */
 	public MultiKeyUpdater policy(WritePolicy policy) {
-		this.policy = policy;
+		this.overridePolicy = policy;
 		return this;
 	}
 
@@ -211,6 +217,17 @@ public class MultiKeyUpdater {
 		}
 	}
 
+	private WritePolicy getPolicy() {
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+
+		writePolicy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
+
+		// must be set so that user key can be retrieved in queries
+		writePolicy.sendKey = true;
+
+		return writePolicy;
+	}
+
 	/**
 	 * Synchronously executes multiple create or update commands and returns the keys of the records.
 	 *
@@ -224,8 +241,9 @@ public class MultiKeyUpdater {
 			throw new SpikeifyError("Error: with multi-put you need to provide equal number of objects and keys");
 		}
 
-		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
-		boolean isReplace = this.policy.recordExistsAction == RecordExistsAction.REPLACE;
+		WritePolicy usePolicy = getPolicy();
+
+		boolean isReplace = usePolicy.recordExistsAction == RecordExistsAction.REPLACE;
 
 		Map<Key, Object> result = new HashMap<>(objects.length);
 
@@ -265,32 +283,17 @@ public class MultiKeyUpdater {
 				}
 			}
 
-			// must be set so that user key can be retrieved in queries
-			this.policy.sendKey = true;
-
 			if (!nonNullField && props.size() == changedProps.size()) {
 				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
 						"At least one object property other then UserKey must be different from NULL.");
 			}
 
-			// is version checking necessary
-			if (isTx) {
-				Integer generation = mapper.getGeneration(object);
-				policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
-				if (generation != null) {
-					policy.generation = generation;
-				} else {
-					throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
-							". When using transact(..) you must have @Generation annotation on a field in the entity class.");
-				}
-			}
-
 			Integer recordExpiration = mapper.getRecordExpiration(object);
 			if (recordExpiration != null) {
-				policy.expiration = recordExpiration;
+				usePolicy.expiration = recordExpiration;
 			}
 
-			synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+			synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 
 			// set LDT fields
 			mapper.setBigDatatypeFields(object, synClient, key);

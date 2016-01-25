@@ -41,7 +41,6 @@ public class SingleKeyUpdater<T, K> {
 		this.create = create;
 		this.namespace = defaultNamespace;
 		this.object = object;
-		this.policy = new WritePolicy();
 		this.mapper = MapperService.getMapper((Class<T>) object.getClass());
 		if (key.getClass().equals(Key.class)) {
 			this.key = (Key) key;
@@ -69,7 +68,7 @@ public class SingleKeyUpdater<T, K> {
 	protected final IAsyncClient asyncClient;
 	protected final RecordsCache recordsCache;
 	protected final boolean create;
-	protected WritePolicy policy;
+	protected WritePolicy overridePolicy;
 	protected final ClassMapper<T> mapper;
 
 	/**
@@ -101,9 +100,48 @@ public class SingleKeyUpdater<T, K> {
 	 * @param policy The policy.
 	 */
 	public SingleKeyUpdater<T, K> policy(WritePolicy policy) {
-		this.policy = policy;
-		this.policy.sendKey = true;
+		this.overridePolicy = policy;
+		this.overridePolicy.sendKey = true;
 		return this;
+	}
+
+	private WritePolicy getPolicy(boolean nonNullField){
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		// must be set in order for later queries to return record keys
+		writePolicy.sendKey = true;
+
+		Integer recordExpiration = mapper.getRecordExpiration(object);
+		if (recordExpiration != null) {
+			writePolicy.expiration = recordExpiration;
+		}
+
+		// is version checking necessary
+		if (isTx) {
+			Integer generation = mapper.getGeneration(object);
+			writePolicy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+			if (generation != null) {
+				writePolicy.generation = generation;
+			} else {
+				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
+						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+			}
+		}
+
+		if (create) {
+			writePolicy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
+			if (!nonNullField) {
+				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
+						"At least one object property other then UserKey must be different from NULL.");
+			}
+		} else {
+			if (forceReplace) {
+				writePolicy.recordExistsAction = RecordExistsAction.REPLACE;
+			} else {
+				writePolicy.recordExistsAction = RecordExistsAction.UPDATE;
+			}
+		}
+
+		return writePolicy;
 	}
 
 	/**
@@ -176,41 +214,9 @@ public class SingleKeyUpdater<T, K> {
 			}
 		}
 
-		// must be set so that user key can be retrieved in queries
-		this.policy.sendKey = true;
+		WritePolicy usePolicy = getPolicy(nonNullField);
 
-		Integer recordExpiration = mapper.getRecordExpiration(object);
-		if (recordExpiration != null) {
-			policy.expiration = recordExpiration;
-		}
-
-		// is version checking necessary
-		if (isTx) {
-			Integer generation = mapper.getGeneration(object);
-			policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
-			if (generation != null) {
-				policy.generation = generation;
-			} else {
-				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
-						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
-			}
-		}
-
-		if (create) {
-			this.policy.recordExistsAction = RecordExistsAction.CREATE_ONLY;
-			if (!nonNullField) {
-				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
-								"At least one object property other then UserKey must be different from NULL.");
-			}
-		} else {
-			if (forceReplace) {
-				this.policy.recordExistsAction = RecordExistsAction.REPLACE;
-			} else {
-				this.policy.recordExistsAction = RecordExistsAction.UPDATE;
-			}
-		}
-
-		synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+		synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 
 		switch (keyType) {
 			case KEY:

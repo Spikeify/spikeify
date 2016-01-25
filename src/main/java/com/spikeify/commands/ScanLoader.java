@@ -17,10 +17,10 @@ import java.util.List;
 public class ScanLoader<T> {
 
 	public ScanLoader(Class<T> type,
-					  IAerospikeClient synClient,
-					  ClassConstructor classConstructor,
-					  RecordsCache recordsCache,
-					  String namespace) {
+	                  IAerospikeClient synClient,
+	                  ClassConstructor classConstructor,
+	                  RecordsCache recordsCache,
+	                  String namespace) {
 
 		this.synClient = synClient;
 		this.classConstructor = classConstructor;
@@ -28,13 +28,13 @@ public class ScanLoader<T> {
 		this.namespace = namespace;
 		this.setName = null;
 
-		this.policy = new ScanPolicy();
-		this.policy.sendKey = true;
-
 		this.maxRecords = 0;
 
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
+
+		// must be set in order for later queries to return record keys
+		this.synClient.getReadPolicyDefault().sendKey = true;
 	}
 
 	protected String namespace;
@@ -44,7 +44,7 @@ public class ScanLoader<T> {
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 
-	protected ScanPolicy policy;
+	protected ScanPolicy overridePolicy;
 	protected long maxRecords;
 
 	protected final ClassMapper<T> mapper;
@@ -80,8 +80,8 @@ public class ScanLoader<T> {
 	 */
 	public ScanLoader<T> policy(ScanPolicy policy) {
 
-		this.policy = policy;
-		this.policy.sendKey = true;
+		this.overridePolicy = policy;
+		this.overridePolicy.sendKey = true;
 		return this;
 	}
 
@@ -111,11 +111,6 @@ public class ScanLoader<T> {
 		return useNamespace;
 	}
 
-	protected ScanPolicy getPolicy() {
-
-		return policy;
-	}
-
 	protected String getSetName() {
 
 		return setName == null ? IndexingService.getSetName(type) : setName;
@@ -132,7 +127,9 @@ public class ScanLoader<T> {
 
 		try {
 
-			synClient.scanAll(getPolicy(), getNamespace(), getSetName(), new ScanCallback() {
+			ScanPolicy policy = overridePolicy != null ? overridePolicy : copyScanPolicy(synClient.getScanPolicyDefault());
+
+			synClient.scanAll(policy, getNamespace(), getSetName(), new ScanCallback() {
 				@Override
 				public void scanCallback(Key key, Record record) throws AerospikeException {
 
@@ -160,8 +157,7 @@ public class ScanLoader<T> {
 					}
 				}
 			});
-		}
-		catch (AerospikeException.ScanTerminated e) {
+		} catch (AerospikeException.ScanTerminated e) {
 			// this is not the best way to do this ...
 			// check if exception was thrown from ScanLoader ... if not propagate
 			if (list.size() < maxRecords) {
@@ -170,6 +166,26 @@ public class ScanLoader<T> {
 		}
 
 		return list;
+	}
+
+	private ScanPolicy copyScanPolicy(ScanPolicy original) {
+		ScanPolicy copy = new ScanPolicy();
+		copy.scanPercent = original.scanPercent;
+		copy.maxConcurrentNodes = original.maxConcurrentNodes;
+		copy.concurrentNodes = original.concurrentNodes;
+		copy.includeBinData = original.includeBinData;
+		copy.includeLDT = original.includeLDT;
+		copy.failOnClusterChange = original.failOnClusterChange;
+
+		return copy;
+	}
+
+	private ScanPolicy getPolicy(){
+		ScanPolicy policy = overridePolicy != null ? overridePolicy : copyScanPolicy(synClient.getScanPolicyDefault());
+		// make sure only keys get retrieved
+		policy.includeBinData = false;
+		policy.includeLDT = false;
+		return policy;
 	}
 
 	/**
@@ -183,10 +199,7 @@ public class ScanLoader<T> {
 
 		try {
 
-			ScanPolicy policy = getPolicy();
-			policy.includeBinData = false;
-
-			synClient.scanAll(policy, getNamespace(), getSetName(), new ScanCallback() {
+			synClient.scanAll(getPolicy(), getNamespace(), getSetName(), new ScanCallback() {
 				@Override
 				public void scanCallback(Key key, Record record) throws AerospikeException {
 
@@ -198,8 +211,7 @@ public class ScanLoader<T> {
 					}
 				}
 			});
-		}
-		catch (AerospikeException.ScanTerminated e) {
+		} catch (AerospikeException.ScanTerminated e) {
 			// this is not the best way to do this ...
 			// check if exception was thrown from ScanLoader ... if not propagate
 			if (list.size() < maxRecords) {
@@ -209,4 +221,5 @@ public class ScanLoader<T> {
 
 		return list;
 	}
+
 }

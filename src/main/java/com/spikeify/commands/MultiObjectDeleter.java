@@ -3,6 +3,7 @@ package com.spikeify.commands;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.MapperService;
 import com.spikeify.ObjectMetadata;
 import com.spikeify.RecordsCache;
@@ -31,6 +32,9 @@ public class MultiObjectDeleter {
 		for (Object object : objects) {
 			data.put(object, collectKey(object));
 		}
+
+		// must be set in order for later queries to return record keys
+		this.synClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	protected final Map<Object, Key> data = new HashMap<>(10);
@@ -39,6 +43,22 @@ public class MultiObjectDeleter {
 	protected final IAerospikeClient synClient;
 	protected final IAsyncClient asyncClient;
 	private final RecordsCache recordsCache;
+	private WritePolicy overridePolicy;
+
+	/**
+	 * Sets the {@link WritePolicy} to be used when deleting the record in the database.
+	 *
+	 * @param policy The write policy.
+	 * @return this instance
+	 */
+	public MultiObjectDeleter policy(WritePolicy policy) {
+		this.overridePolicy = policy;
+		return this;
+	}
+
+	private WritePolicy getPolicy(){
+		return overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+	}
 
 	protected Key collectKey(Object obj) {
 
@@ -64,7 +84,7 @@ public class MultiObjectDeleter {
 		for (Object obj : data.keySet()) {
 			Key key = data.get(obj);
 			recordsCache.remove(key);
-			result.put(obj, synClient.delete(null, key));
+			result.put(obj, synClient.delete(getPolicy(), key));
 		}
 
 		return result;

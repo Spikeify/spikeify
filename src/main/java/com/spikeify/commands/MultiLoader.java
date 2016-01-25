@@ -5,6 +5,7 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.BatchPolicy;
+import com.aerospike.client.policy.Policy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
@@ -13,6 +14,7 @@ import java.util.*;
 
 /**
  * A command chain for getting multiple records from database.
+ *
  * @param <T>
  * @param <K>
  */
@@ -29,8 +31,6 @@ public class MultiLoader<T, K> {
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = namespace;
-		this.policy = new BatchPolicy();
-		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
 		Class componentType = keys.getClass().getComponentType();
@@ -46,6 +46,7 @@ public class MultiLoader<T, K> {
 		} else {
 			throw new IllegalArgumentException("Error: unsupported key type '" + componentType + "'. Supported key types are Key, Long and String.");
 		}
+
 	}
 
 	protected String namespace;
@@ -57,13 +58,14 @@ public class MultiLoader<T, K> {
 	protected final IAsyncClient asyncClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
-	protected BatchPolicy policy;
+	protected BatchPolicy overridePolicy;
 	protected final ClassMapper<T> mapper;
 	protected final Class<T> type;
 	protected KeyType keyType;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 *
 	 * @param namespace The namespace.
 	 */
 	public MultiLoader<T, K> namespace(String namespace) {
@@ -73,6 +75,7 @@ public class MultiLoader<T, K> {
 
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 *
 	 * @param setName The name of the set.
 	 */
 	public MultiLoader<T, K> setName(String setName) {
@@ -83,12 +86,17 @@ public class MultiLoader<T, K> {
 	/**
 	 * Sets the {@link BatchPolicy} to be used when getting the record from the database.
 	 * Internally the 'sendKey' property of the policy will always be set to true.
+	 *
 	 * @param policy The policy.
 	 */
 	public MultiLoader<T, K> policy(BatchPolicy policy) {
-		this.policy = policy;
-		this.policy.sendKey = true;
+		this.overridePolicy = policy;
+		this.overridePolicy.sendKey = true;
 		return this;
+	}
+
+	private BatchPolicy getPolicy() {
+		return overridePolicy != null ? overridePolicy : new BatchPolicy(synClient.getBatchPolicyDefault());
 	}
 
 	protected void collectKeys() {
@@ -131,8 +139,10 @@ public class MultiLoader<T, K> {
 			throw new SpikeifyError("Cannot request more then 5000 keys in single batch request. Check out: https://www.aerospike.com/docs/guide/batch.html");
 		}
 
+		BatchPolicy usePolicy = getPolicy();
+
 		Key[] keysArray = keys.toArray(new Key[keys.size()]);
-		Record[] records = synClient.get(policy, keysArray);
+		Record[] records = synClient.get(usePolicy, keysArray);
 
 		Map<K, T> result = new HashMap<>(keys.size());
 
@@ -170,4 +180,5 @@ public class MultiLoader<T, K> {
 
 		return result;
 	}
+
 }

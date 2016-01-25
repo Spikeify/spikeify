@@ -31,7 +31,7 @@ public class SingleObjectUpdater<T> {
 	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
 	 */
 	public SingleObjectUpdater(boolean isTx, Class type, IAerospikeClient synClient, IAsyncClient asyncClient,
-							   RecordsCache recordsCache, boolean create, String defaultNamespace, T object) {
+	                           RecordsCache recordsCache, boolean create, String defaultNamespace, T object) {
 
 		this.isTx = isTx;
 		this.synClient = synClient;
@@ -39,7 +39,6 @@ public class SingleObjectUpdater<T> {
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.defaultNamespace = defaultNamespace;
-		this.policy = new WritePolicy();
 		this.mapper = MapperService.getMapper(type);
 		this.object = object;
 	}
@@ -51,7 +50,7 @@ public class SingleObjectUpdater<T> {
 	protected final IAsyncClient asyncClient;
 	protected final RecordsCache recordsCache;
 	protected final boolean create;
-	protected WritePolicy policy;
+	protected WritePolicy overridePolicy;
 	protected final ClassMapper<T> mapper;
 
 
@@ -64,7 +63,7 @@ public class SingleObjectUpdater<T> {
 	 * @param policy The policy.
 	 */
 	public SingleObjectUpdater<T> policy(WritePolicy policy) {
-		this.policy = policy;
+		this.overridePolicy = policy;
 		return this;
 	}
 
@@ -84,10 +83,38 @@ public class SingleObjectUpdater<T> {
 		ObjectMetadata meta = MapperService.getMapper(obj.getClass()).getRequiredMetadata(obj, namespace);
 		if (meta.userKeyString != null) {
 			return new Key(meta.namespace, meta.setName, meta.userKeyString);
-		}
-		else {
+		} else {
 			return new Key(meta.namespace, meta.setName, meta.userKeyLong);
 		}
+	}
+
+	private WritePolicy getPolicy() {
+
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		// must be set in order for later queries to return record keys
+		writePolicy.sendKey = true;
+
+		// reaction on existing records depends if we are updating or creating
+		writePolicy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY :
+				(forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE);
+
+		Integer recordExpiration = mapper.getRecordExpiration(object);
+		if (recordExpiration != null) {
+			writePolicy.expiration = recordExpiration;
+		}
+
+		if (isTx) {
+			Integer generation = mapper.getGeneration(object);
+			writePolicy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
+			if (generation != null) {
+				writePolicy.generation = generation;
+			} else {
+				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
+						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
+			}
+		}
+
+		return writePolicy;
 	}
 
 	/**
@@ -110,11 +137,11 @@ public class SingleObjectUpdater<T> {
 
 		Key key = collectKey(object, defaultNamespace);
 
-		this.policy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
-		boolean isReplace = this.policy.recordExistsAction == RecordExistsAction.REPLACE;
+		WritePolicy usePolicy = getPolicy();
+		boolean isReplace = usePolicy.recordExistsAction == RecordExistsAction.REPLACE;
 
 		Map<String, Object> props = mapper.getProperties(object);
-		Set<String> changedProps = recordsCache.update(key, props, forceReplace);
+		Set<String> changedProps = recordsCache.update(key, props, create || forceReplace);
 
 		List<Bin> bins = new ArrayList<>();
 		boolean nonNullField = false;
@@ -136,42 +163,21 @@ public class SingleObjectUpdater<T> {
 			}
 		}
 
-		// must be set so that user key can be retrieved in queries
-		this.policy.sendKey = true;
-
-
 		if (!nonNullField && props.size() == changedProps.size()) {
 			throw new SpikeifyError("Error: cannot create object with no writable properties. " +
 					"At least one object property other then UserKey must be different from NULL.");
-		}
-
-		Integer recordExpiration = mapper.getRecordExpiration(object);
-		if (recordExpiration != null) {
-			policy.expiration = recordExpiration;
-		}
-
-		if (isTx) {
-			Integer generation = mapper.getGeneration(object);
-			policy.generationPolicy = GenerationPolicy.EXPECT_GEN_EQUAL;
-			if (generation != null) {
-				policy.generation = generation;
-			} else {
-				throw new SpikeifyError("Error: missing @Generation field in class " + object.getClass() +
-						". When using transact(..) you must have @Generation annotation on a field in the entity class.");
-			}
 		}
 
 		if (generatedId) {
 			// retry 5 times in case same id is generated ...
 			for (int count = 1; count <= SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES; count++) {
 				try {
-					synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+					synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 					break;
-				}
-				catch (AerospikeException e) {
+				} catch (AerospikeException e) {
 					// let's retry or not ?
 					if (e.getResultCode() != ResultCode.KEY_EXISTS_ERROR ||
-						SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES == count) {
+							SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES == count) {
 						throw e;
 					}
 					// regenerate key ...
@@ -179,9 +185,8 @@ public class SingleObjectUpdater<T> {
 					key = SingleObjectUpdater.collectKey(object, defaultNamespace);
 				}
 			}
-		}
-		else {
-			synClient.put(policy, key, bins.toArray(new Bin[bins.size()]));
+		} else {
+			synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 		}
 
 		// set LDT fields

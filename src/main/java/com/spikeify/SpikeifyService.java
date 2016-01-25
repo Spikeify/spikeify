@@ -33,6 +33,15 @@ public class SpikeifyService {
 		SpikeifyService.defaultNamespace = defaultNamespace;
 	}
 
+	public static void globalConfig(String defaultNamespace, ClientPolicy policy, AsyncClientPolicy policyAsync, Host... hosts) {
+		synClient = new AerospikeClient(policy, hosts);
+		asyncClient = new AsyncClient(policyAsync, hosts);
+
+		checkDoubleSupport(synClient);
+
+		SpikeifyService.defaultNamespace = defaultNamespace;
+	}
+
 	private static IAerospikeClient synClient;
 	private static IAsyncClient asyncClient;
 	public static String defaultNamespace;
@@ -87,8 +96,8 @@ public class SpikeifyService {
 	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, Host... hosts) {
-		AerospikeClient synClient = new AerospikeClient(new ClientPolicy(), hosts);
-		AsyncClient asyncClient = new AsyncClient(new AsyncClientPolicy(), hosts);
+		AerospikeClient synClient = new AerospikeClient(null, hosts);
+		AsyncClient asyncClient = new AsyncClient(null, hosts);
 
 		checkDoubleSupport(synClient);
 
@@ -149,7 +158,7 @@ public class SpikeifyService {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		String build = Info.request(new InfoPolicy(), nodes[0], "build");
+		String build = Info.request(synClient.getInfoPolicyDefault(), nodes[0], "build");
 		String[] buildNumbers = build.split("\\.");
 		return new InfoFetcher.Build(Integer.valueOf(buildNumbers[0]), Integer.valueOf(buildNumbers[1]), Integer.valueOf(buildNumbers[2]));
 	}

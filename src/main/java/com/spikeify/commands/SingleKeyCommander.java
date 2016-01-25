@@ -30,7 +30,6 @@ public class SingleKeyCommander<T> {
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
-		this.policy = new WritePolicy();
 		mapper = MapperService.getMapper(type);
 		this.namespace = mapper.getNamespace() != null ? mapper.getNamespace() : defaultNamespace;
 		this.setName = mapper.getSetName();
@@ -46,9 +45,10 @@ public class SingleKeyCommander<T> {
 	protected final IAsyncClient asyncClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
-	protected WritePolicy policy;
 	protected final ClassMapper<T> mapper;
 	protected final List<Operation> operations = new ArrayList<>();
+	private WritePolicy overridePolicy;
+	private Long expiry;
 
 	/**
 	 * Sets the key of the record to be updated.
@@ -115,8 +115,8 @@ public class SingleKeyCommander<T> {
 	 * @param policy The policy.
 	 */
 	public SingleKeyCommander<T> policy(WritePolicy policy) {
-		this.policy = policy;
-		this.policy.sendKey = true;
+		overridePolicy = policy;
+		overridePolicy.sendKey = true;
 		return this;
 	}
 
@@ -224,6 +224,24 @@ public class SingleKeyCommander<T> {
 	}
 
 	/**
+	 * Set expiation of the
+	 * @param timeToExpireAt Java time in milliseconds when this record expires
+	 */
+	public void setExpires(Long timeToExpireAt){
+		this.expiry = timeToExpireAt;
+	}
+
+	private WritePolicy getPolicy(){
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		// must be set in order for later queries to return record keys
+		writePolicy.sendKey = true;
+
+		//todo add record expiration
+
+		return writePolicy;
+	}
+
+	/**
 	 * Synchronously executes a set of atomic commands.
 	 *
 	 * @return If there is a read operation in the set of commands, then it returns a Map of field name, field value.
@@ -237,10 +255,7 @@ public class SingleKeyCommander<T> {
 
 		collectKeys();
 
-		// must be set so that user key can be retrieved in queries
-		this.policy.sendKey = true;
-
-		Record rec = synClient.operate(policy, key, operations.toArray(new Operation[operations.size()]));
+		Record rec = synClient.operate(getPolicy(), key, operations.toArray(new Operation[operations.size()]));
 
 		if (rec == null || rec.bins == null) {
 			return null;

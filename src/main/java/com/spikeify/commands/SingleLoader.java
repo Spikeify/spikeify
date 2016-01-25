@@ -4,7 +4,8 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.BatchPolicy;
+import com.aerospike.client.policy.Policy;
+import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * A command chain for getting a single object from database.
  * This class is not intended to be instantiated by user.
+ *
  * @param <T>
  */
 @SuppressWarnings("WeakerAccess")
@@ -23,15 +25,15 @@ public class SingleLoader<T> {
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#get(Class)} instead.
 	 */
-	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
+
+	                    ClassConstructor classConstructor,
 	                    RecordsCache recordsCache, String namespace) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = namespace;
-		this.policy = new BatchPolicy();
-		this.policy.sendKey = true;
 		this.mapper = MapperService.getMapper(type);
 		this.type = type;
 	}
@@ -45,12 +47,13 @@ public class SingleLoader<T> {
 	protected final IAsyncClient asyncClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
-	protected BatchPolicy policy;
 	protected final ClassMapper<T> mapper;
 	protected final Class<T> type;
+	protected Policy overridePolicy;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
+	 *
 	 * @param namespace The namespace.
 	 */
 	public SingleLoader<T> namespace(String namespace) {
@@ -60,6 +63,7 @@ public class SingleLoader<T> {
 
 	/**
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
+	 *
 	 * @param setName The name of the set.
 	 */
 	public SingleLoader<T> setName(String setName) {
@@ -69,6 +73,7 @@ public class SingleLoader<T> {
 
 	/**
 	 * Sets the key of the record to be loaded.
+	 *
 	 * @param userKey A user key of the record to loaded.
 	 */
 	public SingleLoader<T> key(String userKey) {
@@ -78,6 +83,7 @@ public class SingleLoader<T> {
 
 	/**
 	 * Sets the user key of the record to be loaded.
+	 *
 	 * @param userKey User key of tye Long.
 	 */
 	public SingleLoader<T> key(Long userKey) {
@@ -87,6 +93,7 @@ public class SingleLoader<T> {
 
 	/**
 	 * Sets the user key of the record to be loaded.
+	 *
 	 * @param userKey User key of tye String.
 	 */
 	public SingleLoader<T> key(Key userKey) {
@@ -95,14 +102,19 @@ public class SingleLoader<T> {
 	}
 
 	/**
-	 * Sets the {@link BatchPolicy} to be used when getting the record from the database.
+	 * Sets the {@link Policy} to be used when getting the record from the database.
 	 * Internally the 'sendKey' property of the policy will always be set to true.
+	 *
 	 * @param policy The policy.
 	 */
-	public SingleLoader<T> policy(BatchPolicy policy) {
-		this.policy = policy;
-		this.policy.sendKey = true;
+	public SingleLoader<T> policy(Policy policy) {
+		this.overridePolicy = policy;
+		this.overridePolicy.sendKey = true;
 		return this;
+	}
+
+	private Policy getPolicy(){
+		return  overridePolicy != null ? overridePolicy : new Policy(synClient.getReadPolicyDefault());
 	}
 
 	protected void collectKeys() {
@@ -145,7 +157,7 @@ public class SingleLoader<T> {
 		// if multiple keys - use the first key
 		Key key = keys.get(0);
 
-		Record record = synClient.get(policy, key);
+		Record record = synClient.get(getPolicy(), key);
 
 		if (record == null) {
 			return null;

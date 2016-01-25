@@ -65,10 +65,7 @@ public class RecordsCache {
 
 		Map<String, String> existing = cache.get().get(key);
 
-		if (existing != null) {
-			if (forceReplace) {
-				return newProperties.keySet();
-			}
+		if (existing != null && !forceReplace) {
 
 			Set<String> changed = new HashSet<>(newProperties.size());
 
