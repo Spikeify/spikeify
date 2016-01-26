@@ -7,7 +7,7 @@ public class ExpirationUtils {
 
 	/**
 	 * @param recordExpirationTimestamp Timestamp when record expires, in seconds since Jan 01 2010 00:00:00 GMT (absolute)
-	 * @return
+	 * @return Expiration time in millis
 	 */
 	public static long getExpirationMillisAbs(int recordExpirationTimestamp) {
 		long timestamp;
@@ -27,7 +27,7 @@ public class ExpirationUtils {
 	 * Returns relative expiration time of a record in seconds from now.
 	 *
 	 * @param expiresTimestampMillis A Unix timestamp in milliseconds when record should expire
-	 * @return
+	 * @return Expiration time of a record in seconds from now
 	 */
 	public static int getRecordExpiration(long expiresTimestampMillis) {
 		int recordExpiration;
@@ -45,7 +45,7 @@ public class ExpirationUtils {
 	/**
 	 * Transforms an absolute record expiration time in seconds since Jan 01 2010 00:00:00 GMT to relative expiration time in seconds from now.
 	 * @param absRecordExpiresTimestamp
-	 * @return
+	 * @return Relative expiration time in seconds from now
 	 */
 	public static int getExpiresRelative(int absRecordExpiresTimestamp) {
 
