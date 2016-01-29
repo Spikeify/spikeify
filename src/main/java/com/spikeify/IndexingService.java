@@ -22,7 +22,7 @@ import java.util.Set;
  */
 public class IndexingService {
 
-	private static final List<Class> registeredEntities = new ArrayList<>();
+	private static final List<String> registeredEntities = new ArrayList<>();
 
 	/**
 	 * Creates indexes upon information given in {@link Indexed} annotation
@@ -34,9 +34,9 @@ public class IndexingService {
 	public static void createIndex(Spikeify sfy, Policy policy, Class<?> clazz) {
 
 		// skip registration if already registered
-		if (registeredEntities.contains(clazz)) { return; }
+		if (registeredEntities.contains(clazz.getName())) { return; }
 
-		registeredEntities.add(clazz);
+		registeredEntities.add(clazz.getName());
 
 		// look up @Indexed annotations in clazz and prepare data for indexing
 		Field[] fields = clazz.getDeclaredFields();
@@ -79,6 +79,10 @@ public class IndexingService {
 				}
 			}
 		}
+	}
+
+	public static boolean isRegistered(Class<?> clazz) {
+		return registeredEntities.contains(clazz.getName());
 	}
 
 	/**

@@ -42,6 +42,10 @@ public class Scanner<T> {
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
+
+		if (!IndexingService.isRegistered(type)) {
+			throw new SpikeifyError("Must register entity: " + type + " to allow quering!");
+		}
 	}
 
 	public Scanner<T> namespace(String namespace) {
