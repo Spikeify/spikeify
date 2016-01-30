@@ -12,6 +12,8 @@ import com.spikeify.annotations.SetName;
 
 import java.util.*;
 
+import static javax.swing.UIManager.put;
+
 /**
  * A command chain for getting multiple records from database.
  *
@@ -181,4 +183,46 @@ public class MultiLoader<T, K> {
 		return result;
 	}
 
+	/**
+	 * Generic method to convert iterator to list
+	 * @return list of values or empty list if none present
+	 */
+	public List<T> toList() {
+
+		collectKeys();
+
+		if (keys.size() > 5000) {
+			throw new SpikeifyError("Cannot request more then 5000 keys in single batch request. Check out: https://www.aerospike.com/docs/guide/batch.html");
+		}
+
+		BatchPolicy usePolicy = getPolicy();
+
+		Key[] keysArray = keys.toArray(new Key[keys.size()]);
+		Record[] records = synClient.get(usePolicy, keysArray);
+
+		List<T> result = new ArrayList<>(keys.size());
+
+		Record record;
+		for (int i = 0; i < records.length; i++) {
+			record = records[i];
+			if (record != null) {
+				Key key = keysArray[i];
+
+				// construct the entity object via provided ClassConstructor
+				T object = classConstructor.construct(type);
+
+				// save record hash into cache - used later for differential updating
+				recordsCache.insert(key, record.bins);
+
+				MapperService.map(mapper, key, record, object);
+
+				// set LDT wrappers
+				mapper.setBigDatatypeFields(object, synClient, key);
+
+				result.add(object);
+			}
+		}
+
+		return result;
+	}
 }

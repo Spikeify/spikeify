@@ -1,6 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
@@ -112,6 +111,7 @@ public class ResultSet<T> implements Iterable<T> {
 
 	/**
 	 * Generic method to convert iterator to list
+	 *
 	 * @return list of values or empty list if none present
 	 */
 	public List<T> toList() {

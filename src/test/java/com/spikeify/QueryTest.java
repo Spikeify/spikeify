@@ -11,7 +11,6 @@ import com.spikeify.annotations.Indexed;
 import com.spikeify.annotations.UserKey;
 import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
-import com.spikeify.entity.EntitySubJava;
 import com.spikeify.entity.EntitySubJson;
 import com.spikeify.generators.IdGenerator;
 import org.junit.Assert;
@@ -25,7 +24,9 @@ import static org.junit.Assert.assertEquals;
 public class QueryTest {
 
 	private final String namespace = "test";
+
 	private final String setName = "EntityOne";
+
 	private Spikeify sfy;
 
 	@Before
@@ -53,8 +54,8 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
-				.filter("two", "content")
-				.now();
+			.filter("two", "content")
+			.now();
 
 		int count = 0;
 		for (EntityOne entity : entities) {
@@ -65,8 +66,8 @@ public class QueryTest {
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
-				.filter("two", "content")
-				.now();
+			.filter("two", "content")
+			.now();
 
 		int count2 = 0;
 		for (EntityOne entity2 : entities2) {
@@ -149,7 +150,8 @@ public class QueryTest {
 
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			} else {
+			}
+			else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -157,9 +159,9 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-				.query(EntityOne.class)
-				.filter("nine", "content")
-				.now();
+			.query(EntityOne.class)
+			.filter("nine", "content")
+			.now();
 
 		// query should return 10 records
 		List<EntityOne> list = results.toList();
@@ -191,7 +193,8 @@ public class QueryTest {
 
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			} else {
+			}
+			else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -199,10 +202,10 @@ public class QueryTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-				.query(EntityOne.class)
-				.setName(setName)
-				.filter("nine", "content")
-				.now();
+			.query(EntityOne.class)
+			.setName(setName)
+			.filter("nine", "content")
+			.now();
 
 		// query should return 50 records
 		List<EntityOne> list = results.toList();
@@ -210,10 +213,10 @@ public class QueryTest {
 
 		// 2. ... set name after filter ...
 		results = sfy
-				.query(EntityOne.class)
-				.filter("nine", "content")
-				.setName(setName)
-				.now();
+			.query(EntityOne.class)
+			.filter("nine", "content")
+			.setName(setName)
+			.now();
 
 		list = results.toList();
 		assertEquals(50, list.size());
@@ -250,8 +253,8 @@ public class QueryTest {
 
 		// 1. equals
 		ResultSet<EntityIndexed> entities = sfy.query(EntityIndexed.class)
-				.filter("text", "content")
-				.now();
+			.filter("text", "content")
+			.now();
 
 
 		int count = 0;
@@ -264,8 +267,8 @@ public class QueryTest {
 
 		// 2. range
 		entities = sfy.query(EntityIndexed.class)
-				.filter("number", 10, 20)
-				.now();
+			.filter("number", 10, 20)
+			.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -277,8 +280,8 @@ public class QueryTest {
 
 		// 2. list
 		entities = sfy.query(EntityIndexed.class)
-				.filter("list", "bla")
-				.now();
+			.filter("list", "bla")
+			.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -438,17 +441,17 @@ public class QueryTest {
 
 		// this filter by actual field name should be replaced with name in annotation @BinName
 		List<LongEntity> list = sfy.query(LongEntity.class)
-				.filter("sourceBucketAndKey", "Bla")
-				.now()
-				.toList();
+			.filter("sourceBucketAndKey", "Bla")
+			.now()
+			.toList();
 
 		assertEquals(2, list.size());
 
 		// query should also be possible by binName
 		list = sfy.query(LongEntity.class)
-				.filter("sKey", "Blabla")
-				.now()
-				.toList();
+			.filter("sKey", "Blabla")
+			.now()
+			.toList();
 		assertEquals(1, list.size());
 	}
 
@@ -551,13 +554,15 @@ public class QueryTest {
 
 		try {
 			sfy.query(EntityOne.class).filter("one", true).now().toList();
-		} catch (SpikeifyError e) {
+		}
+		catch (SpikeifyError e) {
 			assertEquals("Can't query with boolean filter on: class com.spikeify.entity.EntityOne#one, not a boolean field!", e.getMessage());
 			throw e;
 		}
 	}
 
 	public void createUniqueIndexIfItDoesNotExist(List<String> keys) throws InterruptedException {
+
 		for (int i = 0; i < 10; i++) {
 			for (String key : keys) {
 				Thread.sleep(new Random().nextInt(100));
@@ -572,7 +577,8 @@ public class QueryTest {
 							wp.commitLevel = CommitLevel.COMMIT_ALL;
 							sfy.create(obj).policy(wp).now();
 							created = true;
-						} catch (AerospikeException ignored) {
+						}
+						catch (AerospikeException ignored) {
 						}
 					} while (!created);
 				}
@@ -582,6 +588,7 @@ public class QueryTest {
 
 	@Test
 	public void testQueryingByIndex() throws InterruptedException {
+
 		Spikeify sfy = this.sfy;
 		SpikeifyService.register(UniqueIndex.class);
 		int WORKERS = 5;
@@ -600,7 +607,8 @@ public class QueryTest {
 
 					try {
 						createUniqueIndexIfItDoesNotExist(keys);
-					} catch (InterruptedException ignored){
+					}
+					catch (InterruptedException ignored) {
 					}
 				}
 			};
@@ -620,7 +628,7 @@ public class QueryTest {
 		do {
 			Thread.sleep(100);
 			list = sfy.scanAll(UniqueIndex.class).now();
-			System.out.println("list:"+list.size());
+			System.out.println("list:" + list.size());
 			counter--;
 		} while (list.size() != 10 && counter > 0);
 
@@ -639,7 +647,8 @@ public class QueryTest {
 						try {
 							sfy.create(obj).now();
 							created = true;
-						} catch (AerospikeException ignored) {
+						}
+						catch (AerospikeException ignored) {
 						}
 					} while (!created);
 				}
@@ -651,9 +660,24 @@ public class QueryTest {
 		}
 	}
 
+	@Test(expected = SpikeifyError.class)
+	public void queryWithoutEntityRegister() {
+
+		try {
+			Spikeify sfy = this.sfy;
+			sfy.query(UniqueIndex.class).filter("key", "test1").now();
+		}
+		catch (SpikeifyError e) {
+			assertEquals("Must register entity class com.spikeify.QueryTest$UniqueIndex to allow quering!", e.getMessage());
+			throw e;
+		}
+	}
+
 	public static class UniqueIndex {
+
 		@UserKey
 		public String id;
+
 		@Indexed
 		public String key;
 	}

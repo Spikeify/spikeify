@@ -44,7 +44,7 @@ public class Scanner<T> {
 		this.namespace = defaultNamespace;
 
 		if (!IndexingService.isRegistered(type)) {
-			throw new SpikeifyError("Must register entity: " + type + " to allow quering!");
+			throw new SpikeifyError("Must register entity " + type + " to allow quering!");
 		}
 	}
 

@@ -174,6 +174,13 @@ public class CreatorTest {
 		Assert.assertEquals(2, saveKeys.size());
 		Assert.assertEquals(2, reloaded.size());
 
+
+		List<EntityOne> asList = sfy.getAll(EntityOne.class, userKey1, userKey2, userKey3)
+			.namespace(namespace)
+			.setName(setName)
+			.toList();
+
+		Assert.assertEquals(2, asList.size());
 	}
 
 	@Test(expected = com.aerospike.client.AerospikeException.class)
