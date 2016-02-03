@@ -30,6 +30,7 @@
         </license>
     </licenses>
 
+    <!-- deploy keys -->
     <scm>
         <url>https://github.com/Spikeify/spikeify</url>
         <connection>scm:git:git://github.com/Spikeify/spikeify.git</connection>
