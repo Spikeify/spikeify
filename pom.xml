@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.spikeify</groupId>
     <artifactId>core</artifactId>
-    <version>0.2.21</version>
+    <version>0.2.22</version>
     <packaging>jar</packaging>
 
     <name>Spikeify</name>
@@ -52,6 +52,11 @@
             <name>Andrej Završnik</name>
             <email>andrej@zavrsnik.si</email>
             <id>drejc</id>
+        </developer>
+        <developer>
+            <name>Saša Čoh</name>
+            <email>sasacoh@gmail.com</email>
+            <id>sasa</id>
         </developer>
     </developers>
 
