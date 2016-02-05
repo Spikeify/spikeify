@@ -1,6 +1,5 @@
 package com.spikeify.entity;
 
-import com.spikeify.BigIndexedList;
 import com.spikeify.BigMap;
 import com.spikeify.annotations.UserKey;
 
@@ -12,6 +11,7 @@ public class EntityLargeMap {
 	public int one;
 
 	public BigMap<Long, Long> map;
+	public BigMap<String, Long> stringMap;
 	public BigMap<Long, EntitySubJson> jsonMap;
 
 }

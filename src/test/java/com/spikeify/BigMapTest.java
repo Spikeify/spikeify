@@ -297,4 +297,35 @@ public class BigMapTest {
 		Assert.assertEquals(new EntitySubJava("10"), new ObjectMapper().readValue(((String) val1.get("value")), EntitySubJava.class));
 
 	}
+
+	@Test
+	public void testBigMapRemoveAll() {
+		EntityLargeMap entity = new EntityLargeMap();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		int count = 1_000;
+		String offset = "item_";
+
+		Map<String, Long> data = new HashMap<>(count);
+		for (int i = 0; i < count; i++) {
+			data.put(offset + i, (long) i);
+		}
+		entity.stringMap.putAll(data);
+
+		// get all
+		Map<String, Long> allList = entity.stringMap.getAll();
+		Assert.assertEquals(count, allList.size());
+
+		// Now remove ALL items from BigMap
+		entity.stringMap.removeAll();
+		Map<String, Long> trimmedList = entity.stringMap.getAll();
+		Assert.assertEquals(0, trimmedList.size());
+
+		// try put after removeAll
+		entity.stringMap.put("after_party", 666l);
+		Map<String, Long> afterList = entity.stringMap.getAll();
+		Assert.assertEquals(1, afterList.size());
+		Assert.assertEquals(666l, afterList.get("after_party").longValue());
+	}
 }

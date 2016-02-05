@@ -319,5 +319,35 @@ public class BigListTest {
 		ll.add(Value.get(valMap));
 	}
 
+	@Test
+	public void testBigListRemoveAll() {
+		EntityLargeList entity = new EntityLargeList();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		int count = 10_000;
+		long offset = 1_000_000L;
+
+		List<Long> data = new ArrayList<>(count);
+		for (int i = 0; i < count; i++) {
+			data.add(i + offset);
+		}
+		entity.list.addAll(data);
+
+		// get all
+		List<Long> allList = entity.list.getAll();
+		Assert.assertEquals(count, allList.size());
+
+		// Now remove ALL items from BigList
+		entity.list.removeAll();
+		List<Long> trimmedList = entity.list.getAll();
+		Assert.assertEquals(0, trimmedList.size());
+
+		// try put after removeAll
+		entity.list.add(666l);
+		List<Long> afterList = entity.list.getAll();
+		Assert.assertEquals(1, afterList.size());
+		Assert.assertEquals(666l, afterList.get(0).longValue());
+	}
 
 }

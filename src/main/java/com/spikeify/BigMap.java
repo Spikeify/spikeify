@@ -28,6 +28,11 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	protected Type keyType;
 	protected Type valueType;
 
+	protected AerospikeClient client;
+	protected WritePolicy wp;
+	protected Key key;
+	protected String binName;
+
 	/**
 	 * Internal function - must be called before this LDT can be used.
 	 * This function is called during a setup of mapping relation between this class and mapped field.
@@ -38,6 +43,9 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	 * @param field   The field in the object to which this list is assigned
 	 */
 	public void init(AerospikeClient client, Key key, String binName, Field field) {
+		this.binName = binName;
+		this.client = client;
+		this.key = key;
 		this.keyType = TypeUtils.getBigMapKeyType(field);
 		if (keyType != null) {
 			Class keyClass = (Class) keyType;
@@ -49,7 +57,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 		valueType = TypeUtils.getBigMapValueType(field);
 		setConverterForValueType(field, valueType);
 
-		WritePolicy wp = new WritePolicy();
+		this.wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
 		inner = new LargeList(client, wp, key, binName);
 
@@ -296,6 +304,16 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	public void remove(List<K> keys) {
 		// no need to use Value.get(keys) as this is already done by the underlying client
 		inner.remove(keys);
+	}
+
+	/**
+	 * Removes all values.
+	 */
+	public void removeAll() {
+		// destroy LDT field...
+		inner.destroy();
+		// re-initialize
+		inner = new LargeList(client, wp, key, binName);
 	}
 
 }

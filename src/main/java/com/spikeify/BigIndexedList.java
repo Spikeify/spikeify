@@ -5,6 +5,8 @@ import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
+import com.aerospike.client.policy.RecordExistsAction;
+import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.commands.InfoFetcher;
 
 import java.lang.reflect.Field;
@@ -20,6 +22,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 	protected Type valueType;
 
+	protected AerospikeClient client;
+	protected WritePolicy wp;
+	protected Key key;
+	protected String binName;
+
 	/**
 	 * Internal function - must be called before this LDT can be used.
 	 * This function is called during a setup of mapping relation between this class and mapped field.
@@ -30,10 +37,15 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param field   The field in the object to which this list is assigned
 	 */
 	public void init(AerospikeClient client, Key key, String binName, Field field) {
+		this.binName = binName;
+		this.client = client;
+		this.key = key;
 		valueType = TypeUtils.getBigListValueType(field);
 		setConverterForValueType(field, valueType);
 
-		inner = new LargeList(client, null, key, binName);
+		this.wp = new WritePolicy();
+		wp.recordExistsAction = RecordExistsAction.UPDATE;
+		inner = new LargeList(client, wp, key, binName);
 
 		if (!(new InfoFetcher(client).isUDFEnabled(key.namespace))) {
 			throw new SpikeifyError("Error: LDT support not enabled on namespace '" + key.namespace + "'. Please add 'ldt-enabled true' to namespace section in your aerospike.conf file.");
@@ -319,6 +331,17 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			}
 			throw ae;
 		}
+	}
+
+	/**
+	 * Removes all values.
+	 */
+	public void removeAll() {
+		// destroy LDT field...
+		inner.destroy();
+		// re-initialize
+		inner = new LargeList(client, wp, key, binName);
+		isEmpty = true;
 	}
 
 }
