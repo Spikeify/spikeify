@@ -26,7 +26,6 @@ public class SingleLoader<T> {
 	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#get(Class)} instead.
 	 */
 	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
-
 	                    ClassConstructor classConstructor,
 	                    RecordsCache recordsCache, String namespace) {
 		this.synClient = synClient;

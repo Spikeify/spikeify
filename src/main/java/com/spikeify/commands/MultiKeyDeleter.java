@@ -1,13 +1,18 @@
 package com.spikeify.commands;
 
+import com.aerospike.client.AerospikeException;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.listener.DeleteListener;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
 import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A command chain for deleting multiple objects from database.
@@ -145,7 +150,7 @@ public class MultiKeyDeleter<T, K> {
 	}
 
 	protected String getSetName() {
-		String setName =  this.setName != null ? this.setName : (mapper != null ? mapper.getSetName() : null);
+		String setName = this.setName != null ? this.setName : (mapper != null ? mapper.getSetName() : null);
 		if (setName == null) {
 			throw new SpikeifyError("Set Name not provided.");
 		}
@@ -169,6 +174,59 @@ public class MultiKeyDeleter<T, K> {
 		}
 
 		return result;
+	}
+
+	/**
+	 * Asynchronously executes multiple delete commands.
+	 *
+	 * @return The {code Future<Map<Key, Boolean>>} which you can use to check when deletion is finished.
+	 * The resulting map of Key, Boolean pairs tells whether record existed in the database prior to deletion.
+	 */
+	public Future<Map<Key, Boolean>> async() {
+
+		collectKeys();
+
+		FutureTask<Map<Key, Boolean>> futureTask = new FutureTask<>(new Callable<Map<Key, Boolean>>() {
+			@Override
+			public Map<Key, Boolean> call() throws Exception {
+
+				final AtomicReference<AerospikeException> failureException = new AtomicReference<>(null);
+				final Map<Key, Boolean> results = new ConcurrentHashMap<>(keys.size());
+
+				DeleteListener deleteListener = new DeleteListener() {
+					@Override
+					public void onSuccess(Key key, boolean existed) {
+						results.put(key, existed);
+					}
+
+					@Override
+					public void onFailure(AerospikeException exception) {
+						// save exception to be re-thrown on calling thread
+						failureException.set(exception);
+					}
+				};
+
+				for (Key key : keys) {
+					recordsCache.remove(key);
+					asyncClient.delete(null, deleteListener, key);
+				}
+
+				// wait until all listeners are called and there is no failure
+				while (results.size() < keys.size()) {
+
+					// check for errors
+					if (failureException.get() != null) {
+						throw failureException.get(); // rethrow original exception
+					}
+				}
+
+				return results;
+			}
+		});
+
+		Executors.newCachedThreadPool().execute(futureTask);
+
+		return futureTask;
 	}
 
 }

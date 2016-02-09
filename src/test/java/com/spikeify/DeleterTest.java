@@ -12,6 +12,8 @@ import org.junit.Test;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @SuppressWarnings("SuspiciousToArrayCall")
 public class DeleterTest {
@@ -160,6 +162,27 @@ public class DeleterTest {
 		}
 
 		Map<Key, Boolean> del = sfy.deleteAll(EntityOne.class, res.keySet().toArray(new Key[res.size()])).now();
+		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {
+			Assert.assertTrue(delEntry.getValue());
+			Assert.assertFalse(client.exists(null, delEntry.getKey()));
+		}
+
+	}
+
+	@Test
+	public void deleteAllKeysAsync() throws ExecutionException, InterruptedException {
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(10, setName);
+		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
+		Map<Key, Object> res = sfy.createAll((Object[])antArray).now();
+
+		for (Key key : res.keySet()) {
+			Assert.assertTrue(client.exists(null, key));
+		}
+
+		Future<Map<Key, Boolean>> delFuture = sfy.deleteAll(EntityOne.class, res.keySet().toArray(new Key[res.size()])).async();
+
+		Map<Key, Boolean> del = delFuture.get();
+
 		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {
 			Assert.assertTrue(delEntry.getValue());
 			Assert.assertFalse(client.exists(null, delEntry.getKey()));
