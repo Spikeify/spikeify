@@ -2,6 +2,7 @@ package com.spikeify;
 
 import com.spikeify.entity.EntityExists;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntityTwo;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -38,6 +39,26 @@ public class TestUtils {
 		for (int i = 0; i < number; i++) {
 			EntityOne ent = new EntityOne();
 			ent.userId = new Random().nextLong();
+			ent.theSetName = setName;
+			ent.one = random.nextInt();
+			ent.two = TestUtils.randomWord();
+			ent.three = random.nextDouble();
+			ent.four = random.nextFloat();
+			ent.setFive((short) random.nextInt());
+			ent.setSix((byte) random.nextInt());
+			ent.seven = random.nextBoolean();
+			ent.eight = new Date(random.nextLong());
+			res.put(ent.userId, ent);
+		}
+		return res;
+	}
+
+	public static Map<String, EntityTwo> randomEntityTwo(int number, String setName) {
+
+		Map<String, EntityTwo> res = new HashMap<>(number);
+		for (int i = 0; i < number; i++) {
+			EntityTwo ent = new EntityTwo();
+			ent.userId = new Random().nextLong() + "";
 			ent.theSetName = setName;
 			ent.one = random.nextInt();
 			ent.two = TestUtils.randomWord();

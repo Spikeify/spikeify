@@ -17,19 +17,19 @@ import java.util.Map;
  * This class is not intended to be instantiated by user.
  */
 @SuppressWarnings("WeakerAccess")
-public class MultiObjectDeleter {
+public class MultiObjectDeleter<T> {
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Use {@link Spikeify#deleteAll(Object...)} instead.
 	 */
 	public MultiObjectDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                          RecordsCache recordsCache, String defaultNamespace, Object... objects) {
+	                          RecordsCache recordsCache, String defaultNamespace, T... objects) {
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.defaultNamespace = defaultNamespace;
-		for (Object object : objects) {
+		for (T object : objects) {
 			data.put(object, collectKey(object));
 		}
 
@@ -37,7 +37,7 @@ public class MultiObjectDeleter {
 		this.synClient.getWritePolicyDefault().sendKey = true;
 	}
 
-	protected final Map<Object, Key> data = new HashMap<>(10);
+	protected final Map<T, Key> data = new HashMap<>(10);
 
 	private final String defaultNamespace;
 	protected final IAerospikeClient synClient;
@@ -60,7 +60,7 @@ public class MultiObjectDeleter {
 		return overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
 	}
 
-	protected Key collectKey(Object obj) {
+	protected Key collectKey(T obj) {
 
 		// get metadata for object
 		ObjectMetadata meta = MapperService.getMapper(obj.getClass()).getRequiredMetadata(obj, defaultNamespace);
@@ -77,11 +77,11 @@ public class MultiObjectDeleter {
 	 * @return The Map of Key, Boolean pairs. The boolean tells whether object existed in the
 	 * database prior to deletion.
 	 */
-	public Map<Object, Boolean> now() {
+	public Map<T, Boolean> now() {
 
-		Map<Object, Boolean> result = new HashMap<>(data.size());
+		Map<T, Boolean> result = new HashMap<>(data.size());
 
-		for (Object obj : data.keySet()) {
+		for (T obj : data.keySet()) {
 			Key key = data.get(obj);
 			recordsCache.remove(key);
 			result.put(obj, synClient.delete(getPolicy(), key));

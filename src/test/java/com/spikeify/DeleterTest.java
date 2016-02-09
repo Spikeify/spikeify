@@ -4,6 +4,7 @@ import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.Policy;
 import com.spikeify.entity.EntityOne;
+import com.spikeify.entity.EntityTwo;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -146,6 +147,63 @@ public class DeleterTest {
 			Assert.assertTrue(delEntry.getValue());
 			Assert.assertFalse(client.exists(null, delEntry.getKey()));
 		}
+	}
+
+	@Test
+	public void deleteAllKeys() {
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(10, setName);
+		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
+		Map<Key, Object> res = sfy.createAll((Object[])antArray).now();
+
+		for (Key key : res.keySet()) {
+			Assert.assertTrue(client.exists(null, key));
+		}
+
+		Map<Key, Boolean> del = sfy.deleteAll(EntityOne.class, res.keySet().toArray(new Key[res.size()])).now();
+		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {
+			Assert.assertTrue(delEntry.getValue());
+			Assert.assertFalse(client.exists(null, delEntry.getKey()));
+		}
+
+	}
+
+	@Test
+	public void deleteAllLongs() {
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(10, EntityOne.class.getSimpleName());
+		EntityOne[] antArray = entities.values().toArray(new EntityOne[entities.size()]);
+		Map<Key, Object> res = sfy.createAll(antArray).now();
+
+		for (Key key : res.keySet()) {
+			Assert.assertTrue(client.exists(null, key));
+		}
+
+		Assert.assertTrue(null != sfy.get(EntityOne.class).key(entities.keySet().iterator().next()));
+
+		Map<Key, Boolean> del = sfy.deleteAll(EntityOne.class, entities.keySet().toArray(new Long[entities.keySet().size()])).now();
+		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {
+			Assert.assertTrue(delEntry.getValue());
+			Assert.assertFalse(client.exists(null, delEntry.getKey()));
+		}
+
+	}
+
+	@Test
+	public void deleteAllStrings() {
+		Map<String, EntityTwo> entities = TestUtils.randomEntityTwo(10, EntityTwo.class.getSimpleName());
+		EntityTwo[] antArray = entities.values().toArray(new EntityTwo[entities.size()]);
+		Map<Key, Object> res = sfy.createAll(antArray).now();
+		for (Key key : res.keySet()) {
+			Assert.assertTrue(client.exists(null, key));
+		}
+
+		Assert.assertTrue(null != sfy.get(EntityTwo.class).key(entities.keySet().iterator().next()));
+
+		Map<Key, Boolean> del = sfy.deleteAll(EntityTwo.class, entities.keySet().toArray(new String[entities.keySet().size()])).now();
+		for (Map.Entry<Key, Boolean> delEntry : del.entrySet()) {
+			Assert.assertTrue(delEntry.getValue());
+			Assert.assertFalse(client.exists(null, delEntry.getKey()));
+		}
+
 	}
 
 }

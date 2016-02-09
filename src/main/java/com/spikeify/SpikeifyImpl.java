@@ -240,8 +240,8 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
-	public MultiObjectDeleter deleteAll(Object... objects) {
-		return new MultiObjectDeleter(synClient, asyncClient, recordsCache, defaultNamespace, objects);
+	public <T> MultiObjectDeleter<T> deleteAll(T... objects) {
+		return new MultiObjectDeleter<>(synClient, asyncClient, recordsCache, defaultNamespace, objects);
 	}
 
 	@Override
@@ -259,19 +259,37 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, userKey);
 	}
 
+	@Deprecated
 	@Override
 	public MultiKeyDeleter deleteAll(Key... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
 	}
 
+	@Deprecated
 	@Override
 	public MultiKeyDeleter deleteAll(Long... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
 	}
 
+	@Deprecated
 	@Override
 	public MultiKeyDeleter deleteAll(String... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
+	}
+
+	@Override
+	public <E> MultiKeyDeleter<E, Key> deleteAll(Class<E> clazz, Key... keys) {
+		return new MultiKeyDeleter<>(clazz, synClient, asyncClient, recordsCache, defaultNamespace, keys);
+	}
+
+	@Override
+	public <E> MultiKeyDeleter<E, Long> deleteAll(Class<E> clazz, Long... keys) {
+		return new MultiKeyDeleter<>(clazz, synClient, asyncClient, recordsCache, defaultNamespace, keys);
+	}
+
+	@Override
+	public <E> MultiKeyDeleter<E, String> deleteAll(Class<E> clazz, String... keys) {
+		return new MultiKeyDeleter<>(clazz, synClient, asyncClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override

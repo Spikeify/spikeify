@@ -14,67 +14,47 @@ import java.util.*;
  * This class is not intended to be instantiated by user.
  */
 @SuppressWarnings({"WeakerAccess", "unchecked"})
-public class MultiKeyDeleter {
+public class MultiKeyDeleter<T, K> {
 
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Use {@link Spikeify#deleteAll(Key...)} instead.
 	 */
 	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace, Key... keys) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
-		this.recordsCache = recordsCache;
-		this.namespace = defaultNamespace;
-		this.keys = Arrays.asList(keys);
+	                       RecordsCache recordsCache, String defaultNamespace, K... keys) {
+		this(null, synClient, asyncClient, recordsCache, defaultNamespace, keys);
 	}
 
-	/**
-	 * Used internally to create a command chain. Not intended to be used by the user directly.
-	 * Use {@link Spikeify#deleteAll(Long...)} instead.
-	 */
-	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace, Long... keys) {
+	public MultiKeyDeleter(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
+	                       RecordsCache recordsCache, String defaultNamespace, K... keys) {
+		this.type = type;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
-		this.longKeys = keys;
-	}
+		this.mapper = type != null ? MapperService.getMapper(type) : null;
+		Class componentType = keys.getClass().getComponentType();
+		if (componentType.equals(Key.class)) {
+			this.keys = Arrays.asList((Key[]) keys);
+			this.keyType = KeyType.KEY;
+		} else if (componentType.equals(Long.class)) {
+			this.longKeys = Arrays.asList((Long[]) keys);
+			this.keyType = KeyType.LONG;
+		} else if (componentType.equals(String.class)) {
+			this.stringKeys = Arrays.asList((String[]) keys);
+			this.keyType = KeyType.STRING;
+		} else {
+			throw new IllegalArgumentException("Error: unsupported key type '" + componentType + "'. Supported key types are Key, Long and String.");
+		}
 
-	/**
-	 * Used internally to create a command chain. Not intended to be used by the user directly.
-	 * Use {@link Spikeify#deleteAll(String...)} instead.
-	 */
-	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace, String... keys) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
-		this.recordsCache = recordsCache;
-		this.namespace = defaultNamespace;
-		this.stringKeys = keys;
-	}
-
-	/**
-	 * Used internally to create a command chain. Not intended to be used by the user directly.
-	 * Use {@link Spikeify#deleteAll(String...)} instead.
-	 */
-	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace, Class type) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
-		this.recordsCache = recordsCache;
-		this.namespace = defaultNamespace;
-
-		this.mapper = MapperService.getMapper(type);
-	//	this.type = type;
 	}
 
 	private ClassMapper mapper;
-	// private Class type;
+	protected final Class<T> type;
+	protected KeyType keyType;
 	private List<Key> keys = new ArrayList<>();
-	private Long[] longKeys;
-	private String[] stringKeys;
+	private List<Long> longKeys;
+	private List<String> stringKeys;
 	protected String namespace;
 	protected String setName;
 	protected final IAerospikeClient synClient;
@@ -110,7 +90,7 @@ public class MultiKeyDeleter {
 	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter key(String... keys) {
-		this.stringKeys = keys;
+		this.stringKeys = Arrays.asList(keys);
 		this.longKeys = null;
 		this.keys.clear();
 		return this;
@@ -123,7 +103,7 @@ public class MultiKeyDeleter {
 	 * @return multi key deleter instance
 	 */
 	public MultiKeyDeleter key(Long... keys) {
-		this.longKeys = keys;
+		this.longKeys = Arrays.asList(keys);
 		this.stringKeys = null;
 		this.keys.clear();
 		return this;

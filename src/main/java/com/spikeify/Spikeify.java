@@ -250,7 +250,8 @@ public interface Spikeify {
 	 * @param object Java object(s) representing record(s) to be deleted. The Classes must contain @UserKey annotation.
 	 * @return the command chain
 	 */
-	MultiObjectDeleter deleteAll(Object... object);
+	@Deprecated
+	<T> MultiObjectDeleter<T> deleteAll(T... object);
 
 	/**
 	 * Starts a command chain for deleting multiple record.
@@ -258,6 +259,7 @@ public interface Spikeify {
 	 * @param keys {@link Key}(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
+	@Deprecated
 	MultiKeyDeleter deleteAll(Key... keys);
 
 	/**
@@ -266,6 +268,7 @@ public interface Spikeify {
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
+	@Deprecated
 	MultiKeyDeleter deleteAll(Long... userKeys);
 
 	/**
@@ -274,7 +277,35 @@ public interface Spikeify {
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
+	@Deprecated
 	MultiKeyDeleter deleteAll(String... userKeys);
+
+	/**
+	 * Starts a command chain for deleting multiple record.
+	 *
+	 * @param type The class to map resulting record to.
+	 * @param userKeys User key(s) of the record(s) to delete.
+	 * @return the command chain
+	 */
+	<T> MultiKeyDeleter<T, Key> deleteAll(Class<T> type, Key... userKeys);
+
+	/**
+	 * Starts a command chain for deleting multiple record.
+	 *
+	 * @param type The class to map resulting record to.
+	 * @param userKeys User key(s) of the record(s) to delete.
+	 * @return the command chain
+	 */
+	<T> MultiKeyDeleter<T, Long> deleteAll(Class<T> type, Long... userKeys);
+
+	/**
+	 * Starts a command chain for deleting multiple record.
+	 *
+	 * @param type The class to map resulting record to.
+	 * @param userKeys User key(s) of the record(s) to delete.
+	 * @return the command chain
+	 */
+	<T> MultiKeyDeleter<T, String> deleteAll(Class<T> type, String... userKeys);
 
 	/**
 	 * Starts a command chain to start a query.
