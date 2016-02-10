@@ -107,15 +107,6 @@ public class CreatorTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void nullCreateNative() {
-
-		Key key = new Key(namespace, setName, userKey1);
-		sfy.getClient().put(null, key, new Bin[0]);
-		boolean exists = sfy.getClient().exists(null, key);
-		Assert.assertFalse(exists); // aerospike DB does not save empty records
-	}
-
-	@Test
 	public void multiCreate() {
 
 		EntityOne entity1 = new EntityOne();

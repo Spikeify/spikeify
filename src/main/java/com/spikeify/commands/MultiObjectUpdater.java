@@ -22,13 +22,14 @@ public class MultiObjectUpdater {
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Object...)} method.
-	 * @param isTx transaction enabled
-	 * @param synClient synchrone native aerospike client
-	 * @param asyncClient asynchrone native aerospike client
-	 * @param recordsCache cache
-	 * @param create true create record, false update record
+	 *
+	 * @param isTx             transaction enabled
+	 * @param synClient        synchrone native aerospike client
+	 * @param asyncClient      asynchrone native aerospike client
+	 * @param recordsCache     cache
+	 * @param create           true create record, false update record
 	 * @param defaultNamespace default namespace
-	 * @param objects list of objects to be created or updated
+	 * @param objects          list of objects to be created or updated
 	 */
 	public MultiObjectUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                          RecordsCache recordsCache, boolean create, String defaultNamespace, Object... objects) {
@@ -67,6 +68,7 @@ public class MultiObjectUpdater {
 	 * Sets updater to skip cache check for object changes. This causes that all
 	 * object properties will be written to database. It also deletes previous saved
 	 * properties in database and now not mapped to object.
+	 *
 	 * @return multi object updater instance
 	 */
 	public MultiObjectUpdater forceReplace() {
@@ -74,7 +76,7 @@ public class MultiObjectUpdater {
 		return this;
 	}
 
-	private WritePolicy getPolicy(){
+	private WritePolicy getPolicy() {
 		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
@@ -95,7 +97,7 @@ public class MultiObjectUpdater {
 			if (create && IdGenerator.shouldGenerateId(object)) {
 				IdGenerator.generateId(object);
 			}
-			
+
 			ObjectMetadata metadata = MapperService.getMapper(object.getClass()).getRequiredMetadata(object, namespace);
 			if (metadata.userKeyString != null) {
 				Key objectKey = new Key(metadata.namespace, metadata.setName, metadata.userKeyString);
@@ -197,11 +199,10 @@ public class MultiObjectUpdater {
 					try {
 						synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 						break;
-					}
-					catch (AerospikeException e) {
+					} catch (AerospikeException e) {
 						// let's retry or not ?
 						if (e.getResultCode() != ResultCode.KEY_EXISTS_ERROR ||
-							SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES == count) {
+								SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES == count) {
 							throw e;
 						}
 						// regenerate key ...
@@ -209,9 +210,16 @@ public class MultiObjectUpdater {
 						key = SingleObjectUpdater.collectKey(object, namespace);
 					}
 				}
-			}
-			else {
-				synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+			} else {
+				// if we are updating an existing record and no bins are to be updated,
+				// then just touch the entity to update expiry timestamp
+				if (!create && bins.isEmpty()) {
+					if(recordExpiration != null){
+						synClient.touch(usePolicy, key);
+					}
+				} else {
+					synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+				}
 			}
 
 			// set LDT fields

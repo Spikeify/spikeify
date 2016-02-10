@@ -119,4 +119,22 @@ public class CommandsTest extends SpikeifyTest {
 		Assert.assertEquals(10, ((byte[]) fields.get("thirteen")).length);
 	}
 
+	@Test(expected = SpikeifyError.class)
+	public void noCommand() {
+
+		// create record
+		final EntityOne in = TestUtils.randomEntityOne(setName);
+		in.one = 0;
+		in.three = 246.0d;
+		in.four = 123.0f;
+		in.setFive((short) 11);
+		final Key key = sfy.create(in).now();
+
+		// no command defined - throws SpikeifyError
+		Map<String, Object> result = sfy.command(EntityOne.class)
+				.key(key)
+				.now();
+
+	}
+
 }

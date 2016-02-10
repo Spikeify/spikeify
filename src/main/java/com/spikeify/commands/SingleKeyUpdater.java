@@ -25,9 +25,6 @@ import java.util.Set;
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class SingleKeyUpdater<T, K> {
 
-	private final boolean isTx;
-	private boolean forceReplace = false;
-
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
@@ -42,6 +39,7 @@ public class SingleKeyUpdater<T, K> {
 		this.namespace = defaultNamespace;
 		this.object = object;
 		this.mapper = MapperService.getMapper((Class<T>) object.getClass());
+		this.recordExpiration = mapper.getRecordExpiration(object);
 		if (key.getClass().equals(Key.class)) {
 			this.key = (Key) key;
 			this.keyType = KeyType.KEY;
@@ -70,6 +68,9 @@ public class SingleKeyUpdater<T, K> {
 	protected final boolean create;
 	protected WritePolicy overridePolicy;
 	protected final ClassMapper<T> mapper;
+	private final boolean isTx;
+	private final Integer recordExpiration;
+	private boolean forceReplace = false;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
@@ -105,12 +106,11 @@ public class SingleKeyUpdater<T, K> {
 		return this;
 	}
 
-	private WritePolicy getPolicy(boolean nonNullField){
+	private WritePolicy getPolicy(boolean nonNullField) {
 		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
 
-		Integer recordExpiration = mapper.getRecordExpiration(object);
 		if (recordExpiration != null) {
 			writePolicy.expiration = recordExpiration;
 		}
@@ -216,7 +216,15 @@ public class SingleKeyUpdater<T, K> {
 
 		WritePolicy usePolicy = getPolicy(nonNullField);
 
-		synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+		// if we are updating an existing record and no bins are to be updated,
+		// then just touch the entity to update expiry timestamp
+		if (!create && bins.isEmpty()) {
+			if (recordExpiration != null) {
+				synClient.touch(usePolicy, key);
+			}
+		} else {
+			synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+		}
 
 		switch (keyType) {
 			case KEY:

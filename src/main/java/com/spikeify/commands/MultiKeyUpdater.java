@@ -235,8 +235,7 @@ public class MultiKeyUpdater {
 			for (String stringKey : stringKeys) {
 				keys.add(new Key(namespace, setName, stringKey));
 			}
-		}
-		else if (!longKeys.isEmpty()) {
+		} else if (!longKeys.isEmpty()) {
 			for (long longKey : longKeys) {
 				keys.add(new Key(namespace, setName, longKey));
 			}
@@ -302,16 +301,13 @@ public class MultiKeyUpdater {
 					if (!isReplace) {
 						bins.add(Bin.asNull(propName));
 					}
-				}
-				else if (value instanceof List<?>) {
+				} else if (value instanceof List<?>) {
 					bins.add(new Bin(propName, (List) value));
 					nonNullField = true;
-				}
-				else if (value instanceof Map<?, ?>) {
+				} else if (value instanceof Map<?, ?>) {
 					bins.add(new Bin(propName, (Map) value));
 					nonNullField = true;
-				}
-				else {
+				} else {
 					bins.add(new Bin(propName, value));
 					nonNullField = true;
 				}
@@ -319,7 +315,7 @@ public class MultiKeyUpdater {
 
 			if (!nonNullField && props.size() == changedProps.size()) {
 				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
-					"At least one object property other then UserKey must be different from NULL.");
+						"At least one object property other then UserKey must be different from NULL.");
 			}
 
 			Integer recordExpiration = mapper.getRecordExpiration(object);
@@ -327,7 +323,15 @@ public class MultiKeyUpdater {
 				usePolicy.expiration = recordExpiration;
 			}
 
-			synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+      // if we are updating an existing record and no bins are to be updated,
+			// then just touch the entity to update expiry timestamp
+			if (!create && bins.isEmpty()) {
+				if(recordExpiration != null){
+					synClient.touch(usePolicy, key);
+				}
+			} else {
+				synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+			}
 
 			// set LDT fields
 			mapper.setBigDatatypeFields(object, synClient, key);

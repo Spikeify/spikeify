@@ -21,9 +21,6 @@ import java.util.Set;
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class SingleObjectUpdater<T> {
 
-	private final T object;
-	private boolean forceReplace = false;
-
 	static final int MAX_CREATE_GENERATE_RETRIES = 5;
 
 	/**
@@ -40,6 +37,7 @@ public class SingleObjectUpdater<T> {
 		this.create = create;
 		this.defaultNamespace = defaultNamespace;
 		this.mapper = MapperService.getMapper(type);
+		this.recordExpiration = mapper.getRecordExpiration(object);
 		this.object = object;
 	}
 
@@ -52,7 +50,9 @@ public class SingleObjectUpdater<T> {
 	protected final boolean create;
 	protected WritePolicy overridePolicy;
 	protected final ClassMapper<T> mapper;
-
+	private final T object;
+	private boolean forceReplace = false;
+	private final Integer recordExpiration;
 
 	/**
 	 * Sets the {@link WritePolicy} to be used when creating or updating the record in the database.
@@ -98,7 +98,6 @@ public class SingleObjectUpdater<T> {
 		writePolicy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY :
 				(forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE);
 
-		Integer recordExpiration = mapper.getRecordExpiration(object);
 		if (recordExpiration != null) {
 			writePolicy.expiration = recordExpiration;
 		}
@@ -186,7 +185,16 @@ public class SingleObjectUpdater<T> {
 				}
 			}
 		} else {
-			synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+
+			// if we are updating an existing record and no bins are to be updated,
+			// then just touch the entity to update expiry timestamp
+			if (!create && bins.isEmpty()) {
+				if(recordExpiration != null){
+					synClient.touch(usePolicy, key);
+				}
+			} else {
+				synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()])); // update record with some bins
+			}
 		}
 
 		// set LDT fields

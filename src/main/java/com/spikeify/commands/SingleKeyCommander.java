@@ -8,6 +8,7 @@ import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -225,13 +226,14 @@ public class SingleKeyCommander<T> {
 
 	/**
 	 * Set expiation of the
+	 *
 	 * @param timeToExpireAt Java time in milliseconds when this record expires
 	 */
-	public void setExpires(Long timeToExpireAt){
+	public void setExpires(Long timeToExpireAt) {
 		this.expiry = timeToExpireAt;
 	}
 
-	private WritePolicy getPolicy(){
+	private WritePolicy getPolicy() {
 		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
@@ -250,7 +252,7 @@ public class SingleKeyCommander<T> {
 	public Map<String, Object> now() {
 
 		if (operations.isEmpty()) {
-			throw new SpikeifyError("Error missing command: at least one command method must be called: add(), append() or prepend()");
+			throw new SpikeifyError("Error missing command: at least one command method must be called: set(), add(), append() or prepend()");
 		}
 
 		collectKeys();

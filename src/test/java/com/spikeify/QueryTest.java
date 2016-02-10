@@ -1,6 +1,9 @@
 package com.spikeify;
 
-import com.aerospike.client.*;
+import com.aerospike.client.AerospikeException;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Key;
+import com.aerospike.client.Record;
 import com.aerospike.client.policy.CommitLevel;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.policy.WritePolicy;
@@ -14,12 +17,10 @@ import com.spikeify.entity.EntityOne;
 import com.spikeify.entity.EntitySubJson;
 import com.spikeify.generators.IdGenerator;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.*;
-import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 
@@ -44,8 +45,8 @@ public class QueryTest extends SpikeifyTest {
 		}
 
 		ResultSet<EntityOne> entities = sfy.query(EntityOne.class)
-			.filter("two", "content")
-			.now();
+				.filter("two", "content")
+				.now();
 
 		int count = 0;
 		for (EntityOne entity : entities) {
@@ -56,8 +57,8 @@ public class QueryTest extends SpikeifyTest {
 
 
 		ResultSet<EntityOne> entities2 = sfy.query(EntityOne.class)
-			.filter("two", "content")
-			.now();
+				.filter("two", "content")
+				.now();
 
 		int count2 = 0;
 		for (EntityOne entity2 : entities2) {
@@ -139,8 +140,7 @@ public class QueryTest extends SpikeifyTest {
 
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			}
-			else {
+			} else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -148,9 +148,9 @@ public class QueryTest extends SpikeifyTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-			.query(EntityOne.class)
-			.filter("nine", "content")
-			.now();
+				.query(EntityOne.class)
+				.filter("nine", "content")
+				.now();
 
 		// query should return 10 records
 		List<EntityOne> list = results.toList();
@@ -182,8 +182,7 @@ public class QueryTest extends SpikeifyTest {
 
 			if (count % 3 == 0) {
 				sfy.create(entity).now();
-			}
-			else {
+			} else {
 				sfy.create(entity.userId, entity).setName(setName).now();
 			}
 
@@ -191,10 +190,10 @@ public class QueryTest extends SpikeifyTest {
 		}
 
 		ResultSet<EntityOne> results = sfy
-			.query(EntityOne.class)
-			.setName(setName)
-			.filter("nine", "content")
-			.now();
+				.query(EntityOne.class)
+				.setName(setName)
+				.filter("nine", "content")
+				.now();
 
 		// query should return 50 records
 		List<EntityOne> list = results.toList();
@@ -202,10 +201,10 @@ public class QueryTest extends SpikeifyTest {
 
 		// 2. ... set name after filter ...
 		results = sfy
-			.query(EntityOne.class)
-			.filter("nine", "content")
-			.setName(setName)
-			.now();
+				.query(EntityOne.class)
+				.filter("nine", "content")
+				.setName(setName)
+				.now();
 
 		list = results.toList();
 		assertEquals(50, list.size());
@@ -242,8 +241,8 @@ public class QueryTest extends SpikeifyTest {
 
 		// 1. equals
 		ResultSet<EntityIndexed> entities = sfy.query(EntityIndexed.class)
-			.filter("text", "content")
-			.now();
+				.filter("text", "content")
+				.now();
 
 
 		int count = 0;
@@ -256,8 +255,8 @@ public class QueryTest extends SpikeifyTest {
 
 		// 2. range
 		entities = sfy.query(EntityIndexed.class)
-			.filter("number", 10, 20)
-			.now();
+				.filter("number", 10, 20)
+				.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -269,8 +268,8 @@ public class QueryTest extends SpikeifyTest {
 
 		// 2. list
 		entities = sfy.query(EntityIndexed.class)
-			.filter("list", "bla")
-			.now();
+				.filter("list", "bla")
+				.now();
 
 		count = 0;
 		for (EntityIndexed entity : entities) {
@@ -430,17 +429,17 @@ public class QueryTest extends SpikeifyTest {
 
 		// this filter by actual field name should be replaced with name in annotation @BinName
 		List<LongEntity> list = sfy.query(LongEntity.class)
-			.filter("sourceBucketAndKey", "Bla")
-			.now()
-			.toList();
+				.filter("sourceBucketAndKey", "Bla")
+				.now()
+				.toList();
 
 		assertEquals(2, list.size());
 
 		// query should also be possible by binName
 		list = sfy.query(LongEntity.class)
-			.filter("sKey", "Blabla")
-			.now()
-			.toList();
+				.filter("sKey", "Blabla")
+				.now()
+				.toList();
 		assertEquals(1, list.size());
 	}
 
@@ -552,8 +551,7 @@ public class QueryTest extends SpikeifyTest {
 
 		try {
 			sfy.query(EntityOne.class).filter("one", true).now().toList();
-		}
-		catch (SpikeifyError e) {
+		} catch (SpikeifyError e) {
 			assertEquals("Can't query with boolean filter on: class com.spikeify.entity.EntityOne#one, not a boolean field!", e.getMessage());
 			throw e;
 		}
@@ -577,8 +575,7 @@ public class QueryTest extends SpikeifyTest {
 
 							sfy.create(obj).policy(wp).now();
 							created = true;
-						}
-						catch (AerospikeException ignored) {
+						} catch (AerospikeException ignored) {
 						}
 					} while (!created);
 				}
@@ -610,8 +607,7 @@ public class QueryTest extends SpikeifyTest {
 
 					try {
 						createUniqueIndexIfItDoesNotExist(keys);
-					}
-					catch (InterruptedException ignored) {
+					} catch (InterruptedException ignored) {
 					}
 				}
 			};
@@ -650,8 +646,7 @@ public class QueryTest extends SpikeifyTest {
 						try {
 							sfy.create(obj).now();
 							created = true;
-						}
-						catch (AerospikeException ignored) {
+						} catch (AerospikeException ignored) {
 						}
 					} while (!created);
 				}
@@ -669,8 +664,7 @@ public class QueryTest extends SpikeifyTest {
 		try {
 			Spikeify sfy = this.sfy;
 			sfy.query(UnregisteredIndex.class).filter("key", "test1").now();
-		}
-		catch (SpikeifyError e) {
+		} catch (SpikeifyError e) {
 			assertEquals("Must register entity class com.spikeify.QueryTest$UnregisteredIndex to allow quering!", e.getMessage());
 			throw e;
 		}
