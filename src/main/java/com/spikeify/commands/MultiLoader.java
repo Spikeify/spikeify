@@ -5,14 +5,11 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.BatchPolicy;
-import com.aerospike.client.policy.Policy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
 import java.util.*;
-
-import static javax.swing.UIManager.put;
 
 /**
  * A command chain for getting multiple records from database.
@@ -28,6 +25,7 @@ public class MultiLoader<T, K> {
 	 */
 	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
 	                   RecordsCache recordsCache, String namespace, K... keys) {
+
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
 		this.classConstructor = classConstructor;
@@ -39,30 +37,45 @@ public class MultiLoader<T, K> {
 		if (componentType.equals(Key.class)) {
 			this.keys = Arrays.asList((Key[]) keys);
 			this.keyType = KeyType.KEY;
-		} else if (componentType.equals(Long.class)) {
+		}
+		else if (componentType.equals(Long.class)) {
 			this.longKeys = Arrays.asList((Long[]) keys);
 			this.keyType = KeyType.LONG;
-		} else if (componentType.equals(String.class)) {
+		}
+		else if (componentType.equals(String.class)) {
 			this.stringKeys = Arrays.asList((String[]) keys);
 			this.keyType = KeyType.STRING;
-		} else {
+		}
+		else {
 			throw new IllegalArgumentException("Error: unsupported key type '" + componentType + "'. Supported key types are Key, Long and String.");
 		}
 
 	}
 
 	protected String namespace;
+
 	protected String setName;
+
 	protected List<String> stringKeys = new ArrayList<>();
+
 	protected List<Long> longKeys = new ArrayList<>();
+
 	protected List<Key> keys = new ArrayList<>(10);
+
 	protected final IAerospikeClient synClient;
+
 	protected final IAsyncClient asyncClient;
+
 	protected final ClassConstructor classConstructor;
+
 	protected final RecordsCache recordsCache;
+
 	protected BatchPolicy overridePolicy;
+
 	protected final ClassMapper<T> mapper;
+
 	protected final Class<T> type;
+
 	protected KeyType keyType;
 
 	/**
@@ -71,6 +84,7 @@ public class MultiLoader<T, K> {
 	 * @param namespace The namespace.
 	 */
 	public MultiLoader<T, K> namespace(String namespace) {
+
 		this.namespace = namespace;
 		return this;
 	}
@@ -81,6 +95,7 @@ public class MultiLoader<T, K> {
 	 * @param setName The name of the set.
 	 */
 	public MultiLoader<T, K> setName(String setName) {
+
 		this.setName = setName;
 		return this;
 	}
@@ -92,12 +107,14 @@ public class MultiLoader<T, K> {
 	 * @param policy The policy.
 	 */
 	public MultiLoader<T, K> policy(BatchPolicy policy) {
+
 		this.overridePolicy = policy;
 		this.overridePolicy.sendKey = true;
 		return this;
 	}
 
 	private BatchPolicy getPolicy() {
+
 		return overridePolicy != null ? overridePolicy : new BatchPolicy(synClient.getBatchPolicyDefault());
 	}
 
@@ -107,16 +124,19 @@ public class MultiLoader<T, K> {
 			for (String stringKey : stringKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), stringKey));
 			}
-		} else if (!longKeys.isEmpty()) {
+		}
+		else if (!longKeys.isEmpty()) {
 			for (long longKey : longKeys) {
 				keys.add(new Key(getNamespace(), getSetName(), longKey));
 			}
-		} else if (keys.isEmpty()) {
+		}
+		else if (keys.isEmpty()) {
 			throw new SpikeifyError("Error: missing parameter 'key'");
 		}
 	}
 
 	protected String getNamespace() {
+
 		String useNamespace = namespace != null ? namespace : mapper.getNamespace();
 		if (useNamespace == null) {
 			throw new SpikeifyError("Namespace not set.");
@@ -125,6 +145,7 @@ public class MultiLoader<T, K> {
 	}
 
 	protected String getSetName() {
+
 		return setName != null ? setName : mapper.getSetName();
 	}
 
@@ -185,6 +206,7 @@ public class MultiLoader<T, K> {
 
 	/**
 	 * Generic method to convert iterator to list
+	 *
 	 * @return list of values or empty list if none present
 	 */
 	public List<T> toList() {
