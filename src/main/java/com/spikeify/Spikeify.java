@@ -33,6 +33,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for loading a single record.
 	 *
+	 * @param <T>  type
 	 * @param type The class to map resulting record to.
 	 * @return the command chain
 	 */
@@ -41,6 +42,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for loading multiple records.
 	 *
+	 * @param <T>  type
 	 * @param type The class to map resulting records to.
 	 * @param keys {@link Key}(s) to load from DB.
 	 * @return the command chain
@@ -50,6 +52,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for loading multiple records.
 	 *
+	 * @param <T>      type
 	 * @param type     The class to map resulting records to.
 	 * @param userKeys User key(s) of the records to load.
 	 * @return the command chain
@@ -60,6 +63,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for loading multiple records.
 	 *
+	 * @param <T>      type
 	 * @param type     The class to map resulting records to.
 	 * @param userKeys User key(s) of the records to load.
 	 * @return the command chain
@@ -67,6 +71,7 @@ public interface Spikeify {
 	<T> MultiLoader<T, String> getAll(Class<T> type, String... userKeys);
 
 	/**
+	 * @param <T>  type
 	 * @param type entity type
 	 * @return list of all entities
 	 */
@@ -75,6 +80,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating a single record. This command fails if the records is already present in the DB.
 	 *
+	 * @param <T>    type
 	 * @param key    A {@link Key} of the record to create.
 	 * @param entity The Java object to be mapped to the created record.
 	 * @return the command chain
@@ -84,6 +90,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating a single record. This command fails if the record already exists in the DB.
 	 *
+	 * @param <T>     type
 	 * @param userKey A user key of the record to create.
 	 * @param entity  The Java object to be mapped to the created record.
 	 * @return the command chain
@@ -93,6 +100,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating a single record. This command fails if the record already exists  in the DB.
 	 *
+	 * @param <T>     type
 	 * @param userKey A user key of the record to create.
 	 * @param entity  The Java object to be mapped to the created record.
 	 * @return the command chain
@@ -102,6 +110,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating a single record. This command fails if the record already exists in the DB.
 	 *
+	 * @param <T>    type
 	 * @param entity The Java object to be mapped to the created record. The Class must contain @UserKey annotation.
 	 * @return the command chain
 	 */
@@ -145,6 +154,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating or updating a single record.
 	 *
+	 * @param <T>    type
 	 * @param object The Java object to be mapped to the created record. The Class must contain @UserKey annotation.
 	 * @return the command chain
 	 */
@@ -153,6 +163,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating or updating a single record.
 	 *
+	 * @param <T>    type
 	 * @param key    A {@link Key} of the record to create or update.
 	 * @param entity The Java object to be mapped to the created record.
 	 * @return the command chain
@@ -162,6 +173,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating or updating a single record.
 	 *
+	 * @param <T>    type
 	 * @param key    A user key of the record to create or update.
 	 * @param entity The Java object to be mapped to the created record.
 	 * @return the command chain
@@ -171,6 +183,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for creating or updating a single record.
 	 *
+	 * @param <T>    type
 	 * @param key    A user key of the record to create or update.
 	 * @param entity The Java object to be mapped to the created record.
 	 * @return the command chain
@@ -247,6 +260,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for deleting multiple record.
 	 *
+	 * @param <T>    type
 	 * @param object Java object(s) representing record(s) to be deleted. The Classes must contain @UserKey annotation.
 	 * @return the command chain
 	 */
@@ -283,7 +297,8 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for deleting multiple record.
 	 *
-	 * @param type The class to map resulting record to.
+	 * @param <T>      type
+	 * @param type     The class to map resulting record to.
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
@@ -292,7 +307,8 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for deleting multiple record.
 	 *
-	 * @param type The class to map resulting record to.
+	 * @param <T>      type
+	 * @param type     The class to map resulting record to.
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
@@ -301,7 +317,8 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain for deleting multiple record.
 	 *
-	 * @param type The class to map resulting record to.
+	 * @param <T>      type
+	 * @param type     The class to map resulting record to.
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
@@ -310,6 +327,7 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain to start a query.
 	 *
+	 * @param <T>  type
 	 * @param type The type (set name) of the records to query for.
 	 * @return the command chain
 	 */
@@ -318,7 +336,9 @@ public interface Spikeify {
 	/**
 	 * Starts a command chain to execute a series of atomic commands on a single Record.
 	 *
+	 * @param <T>  type
 	 * @param type The mapped class, used to derive namespace and setName.
+	 * @return generated command
 	 */
 	<T> SingleKeyCommander<T> command(Class<T> type);
 
@@ -376,7 +396,7 @@ public interface Spikeify {
 
 	/**
 	 * A helper method that directly maps Record to Java object.
-	 *
+	 * @param <T> type
 	 * @param type   A Class to map to.
 	 * @param key    Key used to get the Record from DB.
 	 * @param record A Record to be mapped.
@@ -386,7 +406,7 @@ public interface Spikeify {
 
 	/**
 	 * A helper method that gets the Key of the Record that the annotated object maps to.
-	 *
+	 * @param <T> type
 	 * @param object An annotated object containing at least @UserKey annotation.
 	 * @return Key of the Record that given object maps to.
 	 */
@@ -424,7 +444,7 @@ public interface Spikeify {
 	 * <li>Aborts the transaction on ANY mismatched update operation, but does not rollback update operations that happened beforehand. </li>
 	 * </ol>
 	 * Best practice: make a series of read operations and then only one update operation.
-	 *
+	 * @param <R> type
 	 * @param retries Number of retries of transaction operation. A sensible number would be 5.
 	 * @param work    An IDEMPOTENT unit of work (series of DB operations) that will be transactionally executed.
 	 *                In case of failure, the whole set of operations will be executed again,

@@ -21,10 +21,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @SuppressWarnings({"WeakerAccess", "unchecked"})
 public class MultiKeyDeleter<T, K> {
 
-	/**
+	/*
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Use {@link Spikeify#deleteAll(Key...)} instead.
 	 */
+
+
 	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, String defaultNamespace, K... keys) {
 		this(null, synClient, asyncClient, recordsCache, defaultNamespace, keys);
@@ -179,7 +181,7 @@ public class MultiKeyDeleter<T, K> {
 	/**
 	 * Asynchronously executes multiple delete commands.
 	 *
-	 * @return The {code Future<Map<Key, Boolean>>} which you can use to check when deletion is finished.
+	 * @return The {code Future} which you can use to check when deletion is finished.
 	 * The resulting map of Key, Boolean pairs tells whether record existed in the database prior to deletion.
 	 */
 	public Future<Map<Key, Boolean>> async() {

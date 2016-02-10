@@ -44,7 +44,7 @@ public class ExpirationUtils {
 
 	/**
 	 * Transforms an absolute record expiration time in seconds since Jan 01 2010 00:00:00 GMT to relative expiration time in seconds from now.
-	 * @param absRecordExpiresTimestamp
+	 * @param absRecordExpiresTimestamp absolute time stamp
 	 * @return Relative expiration time in seconds from now
 	 */
 	public static int getExpiresRelative(int absRecordExpiresTimestamp) {

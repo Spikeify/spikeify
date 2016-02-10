@@ -15,6 +15,7 @@ import com.spikeify.entity.EntitySubJson;
 import com.spikeify.generators.IdGenerator;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.*;
@@ -585,6 +586,8 @@ public class QueryTest extends SpikeifyTest {
 		}
 	}
 
+	// This test is broken ... Aerospike does not ensure non duplicate index creation on non key fields
+	@Ignore
 	@Test
 	public void testQueryingByIndex() throws InterruptedException {
 

@@ -23,8 +23,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	protected Type valueType;
 
 	protected AerospikeClient client;
+
 	protected WritePolicy wp;
+
 	protected Key key;
+
 	protected String binName;
 
 	/**
@@ -37,6 +40,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param field   The field in the object to which this list is assigned
 	 */
 	public void init(AerospikeClient client, Key key, String binName, Field field) {
+
 		this.binName = binName;
 		this.client = client;
 		this.key = key;
@@ -53,7 +57,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 		try {
 			inner.size();
-		} catch (AerospikeException ae) {
+		}
+		catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
 				isEmpty = true;
 			}
@@ -64,9 +69,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * Add object to the end of list
 	 *
 	 * @param value Value
+	 * @return last index
 	 */
 	@SuppressWarnings("unchecked")
 	public int add(T value) {
+
 		if (value == null) {
 			throw new IllegalArgumentException("Can not add 'null' to BigList.");
 		}
@@ -83,10 +90,12 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 				inner.add(Value.get(valMap));
 				isEmpty = false;
 				return lastIndex;
-			} catch (AerospikeException ae) {
+			}
+			catch (AerospikeException ae) {
 				if (ae.getResultCode() == 1402) {
 					retries--;
-				} else {
+				}
+				else {
 					throw ae;  // re-throw the exception
 				}
 			}
@@ -99,6 +108,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * Add a List of objects to the end of list
 	 *
 	 * @param collection A collection of object to be added to the end of list.
+	 * @return last index
 	 */
 	@SuppressWarnings("unchecked")
 	public int addAll(Collection<T> collection) {
@@ -130,17 +140,18 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		if (!values.isEmpty()) {
 			addTransactionally(values);  // add remaining chunk
 			return lastIndex;
-		} else {
+		}
+		else {
 			return lastIndex;
 		}
 	}
-
 
 
 	/**
 	 * Update value at given position in the list.
 	 *
 	 * @param index Index
+	 * @param value to be updated
 	 */
 	@SuppressWarnings("unchecked")
 	public void update(int index, T value) {
@@ -165,10 +176,12 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 				inner.update(Value.get(valMap));
 				isEmpty = false;
 				return;
-			} catch (AerospikeException ae) {
+			}
+			catch (AerospikeException ae) {
 				if (ae.getResultCode() == 1402) {
 					retries--;
-				} else {
+				}
+				else {
 					throw ae;  // re-throw the exception
 				}
 			}
@@ -201,11 +214,13 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 			if (converter != null) {
 				return (T) converter.fromProperty(((Map<String, Object>) found.get(0)).get("value"));
-			} else {
+			}
+			else {
 				return (T) ((Map<String, Object>) found.get(0)).get("value");
 			}
 
-		} catch (AerospikeException ae) {
+		}
+		catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
 				return null;
 			}
@@ -225,7 +240,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 		try {
 			found = inner.scan();
-		} catch (AerospikeException ae) {
+		}
+		catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
 				return new ArrayList<>(0);
 			}
@@ -241,7 +257,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			Object val = ((Map<String, Object>) obj).get("value");
 			if (converter != null) {
 				results.add((T) converter.fromProperty(val));
-			} else {
+			}
+			else {
 				results.add((T) val);
 			}
 
@@ -268,7 +285,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 		try {
 			found = inner.range(Value.get(from), Value.get(to));
-		} catch (AerospikeException ae) {
+		}
+		catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
 				return new ArrayList<>();
 			}
@@ -284,7 +302,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 			Object val = ((Map<String, Object>) obj).get("value");
 			if (converter != null) {
 				results.add((T) converter.fromProperty(val));
-			} else {
+			}
+			else {
 				results.add((T) val);
 			}
 
@@ -307,7 +326,8 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 				throw new IndexOutOfBoundsException("Parameter 'from' is out of range.");
 			}
 			return inner.remove(Value.get(from), Value.get(to));
-		} catch (AerospikeException ae) {
+		}
+		catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
 				return 0;
 			}
@@ -323,9 +343,11 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @return True if  value at given index exists
 	 */
 	public boolean exists(int index) throws AerospikeException {
+
 		try {
 			return index >= 0 && inner.exists(Value.get(index));
-		} catch (AerospikeException ae) {
+		}
+		catch (AerospikeException ae) {
 			if (ae.getResultCode() == 1417) {
 				return false;
 			}

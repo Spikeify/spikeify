@@ -4,7 +4,6 @@ import com.aerospike.client.Bin;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
@@ -22,14 +21,16 @@ public class MultiKeyUpdater {
 
 	private boolean forceReplace = false;
 
-	/**
+	/*
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#createAll(Key[], Object[])} (Object...)} method.
 	 */
+
 	@SuppressWarnings("SameParameterValue")
 	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Key[] keys, Object[] objects) {
+
 		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
@@ -54,6 +55,7 @@ public class MultiKeyUpdater {
 	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Long[] keys, Object[] objects) {
+
 		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
@@ -78,6 +80,7 @@ public class MultiKeyUpdater {
 	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       String[] keys, Object[] objects) {
+
 		this.isTx = isTx;
 		this.synClient = synClient;
 		this.asyncClient = asyncClient;
@@ -95,24 +98,37 @@ public class MultiKeyUpdater {
 	}
 
 	private final Object[] objects;
+
 	protected String namespace;
+
 	protected String setName;
+
 	protected List<String> stringKeys = new ArrayList<>();
+
 	protected List<Long> longKeys = new ArrayList<>();
+
 	protected List<Key> keys = new ArrayList<>(10);
+
 	private final boolean isTx;
+
 	protected final IAerospikeClient synClient;
+
 	protected final IAsyncClient asyncClient;
+
 	protected final RecordsCache recordsCache;
+
 	protected final boolean create;
+
 	protected WritePolicy overridePolicy;
 
 	/**
 	 * Sets the Namespace. Overrides the default namespace and the namespace defined on the Class via {@link Namespace} annotation.
 	 *
 	 * @param namespace The namespace.
+	 * @return updater
 	 */
 	public MultiKeyUpdater namespace(String namespace) {
+
 		this.namespace = namespace;
 		return this;
 	}
@@ -121,8 +137,10 @@ public class MultiKeyUpdater {
 	 * Sets the SetName. Overrides any SetName defined on the Class via {@link SetName} annotation.
 	 *
 	 * @param setName The name of the set.
+	 * @return updater
 	 */
 	public MultiKeyUpdater setName(String setName) {
+
 		this.setName = setName;
 		return this;
 	}
@@ -131,8 +149,10 @@ public class MultiKeyUpdater {
 	 * Sets the keys of the records to be loaded.
 	 *
 	 * @param keys Array of keys
+	 * @return updater
 	 */
 	public MultiKeyUpdater key(String... keys) {
+
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Number of keys does not match number of objects.");
 		}
@@ -146,8 +166,10 @@ public class MultiKeyUpdater {
 	 * Sets the keys of the records to be loaded.
 	 *
 	 * @param keys Array of keys
+	 * @return updater
 	 */
 	public MultiKeyUpdater key(Long... keys) {
+
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Number of keys does not match number of objects.");
 		}
@@ -161,8 +183,10 @@ public class MultiKeyUpdater {
 	 * Sets the keys of the records to be loaded.
 	 *
 	 * @param keys Array of keys
+	 * @return updater
 	 */
 	public MultiKeyUpdater key(Key... keys) {
+
 		if (keys.length != objects.length) {
 			throw new SpikeifyError("Number of keys does not match number of objects.");
 		}
@@ -179,8 +203,10 @@ public class MultiKeyUpdater {
 	 * The 'recordExistsAction' property is set accordingly depending if this is a create or update operation
 	 *
 	 * @param policy The policy.
+	 * @return updater
 	 */
 	public MultiKeyUpdater policy(WritePolicy policy) {
+
 		this.overridePolicy = policy;
 		return this;
 	}
@@ -189,8 +215,11 @@ public class MultiKeyUpdater {
 	 * Sets updater to skip cache check for object changes. This causes that all
 	 * object properties will be written to database. It also deletes previous saved
 	 * properties in database and now not mapped to object.
+	 *
+	 * @return updater
 	 */
 	public MultiKeyUpdater forceReplace() {
+
 		this.forceReplace = true;
 		return this;
 	}
@@ -206,7 +235,8 @@ public class MultiKeyUpdater {
 			for (String stringKey : stringKeys) {
 				keys.add(new Key(namespace, setName, stringKey));
 			}
-		} else if (!longKeys.isEmpty()) {
+		}
+		else if (!longKeys.isEmpty()) {
 			for (long longKey : longKeys) {
 				keys.add(new Key(namespace, setName, longKey));
 			}
@@ -218,6 +248,7 @@ public class MultiKeyUpdater {
 	}
 
 	private WritePolicy getPolicy() {
+
 		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
 
 		writePolicy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
@@ -271,13 +302,16 @@ public class MultiKeyUpdater {
 					if (!isReplace) {
 						bins.add(Bin.asNull(propName));
 					}
-				} else if (value instanceof List<?>) {
+				}
+				else if (value instanceof List<?>) {
 					bins.add(new Bin(propName, (List) value));
 					nonNullField = true;
-				} else if (value instanceof Map<?, ?>) {
+				}
+				else if (value instanceof Map<?, ?>) {
 					bins.add(new Bin(propName, (Map) value));
 					nonNullField = true;
-				} else {
+				}
+				else {
 					bins.add(new Bin(propName, value));
 					nonNullField = true;
 				}
@@ -285,7 +319,7 @@ public class MultiKeyUpdater {
 
 			if (!nonNullField && props.size() == changedProps.size()) {
 				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
-						"At least one object property other then UserKey must be different from NULL.");
+					"At least one object property other then UserKey must be different from NULL.");
 			}
 
 			Integer recordExpiration = mapper.getRecordExpiration(object);
