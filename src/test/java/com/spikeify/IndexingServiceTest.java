@@ -13,21 +13,7 @@ import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class IndexingServiceTest {
-
-	private final String namespace = "test";
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
+public class IndexingServiceTest extends SpikeifyTest {
 
 	@Test
 	public void readInfoNonExistent() {

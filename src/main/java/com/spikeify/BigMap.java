@@ -315,5 +315,4 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 		// re-initialize
 		inner = new LargeList(client, wp, key, binName);
 	}
-
 }

@@ -15,22 +15,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class CommandsTest {
+public class CommandsTest extends SpikeifyTest {
 
-	private final String namespace = "test";
 	private final String setName = "testSetQuery";
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void testEntityIncrement() {

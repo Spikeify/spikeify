@@ -15,22 +15,7 @@ import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 
-public class CreateGenerateIdTest {
-
-	private final String namespace = "test";
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-		sfy.truncateNamespace(namespace);
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
+public class CreateGenerateIdTest extends SpikeifyTest {
 
 	@Test
 	public void autogenerateKeyTest() {

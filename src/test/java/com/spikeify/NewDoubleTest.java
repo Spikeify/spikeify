@@ -16,26 +16,11 @@ import static org.junit.Assert.assertEquals;
  */
 
 @SuppressWarnings("ConstantConditions")
-public class NewDoubleTest {
+public class NewDoubleTest extends SpikeifyTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final Long userKey2 = new Random().nextLong();
-	private final String namespace = "test";
 	private final String setName = "testSet";
-	private Spikeify sfy;
-	private IAerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void saveDoubleLoadAsDouble() {

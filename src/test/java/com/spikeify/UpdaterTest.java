@@ -17,27 +17,12 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
-public class UpdaterTest {
+public class UpdaterTest extends SpikeifyTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final Long userKey2 = new Random().nextLong();
 	private final String userKeyString = String.valueOf(new Random().nextLong());
-	private final String namespace = "test";
 	private final String setName = "newTestSet";
-	private Spikeify sfy;
-	private IAerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void saveProperties() {

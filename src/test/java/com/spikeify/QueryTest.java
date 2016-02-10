@@ -18,24 +18,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.function.Function;
 
 import static org.junit.Assert.assertEquals;
 
-public class QueryTest {
-
-	private final String namespace = "test";
+public class QueryTest extends SpikeifyTest {
 
 	private final String setName = "EntityOne";
-
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void testEntityQuery() {
@@ -83,12 +72,11 @@ public class QueryTest {
 
 		Random random = new Random();
 
-		AerospikeClient client = new AerospikeClient("localhost", 3000);
-		String namespace = "test";
 		String setName = "testSetQuery";
 		String stringListIndex = "index_list_string";
 		String binString = "binString";
 
+		//client.dropIndex(new Policy(), namespace, setName, stringListIndex);
 		client.createIndex(new Policy(), namespace, setName, stringListIndex, binString, IndexType.STRING, IndexCollectionType.LIST);
 
 		// create records
@@ -477,6 +465,15 @@ public class QueryTest {
 
 		List<EntityOne> list = sfy.query(EntityOne.class).filter("seven", true).now().toList();
 		assertEquals(2, list.size());
+
+		Collections.sort(list, new Comparator<EntityOne>() {
+			@Override
+			public int compare(EntityOne o1, EntityOne o2) {
+
+				return Long.compare(o1.userId, o2.userId);
+			}
+		});
+
 		assertEquals(1L, list.get(0).userId.longValue());
 		assertEquals(3L, list.get(1).userId.longValue());
 
@@ -567,6 +564,7 @@ public class QueryTest {
 			for (String key : keys) {
 				Thread.sleep(new Random().nextInt(100));
 				if (sfy.query(UniqueIndex.class).filter("key", key).now().toList().size() == 0) {
+
 					UniqueIndex obj = new UniqueIndex();
 					obj.key = key;
 					boolean created = false;
@@ -575,6 +573,7 @@ public class QueryTest {
 						try {
 							WritePolicy wp = new WritePolicy();
 							wp.commitLevel = CommitLevel.COMMIT_ALL;
+
 							sfy.create(obj).policy(wp).now();
 							created = true;
 						}
@@ -589,7 +588,8 @@ public class QueryTest {
 	@Test
 	public void testQueryingByIndex() throws InterruptedException {
 
-		Spikeify sfy = this.sfy;
+		sfy.truncateNamespace(namespace);
+
 		SpikeifyService.register(UniqueIndex.class);
 		int WORKERS = 5;
 
@@ -623,7 +623,7 @@ public class QueryTest {
 			threads[i].join();
 		}
 
-		List<UniqueIndex> list = new ArrayList<>();
+		List<UniqueIndex> list;
 		int counter = 10;
 		do {
 			Thread.sleep(100);
@@ -665,15 +665,24 @@ public class QueryTest {
 
 		try {
 			Spikeify sfy = this.sfy;
-			sfy.query(UniqueIndex.class).filter("key", "test1").now();
+			sfy.query(UnregisteredIndex.class).filter("key", "test1").now();
 		}
 		catch (SpikeifyError e) {
-			assertEquals("Must register entity class com.spikeify.QueryTest$UniqueIndex to allow quering!", e.getMessage());
+			assertEquals("Must register entity class com.spikeify.QueryTest$UnregisteredIndex to allow quering!", e.getMessage());
 			throw e;
 		}
 	}
 
 	public static class UniqueIndex {
+
+		@UserKey
+		public String id;
+
+		@Indexed
+		public String key;
+	}
+
+	public static class UnregisteredIndex {
 
 		@UserKey
 		public String id;

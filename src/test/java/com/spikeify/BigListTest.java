@@ -18,27 +18,10 @@ import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
-public class BigListTest {
+public class BigListTest extends SpikeifyTest {
 
 	private final Long userKey1 = new Random().nextLong();
-	private final String namespace = "test";
 	private final String setName = "newTestSet";
-	private Spikeify sfy;
-	private AerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-
-		client = new AerospikeClient("localhost", 3000);
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void testBigIndexedList() {
@@ -349,5 +332,4 @@ public class BigListTest {
 		Assert.assertEquals(1, afterList.size());
 		Assert.assertEquals(666l, afterList.get(0).longValue());
 	}
-
 }

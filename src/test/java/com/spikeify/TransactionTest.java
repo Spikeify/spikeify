@@ -19,27 +19,10 @@ import java.util.concurrent.*;
 
 import static org.junit.Assert.assertTrue;
 
-public class TransactionTest {
+public class TransactionTest extends SpikeifyTest {
 
 	private final Random random = new Random();
-	private final String namespace = "test";
 	private final String setName = "txSet";
-	private Spikeify sfy;
-	private IAerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void testTransactions() {

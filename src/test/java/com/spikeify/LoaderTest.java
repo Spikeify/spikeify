@@ -25,23 +25,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("ConstantConditions")
-public class LoaderTest {
+public class LoaderTest extends SpikeifyTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final Long userKey2 = new Random().nextLong();
-	private final String namespace = "test";
 	private final String setName = "testSet";
-	private Spikeify sfy;
-	private IAerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
-		sfy = SpikeifyService.sfy();
-
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void loadEntity() {

@@ -13,18 +13,7 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class ScanLoaderTest {
-
-	private final String namespace = "test";
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-		sfy.truncateNamespace(namespace);
-	}
+public class ScanLoaderTest extends SpikeifyTest {
 
 	@Test
 	public void scanLoaderTest() {

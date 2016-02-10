@@ -14,25 +14,12 @@ import org.junit.Test;
 import java.util.*;
 
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
-public class CreatorTest {
+public class CreatorTest extends SpikeifyTest {
 
 	private final Long userKey1 = new Random().nextLong();
 	private final Long userKey2 = new Random().nextLong();
 	private final Long userKey3 = new Random().nextLong();
-	private final String namespace = "test";
 	private final String setName = "newTestSet";
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@SuppressWarnings("UnusedAssignment")
 	@Test

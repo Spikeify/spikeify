@@ -16,28 +16,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @SuppressWarnings("SuspiciousToArrayCall")
-public class DeleterTest {
+public class DeleterTest extends SpikeifyTest {
 
 	private final Random random = new Random();
 	private final Long userKeyLong = random.nextLong();
 	private final String userKeyString = String.valueOf(random.nextLong());
-	private final String namespace = "test";
 	private final String setName = "testSet";
-
-	private Spikeify sfy;
-	private IAerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		client = SpikeifyService.getClient();
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void deleteRecordViaKey() {

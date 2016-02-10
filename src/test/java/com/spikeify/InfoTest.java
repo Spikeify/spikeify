@@ -11,22 +11,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class InfoTest {
+public class InfoTest extends SpikeifyTest {
 
-	private final String namespace = "test";
 	private final List<String> setNames = new ArrayList<>();
-	private Spikeify sfy;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void testInfo() {

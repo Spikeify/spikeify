@@ -23,24 +23,9 @@ import java.util.*;
  * A test where Map or List contains classes marked with @AsJson
  */
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
-public class JsonCollectionsTest {
+public class JsonCollectionsTest extends SpikeifyTest {
 
 	private final String userKey1 = String.valueOf(new Random().nextLong());
-	private final String namespace = "test";
-	private Spikeify sfy;
-	private IAerospikeClient client;
-
-	@Before
-	public void dbSetup() {
-		SpikeifyService.globalConfig(namespace, 3000, "localhost");
-		sfy = SpikeifyService.sfy();
-		client = SpikeifyService.getClient();
-	}
-
-	@After
-	public void dbCleanup() {
-		sfy.truncateNamespace(namespace);
-	}
 
 	@Test
 	public void create() throws IOException {
