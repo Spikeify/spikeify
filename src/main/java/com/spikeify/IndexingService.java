@@ -72,10 +72,13 @@ public class IndexingService {
 					}
 
 					// check before creating new index
-					check(indexes, clazz, field, indexName, indexType, collectionType);
+					InfoFetcher.IndexInfo found = check(indexes, clazz, field, indexName, indexType, collectionType);
 
-					// we have all the data to create the index ... let's do it
-					createIndex(clazz, sfy.getClient(), policy, sfy.getNamespace(), indexName, field, indexType, collectionType);
+					// only create index if not already created
+					if (found == null) {
+						// we have all the data to create the index ... let's do it
+						createIndex(clazz, sfy.getClient(), policy, sfy.getNamespace(), indexName, field, indexType, collectionType);
+					}
 				}
 			}
 		}
@@ -158,7 +161,7 @@ public class IndexingService {
 	 * @param indexType      to be created index type
 	 * @param collectionType to be created index collection type
 	 */
-	private static void check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, Field field, String indexName, IndexType indexType, IndexCollectionType collectionType) {
+	private static InfoFetcher.IndexInfo check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, Field field, String indexName, IndexType indexType, IndexCollectionType collectionType) {
 
 		String classSetName = getSetName(clazz);
 		InfoFetcher.IndexInfo found = indexes.get(indexName);
@@ -196,6 +199,8 @@ public class IndexingService {
 						.getName() + "'!");
 			}
 		}
+
+		return found;
 	}
 
 	/**
