@@ -5,7 +5,6 @@ import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.Policy;
-import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;

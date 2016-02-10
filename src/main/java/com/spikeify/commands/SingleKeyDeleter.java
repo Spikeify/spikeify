@@ -3,7 +3,6 @@ package com.spikeify.commands;
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
-import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.RecordsCache;
 import com.spikeify.Spikeify;
 import com.spikeify.SpikeifyError;

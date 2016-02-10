@@ -6,7 +6,6 @@ import com.aerospike.client.async.AsyncClientPolicy;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.policy.ClientPolicy;
-import com.aerospike.client.policy.InfoPolicy;
 import com.aerospike.client.policy.Policy;
 import com.spikeify.commands.InfoFetcher;
 
