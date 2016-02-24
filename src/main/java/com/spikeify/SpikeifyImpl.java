@@ -259,19 +259,16 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, userKey);
 	}
 
-	@Deprecated
 	@Override
 	public MultiKeyDeleter deleteAll(Key... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
 	}
 
-	@Deprecated
 	@Override
 	public MultiKeyDeleter deleteAll(Long... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
 	}
 
-	@Deprecated
 	@Override
 	public MultiKeyDeleter deleteAll(String... keys) {
 		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);

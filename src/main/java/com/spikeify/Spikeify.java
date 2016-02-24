@@ -264,7 +264,6 @@ public interface Spikeify {
 	 * @param object Java object(s) representing record(s) to be deleted. The Classes must contain @UserKey annotation.
 	 * @return the command chain
 	 */
-	@Deprecated
 	<T> MultiObjectDeleter<T> deleteAll(T... object);
 
 	/**
@@ -273,7 +272,6 @@ public interface Spikeify {
 	 * @param keys {@link Key}(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
-	@Deprecated
 	MultiKeyDeleter deleteAll(Key... keys);
 
 	/**
@@ -282,7 +280,6 @@ public interface Spikeify {
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
-	@Deprecated
 	MultiKeyDeleter deleteAll(Long... userKeys);
 
 	/**
@@ -291,7 +288,6 @@ public interface Spikeify {
 	 * @param userKeys User key(s) of the record(s) to delete.
 	 * @return the command chain
 	 */
-	@Deprecated
 	MultiKeyDeleter deleteAll(String... userKeys);
 
 	/**
