@@ -7,6 +7,7 @@ import com.spikeify.commands.InfoFetcher;
 import com.spikeify.entity.*;
 import org.junit.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -314,6 +315,8 @@ public class IndexingServiceTest extends SpikeifyTest {
 
 	public List<Long> longList;
 
+	public Collection<Long> longCollection;
+
 	public List<String> stringList;
 
 	public char charField;
@@ -341,6 +344,7 @@ public class IndexingServiceTest extends SpikeifyTest {
 
 		assertEquals(IndexType.STRING, IndexingService.getIndexType(getClass().getField("stringList")));
 		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("longList")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("longCollection")));
 
 		try {
 			IndexingService.getIndexType(getClass().getField("charField"));
