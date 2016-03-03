@@ -21,6 +21,9 @@ public class SpikeifyTest {
 		sfy = SpikeifyService.sfy();
 
 		client = new AerospikeClient("localhost", 3000);
+
+		sfy.truncateNamespace(namespace);
+
 	}
 
 	@After

@@ -68,6 +68,8 @@ public class BigMapTest extends SpikeifyTest {
 		entity.userId = userKey1;
 		sfy.create(entity).now();
 
+		Map<Long, Long> allList = entity.map.getAll();
+
 		int count = 10_000;
 		long offset = 1_000_000L;
 
@@ -78,7 +80,7 @@ public class BigMapTest extends SpikeifyTest {
 		entity.map.putAll(data);
 
 		// get all
-		Map<Long, Long> allList = entity.map.getAll();
+		allList = entity.map.getAll();
 		Assert.assertEquals(count, allList.size());
 	}
 

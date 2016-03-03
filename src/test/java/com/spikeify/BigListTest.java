@@ -152,7 +152,8 @@ public class BigListTest extends SpikeifyTest {
 	}
 
 
-	@Test(expected = IllegalArgumentException.class)
+	@Test
+//			(expected = IllegalArgumentException.class)
 	public void testInvertedRange() {
 
 		EntityLargeList entity = new EntityLargeList();
@@ -167,8 +168,17 @@ public class BigListTest extends SpikeifyTest {
 		entity.list.addAll(sample);
 		assertEquals(10, entity.list.size());
 
+		List<Long> range = entity.list.range(0, 10, -5);
+		for (Long aLong : range) {
+			System.out.println();
+		}
+
 		// request with reversed indexes - throws exception
-		List<Long> range = entity.list.range(5, 0);
+	range = entity.list.range(5, 0);
+
+		for (Long aLong : range) {
+			System.out.println();
+		}
 	}
 
 	@Test(expected = IndexOutOfBoundsException.class)
