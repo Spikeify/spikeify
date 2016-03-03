@@ -444,6 +444,16 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	}
 
 	@Override
+	public void dropIndexesInNamespace(String namespace) {
+		Truncater.dropNamespaceIndexes(namespace, asyncClient);
+	}
+
+	@Override
+	public void dropIndexesInNamespace(String namespace, String setName) {
+		Truncater.dropSetIndexes(namespace, setName, asyncClient);
+	}
+
+	@Override
 	public <R> R transact(int limitTries, Work<R> work) {
 
 		// log.info("Transaction_started");

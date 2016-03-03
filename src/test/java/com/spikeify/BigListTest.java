@@ -1,6 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
@@ -9,9 +8,7 @@ import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityLargeList;
 import com.spikeify.entity.EntityListOfBytes;
 import com.spikeify.entity.EntitySubJson;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.*;
@@ -88,7 +85,7 @@ public class BigListTest extends SpikeifyTest {
 
 		Long originalValue = -1L;
 		entity.list.update(995, originalValue);
-		Assert.assertEquals(originalValue.longValue(),entity.list.get(995).longValue());
+		Assert.assertEquals(originalValue.longValue(), entity.list.get(995).longValue());
 		Assert.assertEquals(offset + 996L, entity.list.get(996).longValue());
 		Assert.assertEquals(offset + 994L, entity.list.get(994).longValue());
 	}
@@ -152,8 +149,7 @@ public class BigListTest extends SpikeifyTest {
 	}
 
 
-	@Test
-//			(expected = IllegalArgumentException.class)
+	@Test(expected = IllegalArgumentException.class)
 	public void testInvertedRange() {
 
 		EntityLargeList entity = new EntityLargeList();
@@ -174,7 +170,7 @@ public class BigListTest extends SpikeifyTest {
 		}
 
 		// request with reversed indexes - throws exception
-	range = entity.list.range(5, 0);
+		range = entity.list.range(5, 0);
 
 		for (Long aLong : range) {
 			System.out.println();

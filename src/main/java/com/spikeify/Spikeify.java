@@ -431,6 +431,21 @@ public interface Spikeify {
 	void truncateNamespace(String namespace);
 
 	/**
+	 * Drops all indexes within given namespace.
+	 *
+	 * @param namespace The namespace where to drop indexes.
+	 */
+	void dropIndexesInNamespace(String namespace);
+
+	/**
+	 * Drops all indexes within given set.
+	 *
+	 * @param namespace The namespace where to drop indexes.
+	 * @param setName The setName where to drop indexes.
+	 */
+	void dropIndexesInNamespace(String namespace, String setName);
+
+	/**
 	 * A lightweight "transaction" helper that builds upon the Aerospike's record versioning functionality.
 	 * Within a unit of work you can execute a number of get and update operations.
 	 * If the version of the record for any update operation mismatches, this update operation is aborted and the whole unit of work is retried.

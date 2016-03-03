@@ -10,6 +10,7 @@ import org.junit.Before;
 public class SpikeifyTest {
 
 	public String namespace = "test";
+	public boolean dropIndexesOnCleanup = true;
 
 	Spikeify sfy;
 	AerospikeClient client;
@@ -24,10 +25,17 @@ public class SpikeifyTest {
 
 		sfy.truncateNamespace(namespace);
 
+		if (dropIndexesOnCleanup) {
+			sfy.dropIndexesInNamespace(namespace);
+		}
 	}
 
 	@After
 	public void dbCleanup() {
 		sfy.truncateNamespace(namespace);
+
+		if (dropIndexesOnCleanup) {
+			sfy.dropIndexesInNamespace(namespace);
+		}
 	}
 }

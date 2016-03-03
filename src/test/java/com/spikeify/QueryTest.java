@@ -26,6 +26,10 @@ import static org.junit.Assert.assertEquals;
 
 public class QueryTest extends SpikeifyTest {
 
+	public QueryTest() {
+		dropIndexesOnCleanup = false;  // prevents clearing indexes between test methods
+	}
+
 	private final String setName = "EntityOne";
 
 	@Test
