@@ -353,7 +353,8 @@ public class IndexingServiceTest extends SpikeifyTest {
 		try {
 			IndexingService.getIndexType(getClass().getField("charField"));
 			assertFalse("This should not happen!", true);
-		} catch (SpikeifyError e) {
+		}
+		catch (SpikeifyError e) {
 			assertEquals("Can't index field: 'charField', indexing field type: 'char' not supported!", e.getMessage());
 		}
 	}
@@ -364,7 +365,8 @@ public class IndexingServiceTest extends SpikeifyTest {
 		IndexingService.createIndex(sfy, new Policy(), EntityIndexed.class);
 		try {
 			IndexingService.createIndex(sfy, new Policy(), EntityIndexed2.class);
-		} catch (SpikeifyError e) {
+		}
+		catch (SpikeifyError e) {
 			assertEquals("Index: 'index_number' is already indexing entity: 'EntityIndexed', can not bind to: 'com.spikeify.entity.EntityIndexed2'", e.getMessage());
 			throw e;
 		}
@@ -378,10 +380,11 @@ public class IndexingServiceTest extends SpikeifyTest {
 
 		try {
 			IndexingService.createIndex(sfy, new Policy(), EntityIndexed3.class);
-		} catch (SpikeifyError e) {
+		}
+		catch (SpikeifyError e) {
 			assertEquals(
-					"Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3'!",
-					e.getMessage());
+				"Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3'!",
+				e.getMessage());
 			throw e;
 		}
 
