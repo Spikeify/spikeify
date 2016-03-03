@@ -33,7 +33,7 @@ public class QueryListTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void testTooLongFieldNameForIndex() {
+	public void testTranslatedFieldNameForListIndex() {
 
 		SpikeifyService.register(LongEntity.class);
 
@@ -60,18 +60,19 @@ public class QueryListTest extends SpikeifyTest {
 
 		// this filter by actual field name should be replaced with name in annotation @BinName
 		List<LongEntity> listShort = sfy.query(LongEntity.class)
-				.filter("listLong", 10L)
+				.filter("list", 10L)  // finds records if translated name "list" is used
 				.now()
 				.toList();
 
-		List<LongEntity> all = sfy.scanAll(LongEntity.class).now();
-
-//		List<LongEntity> listLong = sfy.query(LongEntity.class)
-//				.filter("listTooLongName", 10L)
-//				.now()
-//				.toList();
-
 		assertEquals(2, listShort.size());
+
+		List<LongEntity> listLong = sfy.query(LongEntity.class)
+				.filter("listLong", 11L)  // finds data also if original field name is used
+				.now()
+				.toList();
+		assertEquals(2, listLong.size());
+
+
 
 	}
 
