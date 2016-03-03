@@ -33,9 +33,10 @@ public class QueryListTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void testTranslatedFieldNameForListIndex() {
+	public void testTranslatedFieldNameForListIndex() throws InterruptedException {
 
 		SpikeifyService.register(LongEntity.class);
+		Thread.sleep(3000); // make sure indexes are up to speed
 
 		LongEntity test = new LongEntity();
 		test.id = "1";

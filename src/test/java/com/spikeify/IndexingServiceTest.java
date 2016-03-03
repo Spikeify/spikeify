@@ -16,7 +16,7 @@ import static org.junit.Assert.*;
 public class IndexingServiceTest extends SpikeifyTest {
 
 	public IndexingServiceTest() {
-		dropIndexesOnCleanup = false;
+		super(false);  // prevents clearing indexes between test methods
 	}
 
 	@Test
@@ -34,6 +34,8 @@ public class IndexingServiceTest extends SpikeifyTest {
 		// create index ...
 		IndexingService.createIndex(sfy, new Policy(), EntityOne.class);
 		IndexingService.createIndex(sfy, new Policy(), EntityIndexed.class);
+
+		Thread.sleep(3000); // make sure indexes are up to speed
 
 		// check if index exists ...
 		Map<String, InfoFetcher.IndexInfo> indexes = sfy.info().getIndexes(namespace, EntityOne.class);
@@ -374,19 +376,22 @@ public class IndexingServiceTest extends SpikeifyTest {
 	}
 
 	@Test(expected = SpikeifyError.class)
-	public void testIndexClash_2() {
+	public void testIndexClash_2() throws InterruptedException {
 
 		IndexingService.createIndex(sfy, new Policy(), EntityIndexed.class);
+		Thread.sleep(2000); // make sure indexes are up to speed
 
 		try {
 			IndexingService.createIndex(sfy, new Policy(), EntityIndexed3.class);
+			assertFalse("This should not be called!", true);
 		}
 		catch (SpikeifyError e) {
 			assertEquals(
-				"Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3'!",
+				"Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', " +
+					"remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3', " +
+					"DROP INDEX test.EntityIndexed idx_EntityIndexed_text",
 				e.getMessage());
 			throw e;
 		}
-
 	}
 }

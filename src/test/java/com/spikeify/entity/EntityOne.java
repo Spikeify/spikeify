@@ -35,6 +35,7 @@ public class EntityOne {
 
 	@Indexed
 	public List<String> nine;
+
 	public Map ten;
 	public EntityEnum eleven;
 	public Set twelve;

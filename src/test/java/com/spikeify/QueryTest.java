@@ -16,9 +16,7 @@ import com.spikeify.entity.EntityIndexed;
 import com.spikeify.entity.EntityOne;
 import com.spikeify.entity.EntitySubJson;
 import com.spikeify.generators.IdGenerator;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 
 import java.util.*;
 
@@ -27,7 +25,7 @@ import static org.junit.Assert.assertEquals;
 public class QueryTest extends SpikeifyTest {
 
 	public QueryTest() {
-		dropIndexesOnCleanup = false;  // prevents clearing indexes between test methods
+		super(false);  // prevents clearing indexes between test methods
 	}
 
 	private final String setName = "EntityOne";
@@ -126,7 +124,7 @@ public class QueryTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void testListQuery() {
+	public void testListQuery() throws InterruptedException {
 
 		SpikeifyService.register(EntityOne.class);
 		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(1000, setName);
@@ -164,6 +162,7 @@ public class QueryTest extends SpikeifyTest {
 	@Test
 	public void testListQuery_CustomSetName() {
 
+		SpikeifyService.register(EntityOne.class);
 		// custom set name and index on same entity ...
 		String stringListIndex = "index_list_string_2";
 		String setName = "testSetQuery";
@@ -215,7 +214,7 @@ public class QueryTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void testQueryWithIndexingAnnotation() {
+	public void testQueryWithIndexingAnnotation() throws InterruptedException {
 
 		// register entity (and create indexes)
 		SpikeifyService.register(EntityIndexed.class);
@@ -284,7 +283,9 @@ public class QueryTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void multiQueryTest() {
+	public void multiQueryTest() throws InterruptedException {
+
+		SpikeifyService.register(EntityIndexed.class);
 
 		// add items to database
 		for (int i = 0; i < 100; i++) {
@@ -315,6 +316,8 @@ public class QueryTest extends SpikeifyTest {
 
 	@Test
 	public void multithreadedQueryTest() throws InterruptedException {
+
+		SpikeifyService.register(EntityIndexed.class);
 
 		// add items to database
 		int WORKERS = 4;
@@ -361,6 +364,8 @@ public class QueryTest extends SpikeifyTest {
 	}
 
 	private List<String> execute() {
+
+		SpikeifyService.register(EntityIndexed.class);
 
 		List<String> ids = new ArrayList<>();
 		List<EntityIndexed> list;
@@ -487,7 +492,7 @@ public class QueryTest extends SpikeifyTest {
 	}
 
 	@Test
-	public void nullableBooleanFilterTest() {
+	public void nullableBooleanFilterTest() throws InterruptedException {
 
 		SpikeifyService.register(EntityIndexed.class);
 

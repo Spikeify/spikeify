@@ -10,10 +10,18 @@ import org.junit.Before;
 public class SpikeifyTest {
 
 	public String namespace = "test";
-	public boolean dropIndexesOnCleanup = true;
+	private boolean dropIndexesOnCleanup = true;
 
 	Spikeify sfy;
 	AerospikeClient client;
+
+	public SpikeifyTest() {
+		dropIndexesOnCleanup = true;
+	}
+
+	public SpikeifyTest(boolean dropIndexes) {
+		dropIndexesOnCleanup = dropIndexes;
+	}
 
 	@Before
 	public void dbSetup() {
@@ -23,19 +31,18 @@ public class SpikeifyTest {
 
 		client = new AerospikeClient("localhost", 3000);
 
-		sfy.truncateNamespace(namespace);
-
-		if (dropIndexesOnCleanup) {
+		/*if (dropIndexesOnCleanup) {
 			sfy.dropIndexesInNamespace(namespace);
-		}
+		} */
+		sfy.truncateNamespace(namespace);
 	}
 
 	@After
 	public void dbCleanup() {
 		sfy.truncateNamespace(namespace);
 
-		if (dropIndexesOnCleanup) {
+		/*if (dropIndexesOnCleanup) {
 			sfy.dropIndexesInNamespace(namespace);
-		}
+		}*/
 	}
 }
