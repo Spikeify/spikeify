@@ -5,10 +5,9 @@ import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
 import com.spikeify.commands.InfoFetcher;
 import com.spikeify.entity.*;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.*;
@@ -285,6 +284,73 @@ public class IndexingServiceTest extends SpikeifyTest {
 		assertTrue(info.synced);
 	}
 
+	public String stringField;
+
+	public int intField;
+
+	public long longField;
+
+	public byte byteField;
+
+	public short shortField;
+
+	public float floatField;
+
+	public double aDoubleField;
+
+	public Boolean aBooleanField;
+
+	public Integer aIntegerField;
+
+	public Long aLongField;
+
+	public Byte aByteField;
+
+	public Short aShortField;
+
+	public Float aFloatField;
+
+	public Double doubleField;
+
+	public List<Long> longList;
+
+	public List<String> stringList;
+
+	public char charField;
+	public Character aCharField;
+
+
+	@Test
+	public void testResolveIndexType() throws NoSuchFieldException {
+
+		assertEquals(IndexType.STRING, IndexingService.getIndexType(getClass().getField("stringField")));
+
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("intField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("longField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("byteField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("shortField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("floatField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aDoubleField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aBooleanField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aIntegerField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aLongField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aByteField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aShortField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("aFloatField")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("doubleField")));
+
+		assertEquals(IndexType.STRING, IndexingService.getIndexType(getClass().getField("stringList")));
+		assertEquals(IndexType.NUMERIC, IndexingService.getIndexType(getClass().getField("longList")));
+
+		try {
+			IndexingService.getIndexType(getClass().getField("charField"));
+			assertFalse("This should not happen!", true);
+		}
+		catch (SpikeifyError e) {
+			assertEquals("Can't index field: 'charField', indexing field type: 'char' not supported!", e.getMessage());
+		}
+	}
+
 	@Test(expected = SpikeifyError.class)
 	public void testIndexClash() {
 
@@ -308,7 +374,9 @@ public class IndexingServiceTest extends SpikeifyTest {
 			IndexingService.createIndex(sfy, new Policy(), EntityIndexed3.class);
 		}
 		catch (SpikeifyError e) {
-			assertEquals("Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3'!", e.getMessage());
+			assertEquals(
+				"Index: 'idx_EntityIndexed_text' is already indexing field: 'text' on: 'EntityIndexed', remove this index before applying: 'failed_index' on: 'com.spikeify.entity.EntityIndexed3'!",
+				e.getMessage());
 			throw e;
 		}
 

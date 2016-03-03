@@ -28,7 +28,7 @@ public class QueryListTest extends SpikeifyTest {
 		public String sourceBucketAndKey;
 
 		@Indexed(collection = IndexCollectionType.LIST)
-		//		@BinName("list")
+		@BinName("list")
 		public List<Long> listLong = new ArrayList<>();
 	}
 

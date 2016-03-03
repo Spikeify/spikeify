@@ -10,12 +10,11 @@ import com.spikeify.commands.InfoFetcher;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Takes care of index creation and usage
@@ -72,7 +71,7 @@ public class IndexingService {
 					}
 
 					// check before creating new index
-					InfoFetcher.IndexInfo found = check(indexes, clazz, field, indexName, indexType, collectionType);
+					InfoFetcher.IndexInfo found = check(indexes, clazz, field, indexName, indexType, collectionType, sfy);
 
 					// only create index if not already created
 					if (found == null) {
@@ -85,6 +84,7 @@ public class IndexingService {
 	}
 
 	public static boolean isRegistered(Class<?> clazz) {
+
 		return registeredEntities.contains(clazz.getName());
 	}
 
@@ -101,30 +101,46 @@ public class IndexingService {
 			char.class.isAssignableFrom(field.getType()) ||
 			BigDecimal.class.isAssignableFrom(field.getType()) ||
 			BigInteger.class.isAssignableFrom(field.getType())) {
-			throw new SpikeifyError("Can't index field: " + field.getName() + ", indexing field type: " + field.getType() + " not supported!");
+			throw new SpikeifyError("Can't index field: '" + field.getName() + "', indexing field type: '" + field.getType() + "' not supported!");
 		}
 
-		// others are Strings (char, enum or string)
-		if (boolean.class.isAssignableFrom(field.getType()) ||
-			int.class.isAssignableFrom(field.getType()) ||
-			long.class.isAssignableFrom(field.getType()) ||
-			byte.class.isAssignableFrom(field.getType()) ||
-			short.class.isAssignableFrom(field.getType()) ||
-			double.class.isAssignableFrom(field.getType()) ||
-			float.class.isAssignableFrom(field.getType()) ||
-			double.class.isAssignableFrom(field.getType()) ||
-			Boolean.class.isAssignableFrom(field.getType()) ||
-			Integer.class.isAssignableFrom(field.getType()) ||
-			Long.class.isAssignableFrom(field.getType()) ||
-			Double.class.isAssignableFrom(field.getType()) ||
-			Byte.class.isAssignableFrom(field.getType()) ||
-			Short.class.isAssignableFrom(field.getType()) ||
-			Float.class.isAssignableFrom(field.getType())) {
-			return IndexType.NUMERIC;
+		if (Collection.class.isAssignableFrom(field.getType())) {
+			// we have a collection ... index is inner type
+			Type type = field.getGenericType();
+
+			if (type instanceof ParameterizedType) {
+				ParameterizedType pt = (ParameterizedType) type;
+				if (pt.getActualTypeArguments().length == 1) {
+					return getIndexType((Class<?>) pt.getActualTypeArguments()[0]);
+				}
+
+				throw new SpikeifyError("Can't index field: '" + field.getName() + "', collection with multiple types: '" + field.getType() + "' not supported!");
+			}
 		}
+
+		return getIndexType(field.getType());
+	}
+
+	private static IndexType getIndexType(Class<?> field) {
+
+		if (field.isAssignableFrom(boolean.class) ||
+			field.isAssignableFrom(int.class) ||
+			field.isAssignableFrom(long.class) ||
+			field.isAssignableFrom(byte.class) ||
+			field.isAssignableFrom(short.class) ||
+			field.isAssignableFrom(float.class) ||
+			field.isAssignableFrom(double.class) ||
+			field.isAssignableFrom(Boolean.class) ||
+			field.isAssignableFrom(Integer.class) ||
+			field.isAssignableFrom(Long.class) ||
+			field.isAssignableFrom(Byte.class) ||
+			field.isAssignableFrom(Short.class) ||
+			field.isAssignableFrom(Float.class) ||
+			field.isAssignableFrom(Double.class)) { return IndexType.NUMERIC; }
 
 		return IndexType.STRING;
 	}
+
 
 	/**
 	 * Resolves index collection type according to field type
@@ -139,7 +155,8 @@ public class IndexingService {
 			return defaultType;
 		}
 
-		if (List.class.isAssignableFrom(field.getType()) ||
+		if (Collection.class.isAssignableFrom(field.getType()) ||
+			List.class.isAssignableFrom(field.getType()) ||
 			Array.class.isAssignableFrom(field.getType()) ||
 			Set.class.isAssignableFrom(field.getType())) {
 			return IndexCollectionType.LIST;
@@ -161,7 +178,8 @@ public class IndexingService {
 	 * @param indexType      to be created index type
 	 * @param collectionType to be created index collection type
 	 */
-	private static InfoFetcher.IndexInfo check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, Field field, String indexName, IndexType indexType, IndexCollectionType collectionType) {
+	private static InfoFetcher.IndexInfo check(Map<String, InfoFetcher.IndexInfo> indexes, Class clazz, Field field, String indexName, IndexType indexType, IndexCollectionType collectionType,
+	                                           Spikeify sfy) {
 
 		String classSetName = getSetName(clazz);
 		InfoFetcher.IndexInfo found = indexes.get(indexName);
@@ -179,11 +197,13 @@ public class IndexingService {
 			}
 
 			if (!indexType.equals(found.indexType)) {
-				throw new SpikeifyError("Index: '" + indexName + "' can not change index type from: '" + found.indexType + "', to: '" + indexType + "', remove index manually!");
+				throw new SpikeifyError("Index: '" + indexName + "' can not change index type from: '" + found.indexType + "', to: '" + indexType + "', remove index manually: " +
+					"DROP INDEX " + sfy.getNamespace() + "." + getSetName(clazz) + " " + indexName);
 			}
 
 			if (!collectionType.equals(found.collectionType)) {
-				throw new SpikeifyError("Index: '" + indexName + "' can not change index collection type from: '" + found.collectionType + "', to: '" + collectionType + "', remove index manually!");
+				throw new SpikeifyError("Index: '" + indexName + "' can not change index collection type from: '" + found.collectionType + "', to: '" + collectionType + "', remove index manually: " +
+					"DROP INDEX " + sfy.getNamespace() + "." + getSetName(clazz) + " " + indexName);
 			}
 		}
 
@@ -196,7 +216,8 @@ public class IndexingService {
 				!indexName.equals(info.name)) {
 				throw new SpikeifyError(
 					"Index: '" + info.name + "' is already indexing field: '" + fieldName + "' on: '" + classSetName + "', remove this index before applying: '" + indexName + "' on: '" + clazz
-						.getName() + "'!");
+						.getName() + "', " +
+						"DROP INDEX " + sfy.getNamespace() + "." + getSetName(clazz) + " " + info.name);
 			}
 		}
 
