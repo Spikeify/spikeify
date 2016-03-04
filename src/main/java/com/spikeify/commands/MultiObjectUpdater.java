@@ -24,18 +24,20 @@ public class MultiObjectUpdater {
 	 * Instead use {@link Spikeify#createAll(Object...)} method.
 	 *
 	 * @param isTx             transaction enabled
-	 * @param synClient        synchrone native aerospike client
-	 * @param asyncClient      asynchrone native aerospike client
+	 * @param asynClient      asynchrone native aerospike client
 	 * @param recordsCache     cache
 	 * @param create           true create record, false update record
 	 * @param defaultNamespace default namespace
 	 * @param objects          list of objects to be created or updated
 	 */
-	public MultiObjectUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                          RecordsCache recordsCache, boolean create, String defaultNamespace, Object... objects) {
+	public MultiObjectUpdater(boolean isTx,
+	                          IAsyncClient asynClient,
+	                          RecordsCache recordsCache,
+	                          boolean create,
+	                          String defaultNamespace,
+	                          Object... objects) {
 		this.isTx = isTx;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = defaultNamespace;
@@ -44,8 +46,7 @@ public class MultiObjectUpdater {
 
 	protected final String namespace;
 	private final boolean isTx;
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	protected final RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy overridePolicy;
@@ -77,7 +78,7 @@ public class MultiObjectUpdater {
 	}
 
 	private WritePolicy getPolicy() {
-		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(asynClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
 
@@ -197,7 +198,7 @@ public class MultiObjectUpdater {
 				// retry 5 times in case same id is generated ...
 				for (int count = 1; count <= SingleObjectUpdater.MAX_CREATE_GENERATE_RETRIES; count++) {
 					try {
-						synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+						asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 						break;
 					} catch (AerospikeException e) {
 						// let's retry or not ?
@@ -215,15 +216,15 @@ public class MultiObjectUpdater {
 				// then just touch the entity to update expiry timestamp
 				if (!create && bins.isEmpty()) {
 					if(recordExpiration != null){
-						synClient.touch(usePolicy, key);
+						asynClient.touch(usePolicy, key);
 					}
 				} else {
-					synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+					asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 				}
 			}
 
 			// set LDT fields
-			mapper.setBigDatatypeFields(object, synClient, key);
+			mapper.setBigDatatypeFields(object, asynClient, key);
 		}
 
 		return result;

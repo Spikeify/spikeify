@@ -26,16 +26,22 @@ public class MultiKeyDeleter<T, K> {
 	 */
 
 
-	public MultiKeyDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace, K... keys) {
-		this(null, synClient, asyncClient, recordsCache, defaultNamespace, keys);
+	public MultiKeyDeleter(IAsyncClient asynClient,
+	                       RecordsCache recordsCache,
+	                       String defaultNamespace,
+	                       K... keys) {
+
+		this(null, asynClient, recordsCache, defaultNamespace, keys);
 	}
 
-	public MultiKeyDeleter(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                       RecordsCache recordsCache, String defaultNamespace, K... keys) {
+	public MultiKeyDeleter(Class<T> type,
+	                       IAsyncClient asynClient,
+	                       RecordsCache recordsCache,
+	                       String defaultNamespace,
+	                       K... keys) {
+
 		this.type = type;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
 		this.mapper = type != null ? MapperService.getMapper(type) : null;
@@ -63,8 +69,7 @@ public class MultiKeyDeleter<T, K> {
 	private List<String> stringKeys;
 	protected String namespace;
 	protected String setName;
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	private final RecordsCache recordsCache;
 
 	/**
@@ -171,7 +176,7 @@ public class MultiKeyDeleter<T, K> {
 
 		for (Key key : keys) {
 			recordsCache.remove(key);
-			result.put(key, synClient.delete(null, key));
+			result.put(key, asynClient.delete(null, key));
 		}
 
 		return result;
@@ -209,7 +214,7 @@ public class MultiKeyDeleter<T, K> {
 
 				for (Key key : keys) {
 					recordsCache.remove(key);
-					asyncClient.delete(null, deleteListener, key);
+					asynClient.delete(null, deleteListener, key);
 				}
 
 				// wait until all listeners are called and there is no failure

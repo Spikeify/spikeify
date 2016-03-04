@@ -1,6 +1,5 @@
 package com.spikeify.commands;
 
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
 import com.aerospike.client.async.IAsyncClient;
@@ -24,11 +23,12 @@ public class SingleLoader<T> {
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#get(Class)} instead.
 	 */
-	public SingleLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient,
+	public SingleLoader(Class<T> type,
+	                    IAsyncClient asynClient,
 	                    ClassConstructor classConstructor,
-	                    RecordsCache recordsCache, String namespace) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+	                    RecordsCache recordsCache,
+	                    String namespace) {
+		this.asynClient = asynClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = namespace;
@@ -41,8 +41,7 @@ public class SingleLoader<T> {
 	protected final List<String> stringKeys = new ArrayList<>();
 	protected final List<Long> longKeys = new ArrayList<>();
 	protected final List<Key> keys = new ArrayList<>(10);
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 	protected final ClassMapper<T> mapper;
@@ -112,7 +111,7 @@ public class SingleLoader<T> {
 	}
 
 	private Policy getPolicy(){
-		return  overridePolicy != null ? overridePolicy : new Policy(synClient.getReadPolicyDefault());
+		return  overridePolicy != null ? overridePolicy : new Policy(asynClient.getReadPolicyDefault());
 	}
 
 	protected void collectKeys() {
@@ -155,7 +154,7 @@ public class SingleLoader<T> {
 		// if multiple keys - use the first key
 		Key key = keys.get(0);
 
-		Record record = synClient.get(getPolicy(), key);
+		Record record = asynClient.get(getPolicy(), key);
 
 		if (record == null) {
 			return null;
@@ -169,7 +168,7 @@ public class SingleLoader<T> {
 		MapperService.map(mapper, key, record, object);
 
 		// set LDT fields
-		mapper.setBigDatatypeFields(object, synClient, key);
+		mapper.setBigDatatypeFields(object, asynClient, key);
 
 		return object;
 	}

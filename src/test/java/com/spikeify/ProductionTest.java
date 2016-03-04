@@ -1,7 +1,7 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Host;
+import com.aerospike.client.async.AsyncClient;
 import com.spikeify.commands.InfoFetcher;
 
 public class ProductionTest {
@@ -16,11 +16,11 @@ public class ProductionTest {
 			hosts[i] = new Host(hostname, 3000);
 		}
 
-		AerospikeClient cl = new AerospikeClient(null, hosts);
+		AsyncClient client = new AsyncClient(null, hosts);
 
-		System.out.println("nodes:" + cl.getNodes().length);
+		System.out.println("nodes:" + client.getNodes().length);
 
-		InfoFetcher info = new InfoFetcher(cl);
+		InfoFetcher info = new InfoFetcher(client);
 
 		System.out.println("recs:" + info.getRecordCount("test", "User"));
 

@@ -4,6 +4,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.large.LargeList;
 import com.spikeify.annotations.AsJson;
 import com.spikeify.converters.JsonConverter;
@@ -68,7 +69,7 @@ public abstract class BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this list is assigned
 	 */
-	public abstract void init(AerospikeClient client, Key key, String binName, Field field);
+	public abstract void init(IAsyncClient client, Key key, String binName, Field field);
 
 	/**
 	 * Size of list, i.e. a number of elements in the list

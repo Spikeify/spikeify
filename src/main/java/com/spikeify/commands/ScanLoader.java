@@ -1,6 +1,7 @@
 package com.spikeify.commands;
 
 import com.aerospike.client.*;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.ScanPolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
@@ -17,12 +18,12 @@ import java.util.List;
 public class ScanLoader<T> {
 
 	public ScanLoader(Class<T> type,
-	                  IAerospikeClient synClient,
+	                  IAsyncClient asynClient,
 	                  ClassConstructor classConstructor,
 	                  RecordsCache recordsCache,
 	                  String namespace) {
 
-		this.synClient = synClient;
+		this.asynClient = asynClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = namespace;
@@ -34,13 +35,13 @@ public class ScanLoader<T> {
 		this.type = type;
 
 		// must be set in order for later queries to return record keys
-		this.synClient.getReadPolicyDefault().sendKey = true;
+		this.asynClient.getReadPolicyDefault().sendKey = true;
 	}
 
 	protected String namespace;
 	protected String setName;
 
-	protected final IAerospikeClient synClient;
+	protected final IAsyncClient asynClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 
@@ -127,9 +128,9 @@ public class ScanLoader<T> {
 
 		try {
 
-			ScanPolicy policy = overridePolicy != null ? overridePolicy : copyScanPolicy(synClient.getScanPolicyDefault());
+			ScanPolicy policy = overridePolicy != null ? overridePolicy : copyScanPolicy(asynClient.getScanPolicyDefault());
 
-			synClient.scanAll(policy, getNamespace(), getSetName(), new ScanCallback() {
+			asynClient.scanAll(policy, getNamespace(), getSetName(), new ScanCallback() {
 				@Override
 				public void scanCallback(Key key, Record record) throws AerospikeException {
 
@@ -140,7 +141,7 @@ public class ScanLoader<T> {
 					MapperService.map(mapper, key, record, object);
 
 					// set LDT fields
-					mapper.setBigDatatypeFields(object, synClient, key);
+					mapper.setBigDatatypeFields(object, asynClient, key);
 
 					// if filter is given then check if item fits, otherwise simple add
 					boolean add = (acceptFilter == null || acceptFilter.accept(object));
@@ -181,7 +182,7 @@ public class ScanLoader<T> {
 	}
 
 	private ScanPolicy getPolicy(){
-		ScanPolicy policy = overridePolicy != null ? overridePolicy : copyScanPolicy(synClient.getScanPolicyDefault());
+		ScanPolicy policy = overridePolicy != null ? overridePolicy : copyScanPolicy(asynClient.getScanPolicyDefault());
 		// make sure only keys get retrieved
 		policy.includeBinData = false;
 		policy.includeLDT = false;
@@ -199,7 +200,7 @@ public class ScanLoader<T> {
 
 		try {
 
-			synClient.scanAll(getPolicy(), getNamespace(), getSetName(), new ScanCallback() {
+			asynClient.scanAll(getPolicy(), getNamespace(), getSetName(), new ScanCallback() {
 				@Override
 				public void scanCallback(Key key, Record record) throws AerospikeException {
 

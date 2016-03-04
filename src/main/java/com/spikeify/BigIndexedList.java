@@ -4,6 +4,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.large.LargeList;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
@@ -22,7 +23,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 	protected Type valueType;
 
-	protected AerospikeClient client;
+	protected IAsyncClient client;
 
 	protected WritePolicy wp;
 
@@ -39,7 +40,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this list is assigned
 	 */
-	public void init(AerospikeClient client, Key key, String binName, Field field) {
+	public void init(IAsyncClient client, Key key, String binName, Field field) {
 
 		this.binName = binName;
 		this.client = client;
@@ -49,7 +50,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 		this.wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
-		inner = new LargeList(client, wp, key, binName);
+		inner = new LargeList((AerospikeClient) client, wp, key, binName);
 
 		if (!(new InfoFetcher(client).isUDFEnabled(key.namespace))) {
 			throw new SpikeifyError("Error: LDT support not enabled on namespace '" + key.namespace + "'. Please add 'ldt-enabled true' to namespace section in your aerospike.conf file.");
@@ -383,7 +384,7 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 		// destroy LDT field...
 		inner.destroy();
 		// re-initialize
-		inner = new LargeList(client, wp, key, binName);
+		inner = new LargeList((AerospikeClient) client, wp, key, binName);
 		isEmpty = true;
 	}
 

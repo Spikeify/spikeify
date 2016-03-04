@@ -1,6 +1,7 @@
 package com.spikeify.commands;
 
 import com.aerospike.client.*;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.ScanPolicy;
 import com.spikeify.Spikeify;
 
@@ -48,7 +49,7 @@ public class Truncater {
 	 * @param namespace
 	 * @param client
 	 */
-	public static void dropNamespaceIndexes(String namespace, final IAerospikeClient client) {
+	public static void dropNamespaceIndexes(String namespace, final IAsyncClient client) {
 
 		Map<String, InfoFetcher.IndexInfo> namespaceIndexes = new InfoFetcher(client).getIndexes(namespace);
 		for (InfoFetcher.IndexInfo index : namespaceIndexes.values()) {
@@ -63,7 +64,7 @@ public class Truncater {
 	 * @param setName
 	 * @param client
 	 */
-	public static void dropSetIndexes(String namespace, String setName, final IAerospikeClient client) {
+	public static void dropSetIndexes(String namespace, String setName, final IAsyncClient client) {
 
 		Map<String, InfoFetcher.IndexInfo> namespaceIndexes = new InfoFetcher(client).getIndexes(namespace, setName);
 		for (InfoFetcher.IndexInfo index : namespaceIndexes.values()) {

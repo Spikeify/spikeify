@@ -8,7 +8,6 @@ import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -23,11 +22,13 @@ public class SingleKeyCommander<T> {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#command(Class)} or similar method.
 	 */
-	public SingleKeyCommander(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-	                          RecordsCache recordsCache, String defaultNamespace) {
+	public SingleKeyCommander(Class<T> type,
+	                          IAsyncClient asynClient,
+	                          ClassConstructor classConstructor,
+	                          RecordsCache recordsCache,
+	                          String defaultNamespace) {
 		this.type = type;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
@@ -42,8 +43,7 @@ public class SingleKeyCommander<T> {
 	protected Long longKey;
 	protected Key key;
 	protected final Class<T> type;
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 	protected final ClassMapper<T> mapper;
@@ -234,7 +234,7 @@ public class SingleKeyCommander<T> {
 	}
 
 	private WritePolicy getPolicy() {
-		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(asynClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
 
@@ -257,7 +257,7 @@ public class SingleKeyCommander<T> {
 
 		collectKeys();
 
-		Record rec = synClient.operate(getPolicy(), key, operations.toArray(new Operation[operations.size()]));
+		Record rec = asynClient.operate(getPolicy(), key, operations.toArray(new Operation[operations.size()]));
 
 		if (rec == null || rec.bins == null) {
 			return null;

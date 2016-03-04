@@ -29,11 +29,15 @@ public class SingleKeyUpdater<T, K> {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Instead use {@link Spikeify#update(Key, Object)} or similar method.
 	 */
-	public SingleKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
-	                        RecordsCache recordsCache, boolean create, String defaultNamespace, T object, K key) {
+	public SingleKeyUpdater(boolean isTx,
+	                        IAsyncClient asynClient,
+	                        RecordsCache recordsCache,
+	                        boolean create,
+	                        String defaultNamespace,
+	                        T object,
+	                        K key) {
 		this.isTx = isTx;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = defaultNamespace;
@@ -62,8 +66,7 @@ public class SingleKeyUpdater<T, K> {
 	protected String stringKey;
 	protected Long longKey;
 	protected Key key;
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	protected final RecordsCache recordsCache;
 	protected final boolean create;
 	protected WritePolicy overridePolicy;
@@ -107,7 +110,7 @@ public class SingleKeyUpdater<T, K> {
 	}
 
 	private WritePolicy getPolicy(boolean nonNullField) {
-		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(asynClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
 
@@ -220,10 +223,10 @@ public class SingleKeyUpdater<T, K> {
 		// then just touch the entity to update expiry timestamp
 		if (!create && bins.isEmpty()) {
 			if (recordExpiration != null) {
-				synClient.touch(usePolicy, key);
+				asynClient.touch(usePolicy, key);
 			}
 		} else {
-			synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+			asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 		}
 
 		switch (keyType) {

@@ -1,8 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
+import com.aerospike.client.async.AsyncClient;
+import com.aerospike.client.async.IAsyncClient;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
 
@@ -168,12 +168,11 @@ public class ClassMapper<TYPE> {
 	}
 
 
-	public void setBigDatatypeFields(Object object, IAerospikeClient client, Key key) {
+	public void setBigDatatypeFields(Object object, IAsyncClient client, Key key) {
 
-		if (!(client instanceof AerospikeClient)) {
+		if (!(client instanceof AsyncClient)) {
 			return;  // only real client can be used, mocks do not support LDTs
 		}
-		AerospikeClient realClient = (AerospikeClient) client;
 
 		for (Map.Entry<String, Class<? extends BigDatatypeWrapper>> entry : ldtMappers.entrySet()) {
 			Field field = null;
@@ -189,7 +188,7 @@ public class ClassMapper<TYPE> {
 				BigDatatypeWrapper wrapper = (BigDatatypeWrapper) field.get(object);
 				if (wrapper == null || !wrapper.isInitialized()) {
 					wrapper = (new NoArgClassConstructor()).construct(entry.getValue());
-					wrapper.init(realClient, key, MapperUtils.getBinName(field), field);
+					wrapper.init(client, key, MapperUtils.getBinName(field), field);
 				}
 				field.set(object, wrapper);
 			} catch (IllegalAccessException e) {
@@ -217,7 +216,6 @@ public class ClassMapper<TYPE> {
 
 		return fieldValues;
 	}
-
 
 
 	public void setMetaFieldValues(Object object, String namespace, String setName, int generation, int recordExpiration) {

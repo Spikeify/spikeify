@@ -24,29 +24,26 @@ public class SpikeifyService {
 	}
 
 	public static void globalConfig(String defaultNamespace, Host... hosts) {
-		synClient = new AerospikeClient(null, hosts);
 		asyncClient = new AsyncClient(null, hosts);
 
-		checkDoubleSupport(synClient);
+		checkDoubleSupport(asyncClient);
 
 		SpikeifyService.defaultNamespace = defaultNamespace;
 	}
 
 	public static void globalConfig(String defaultNamespace, ClientPolicy policy, AsyncClientPolicy policyAsync, Host... hosts) {
-		synClient = new AerospikeClient(policy, hosts);
 		asyncClient = new AsyncClient(policyAsync, hosts);
 
-		checkDoubleSupport(synClient);
+		checkDoubleSupport(asyncClient);
 
 		SpikeifyService.defaultNamespace = defaultNamespace;
 	}
 
-	private static IAerospikeClient synClient;
 	private static IAsyncClient asyncClient;
 	public static String defaultNamespace;
 
-	public static IAerospikeClient getClient() {
-		return synClient;
+	public static IAsyncClient getClient() {
+		return asyncClient;
 	}
 
 	/**
@@ -55,10 +52,10 @@ public class SpikeifyService {
 	 * @return Spikeify instance
 	 */
 	public static Spikeify sfy() {
-		if (synClient == null || asyncClient == null) {
+		if (asyncClient == null) {
 			throw new SpikeifyError("Missing configuration: you must call SpikeifyService.globalConfig(..) once, before using SpikeifyService.sfy().");
 		}
-		return new SpikeifyImpl(synClient, asyncClient, new NoArgClassConstructor(), defaultNamespace);
+		return new SpikeifyImpl(asyncClient, new NoArgClassConstructor(), defaultNamespace);
 	}
 
 	/**
@@ -67,8 +64,8 @@ public class SpikeifyService {
 	 * @param client Native Aerospike client
 	 * @return A mock Spikeify instance
 	 */
-	public static Spikeify mock(IAerospikeClient client) {
-		return new SpikeifyImpl(client, null, new NoArgClassConstructor(), defaultNamespace);
+	public static Spikeify mock(IAsyncClient client) {
+		return new SpikeifyImpl(client, new NoArgClassConstructor(), defaultNamespace);
 	}
 
 	/**
@@ -88,19 +85,18 @@ public class SpikeifyService {
 	}
 
 	/**
-	 * Creates a new instance of Spikeify with given parameters.
+	 * Creates a brand new instance of Spikeify with given parameters. Does not reuse internal
 	 *
 	 * @param namespace Default namespace
 	 * @param hosts     Aerospike server hosts
 	 * @return Spikeify instance
 	 */
 	public static Spikeify instance(String namespace, Host... hosts) {
-		AerospikeClient synClient = new AerospikeClient(null, hosts);
-		AsyncClient asyncClient = new AsyncClient(null, hosts);
+		AsyncClient asynClient = new AsyncClient(null, hosts);
 
-		checkDoubleSupport(synClient);
+		checkDoubleSupport(asynClient);
 
-		return new SpikeifyImpl<>(synClient, asyncClient, new NoArgClassConstructor(), namespace);
+		return new SpikeifyImpl<>(asynClient, new NoArgClassConstructor(), namespace);
 	}
 
 	/**
@@ -119,7 +115,7 @@ public class SpikeifyService {
 	 */
 	public static void register(Class<?>... classes) {
 
-		for (Class item: classes) {
+		for (Class item : classes) {
 			register(item, new Policy());
 		}
 	}
@@ -127,7 +123,7 @@ public class SpikeifyService {
 	/**
 	 * Registers entity of type and creates indexes annotated with @see(@Index) annotation
 	 *
-	 * @param clazz to be registered (Aerospike entity)
+	 * @param clazz  to be registered (Aerospike entity)
 	 * @param policy usage policy
 	 */
 	public static void register(Class<?> clazz, Policy policy) {
@@ -136,9 +132,10 @@ public class SpikeifyService {
 
 	/**
 	 * Checks if server supports saving double values. This is supported on servers higher or equal 3.6.0
+	 *
 	 * @param client Native Aerospike client
 	 */
-	public static void checkDoubleSupport(IAerospikeClient client){
+	public static void checkDoubleSupport(IAerospikeClient client) {
 		InfoFetcher.Build build = getServerBuild(client);
 		// check that server build is >= 3.6.0
 		if (build.major >= 3 && build.minor >= 6) {
@@ -157,7 +154,7 @@ public class SpikeifyService {
 		if (nodes == null || nodes.length == 0) {
 			throw new IllegalStateException("No Aerospike nodes found.");
 		}
-		String build = Info.request(synClient.getInfoPolicyDefault(), nodes[0], "build");
+		String build = Info.request(asyncClient.getInfoPolicyDefault(), nodes[0], "build");
 		String[] buildNumbers = build.split("\\.");
 		return new InfoFetcher.Build(Integer.valueOf(buildNumbers[0]), Integer.valueOf(buildNumbers[1]), Integer.valueOf(buildNumbers[2]));
 	}

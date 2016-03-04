@@ -1,6 +1,7 @@
 package com.spikeify;
 
 import com.aerospike.client.IAerospikeClient;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.Policy;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
@@ -324,15 +325,15 @@ public class IndexingService {
 	/**
 	 * Finds index if set name was manually changed ... custom
 	 *
-	 * @param synClient client
+	 * @param asynClient client
 	 * @param namespace namespace
 	 * @param field     field
 	 * @param setName   to search for index
 	 * @return index information or null if not found
 	 */
-	public static InfoFetcher.IndexInfo findIndex(IAerospikeClient synClient, String namespace, String setName, Field field) {
+		public static InfoFetcher.IndexInfo findIndex(IAsyncClient asynClient, String namespace, String setName, Field field) {
 
-		InfoFetcher fetcher = new InfoFetcher(synClient);
+		InfoFetcher fetcher = new InfoFetcher(asynClient);
 		String fieldName = getFieldName(field);
 		return fetcher.findIndex(namespace, setName, fieldName);
 	}

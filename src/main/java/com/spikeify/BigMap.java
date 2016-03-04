@@ -4,6 +4,7 @@ import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.large.LargeList;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
@@ -28,7 +29,7 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	protected Type keyType;
 	protected Type valueType;
 
-	protected AerospikeClient client;
+	protected IAsyncClient asynClient;
 	protected WritePolicy wp;
 	protected Key key;
 	protected String binName;
@@ -42,9 +43,9 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 	 * @param binName The bin name under which this list is saved in DB
 	 * @param field   The field in the object to which this list is assigned
 	 */
-	public void init(AerospikeClient client, Key key, String binName, Field field) {
+	public void init(IAsyncClient client, Key key, String binName, Field field) {
 		this.binName = binName;
-		this.client = client;
+		this.asynClient = client;
 		this.key = key;
 		this.keyType = TypeUtils.getBigMapKeyType(field);
 		if (keyType != null) {
@@ -59,7 +60,9 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 
 		this.wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
-		inner = new LargeList(client, wp, key, binName);
+
+		// retards from AS
+		inner = new LargeList((AerospikeClient) asynClient, wp, key, binName);
 
 		if (!(new InfoFetcher(client).isUDFEnabled(key.namespace))) {
 			throw new SpikeifyError("Error: LDT support not enabled on namespace '" + key.namespace + "'. Please add 'ldt-enabled true' to namespace section in your aerospike.conf file.");
@@ -313,6 +316,6 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 		// destroy LDT field...
 		inner.destroy();
 		// re-initialize
-		inner = new LargeList(client, wp, key, binName);
+		inner = new LargeList((AerospikeClient) asynClient, wp, key, binName);
 	}
 }

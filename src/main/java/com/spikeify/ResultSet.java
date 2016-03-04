@@ -1,8 +1,8 @@
 package com.spikeify;
 
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Record;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.command.ParticleType;
 import com.aerospike.client.query.RecordSet;
 
@@ -17,18 +17,18 @@ public class ResultSet<T> implements Iterable<T> {
 	private final ClassConstructor classConstructor;
 	private final RecordsCache recordsCache;
 	public final RecordSet recordSet;
-	private IAerospikeClient client;
+	private IAsyncClient asynClient;
 
 	private Boolean hasNext;
 	private T nextRecord;
 
 	protected ResultSet(ClassMapper<T> mapper, ClassConstructor classConstructor,
-	                    RecordsCache recordsCache, RecordSet recordSet, IAerospikeClient client) {
+	                    RecordsCache recordsCache, RecordSet recordSet, IAsyncClient client) {
 		this.mapper = mapper;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.recordSet = recordSet;
-		this.client = client;
+		this.asynClient = client;
 	}
 
 	public final Key getKey() {
@@ -64,7 +64,7 @@ public class ResultSet<T> implements Iterable<T> {
 
 
 		// set LDT fields
-		mapper.setBigDatatypeFields(object, client, key);
+		mapper.setBigDatatypeFields(object, asynClient, key);
 
 		return object;
 	}
@@ -130,6 +130,7 @@ public class ResultSet<T> implements Iterable<T> {
 
 	/**
 	 * Helper method to return only first item in result set or null if not found
+	 *
 	 * @return first item in list or null if no item present
 	 */
 	public T getFirst() {

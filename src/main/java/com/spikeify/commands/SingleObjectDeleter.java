@@ -20,10 +20,11 @@ public class SingleObjectDeleter {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Use {@link Spikeify#delete(Object)}  instead.
 	 */
-	public SingleObjectDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                           RecordsCache recordsCache, String defaultNamespace, Object object) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+	public SingleObjectDeleter(IAsyncClient asynClient,
+	                           RecordsCache recordsCache,
+	                           String defaultNamespace,
+	                           Object object) {
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.defaultNamespace = defaultNamespace;
 		this.object = object;
@@ -32,8 +33,7 @@ public class SingleObjectDeleter {
 	private final Object object;
 
 	private final String defaultNamespace;
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	private final RecordsCache recordsCache;
 	private WritePolicy overridePolicy;
 
@@ -60,7 +60,7 @@ public class SingleObjectDeleter {
 	}
 
 	private WritePolicy getPolicy(){
-		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(asynClient.getWritePolicyDefault());
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
 
@@ -77,7 +77,7 @@ public class SingleObjectDeleter {
 		Key key = collectKey(object);
 		recordsCache.remove(key);
 
-		return synClient.delete(getPolicy(), key);
+		return asynClient.delete(getPolicy(), key);
 	}
 
 

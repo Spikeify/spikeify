@@ -15,15 +15,13 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	private static final Logger log = Logger.getLogger(SpikeifyImpl.class.getSimpleName());
 
-	public SpikeifyImpl(IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor, String defaultNamespace) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+	public SpikeifyImpl(IAsyncClient asyncClient, ClassConstructor classConstructor, String defaultNamespace) {
+		this.asynClient = asyncClient;
 		this.classConstructor = classConstructor;
 		this.defaultNamespace = defaultNamespace;
 	}
 
-	private final IAerospikeClient synClient;
-	private final IAsyncClient asyncClient;
+	private final IAsyncClient asynClient;
 	private final ClassConstructor classConstructor;
 	private final String defaultNamespace;
 
@@ -32,7 +30,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	@Override
 	public InfoFetcher info() {
-		return new InfoFetcher(synClient);
+		return new InfoFetcher(asynClient);
 	}
 
 	@Override
@@ -42,47 +40,47 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	@Override
 	public IAerospikeClient getClient() {
-		return synClient;
+		return asynClient;
 	}
 
 	@Override
 	public <E> SingleLoader<E> get(Class<E> type) {
-		return new SingleLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace);
+		return new SingleLoader<>(type, asynClient, classConstructor, recordsCache, defaultNamespace);
 	}
 
 	@Override
 	public <E> MultiLoader<E, Key> getAll(Class<E> type, Key... keys) {
-		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace, keys);
+		return new MultiLoader<>(type, asynClient, classConstructor, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <E> MultiLoader<E, Long> getAll(Class<E> type, Long... keys) {
-		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace, keys);
+		return new MultiLoader<>(type, asynClient, classConstructor, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <E> MultiLoader<E, String> getAll(Class<E> type, String... keys) {
-		return new MultiLoader<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace, keys);
+		return new MultiLoader<>(type, asynClient, classConstructor, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <T> ScanLoader<T> scanAll(Class<T> type) {
-		return new ScanLoader<>(type, synClient, classConstructor, recordsCache, defaultNamespace);
+		return new ScanLoader<>(type, asynClient, classConstructor, recordsCache, defaultNamespace);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Key> create(Key key, T object) {
-		return new SingleKeyUpdater<>(false, synClient, asyncClient, recordsCache, true, defaultNamespace, object, key);
+		return new SingleKeyUpdater<>(false, asynClient, recordsCache, true, defaultNamespace, object, key);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Long> create(Long userKey, T object) {
-		return new SingleKeyUpdater<>(false, synClient, asyncClient, recordsCache, true, defaultNamespace, object, userKey);
+		return new SingleKeyUpdater<>(false, asynClient, recordsCache, true, defaultNamespace, object, userKey);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, String> create(String userKey, T object) {
-		return new SingleKeyUpdater<>(false, synClient, asyncClient, recordsCache, true, defaultNamespace, object, userKey);
+		return new SingleKeyUpdater<>(false, asynClient, recordsCache, true, defaultNamespace, object, userKey);
 	}
 
 	@Override
@@ -93,7 +91,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
 
-		return new SingleObjectUpdater<>(isTx, object.getClass(), synClient, asyncClient,
+		return new SingleObjectUpdater<>(isTx, object.getClass(), asynClient,
 				recordsCache, true, defaultNamespace, object);
 	}
 
@@ -109,7 +107,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, true, defaultNamespace, keys, objects);
+		return new MultiKeyUpdater(isTx, asynClient, recordsCache, true, defaultNamespace, keys, objects);
 	}
 
 	@Override
@@ -124,7 +122,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, true, defaultNamespace, keys, objects);
+		return new MultiKeyUpdater(isTx, asynClient, recordsCache, true, defaultNamespace, keys, objects);
 	}
 
 	@Override
@@ -139,7 +137,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, true, defaultNamespace, keys, objects);
+		return new MultiKeyUpdater(isTx, asynClient, recordsCache, true, defaultNamespace, keys, objects);
 	}
 
 	@Override
@@ -149,7 +147,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array.");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiObjectUpdater(isTx, synClient, asyncClient,
+		return new MultiObjectUpdater(isTx, asynClient,
 				recordsCache, true, defaultNamespace, objects);
 	}
 
@@ -159,26 +157,26 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: parameter 'object' must not be null.");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new SingleObjectUpdater<>(isTx, object.getClass(), synClient, asyncClient,
+		return new SingleObjectUpdater<>(isTx, object.getClass(), asynClient,
 				recordsCache, false, defaultNamespace, object);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Key> update(Key key, T object) {
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new SingleKeyUpdater<>(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, object, key);
+		return new SingleKeyUpdater<>(isTx, asynClient, recordsCache, false, defaultNamespace, object, key);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, Long> update(Long userKey, T object) {
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new SingleKeyUpdater<>(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, object, userKey);
+		return new SingleKeyUpdater<>(isTx, asynClient, recordsCache, false, defaultNamespace, object, userKey);
 	}
 
 	@Override
 	public <T> SingleKeyUpdater<T, String> update(String userKey, T object) {
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new SingleKeyUpdater<>(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, object, userKey);
+		return new SingleKeyUpdater<>(isTx, asynClient, recordsCache, false, defaultNamespace, object, userKey);
 	}
 
 	@Override
@@ -187,7 +185,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: parameter 'objects' must not be null or empty array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiObjectUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, objects);
+		return new MultiObjectUpdater(isTx, asynClient, recordsCache, false, defaultNamespace, objects);
 	}
 
 	@Override
@@ -202,7 +200,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, keys, objects);
+		return new MultiKeyUpdater(isTx, asynClient, recordsCache, false, defaultNamespace, keys, objects);
 	}
 
 	@Override
@@ -217,7 +215,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, keys, objects);
+		return new MultiKeyUpdater(isTx, asynClient, recordsCache, false, defaultNamespace, keys, objects);
 	}
 
 	@Override
@@ -232,82 +230,82 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			throw new SpikeifyError("Error: array 'objects' must be same length as 'keys' array");
 		}
 		boolean isTx = Boolean.TRUE.equals(tlTransaction.get());
-		return new MultiKeyUpdater(isTx, synClient, asyncClient, recordsCache, false, defaultNamespace, keys, objects);
+		return new MultiKeyUpdater(isTx, asynClient, recordsCache, false, defaultNamespace, keys, objects);
 	}
 
 	public SingleObjectDeleter delete(Object object) {
-		return new SingleObjectDeleter(synClient, asyncClient, recordsCache, defaultNamespace, object);
+		return new SingleObjectDeleter(asynClient, recordsCache, defaultNamespace, object);
 	}
 
 	@Override
 	public <T> MultiObjectDeleter<T> deleteAll(T... objects) {
-		return new MultiObjectDeleter<>(synClient, asyncClient, recordsCache, defaultNamespace, objects);
+		return new MultiObjectDeleter<>(asynClient, recordsCache, defaultNamespace, objects);
 	}
 
 	@Override
 	public SingleKeyDeleter delete(Key key) {
-		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, key);
+		return new SingleKeyDeleter(asynClient, recordsCache, defaultNamespace, key);
 	}
 
 	@Override
 	public SingleKeyDeleter delete(Long userKey) {
-		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, userKey);
+		return new SingleKeyDeleter(asynClient, recordsCache, defaultNamespace, userKey);
 	}
 
 	@Override
 	public SingleKeyDeleter delete(String userKey) {
-		return new SingleKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, userKey);
+		return new SingleKeyDeleter(asynClient, recordsCache, defaultNamespace, userKey);
 	}
 
 	@Override
 	public MultiKeyDeleter deleteAll(Key... keys) {
-		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
+		return new MultiKeyDeleter(asynClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public MultiKeyDeleter deleteAll(Long... keys) {
-		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
+		return new MultiKeyDeleter(asynClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public MultiKeyDeleter deleteAll(String... keys) {
-		return new MultiKeyDeleter(synClient, asyncClient, recordsCache, defaultNamespace, keys);
+		return new MultiKeyDeleter(asynClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <E> MultiKeyDeleter<E, Key> deleteAll(Class<E> clazz, Key... keys) {
-		return new MultiKeyDeleter<>(clazz, synClient, asyncClient, recordsCache, defaultNamespace, keys);
+		return new MultiKeyDeleter<>(clazz, asynClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <E> MultiKeyDeleter<E, Long> deleteAll(Class<E> clazz, Long... keys) {
-		return new MultiKeyDeleter<>(clazz, synClient, asyncClient, recordsCache, defaultNamespace, keys);
+		return new MultiKeyDeleter<>(clazz, asynClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <E> MultiKeyDeleter<E, String> deleteAll(Class<E> clazz, String... keys) {
-		return new MultiKeyDeleter<>(clazz, synClient, asyncClient, recordsCache, defaultNamespace, keys);
+		return new MultiKeyDeleter<>(clazz, asynClient, recordsCache, defaultNamespace, keys);
 	}
 
 	@Override
 	public <T> Scanner<T> query(Class<T> type) {
-		return new Scanner<>(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace);
+		return new Scanner<>(type, asynClient, classConstructor, recordsCache, defaultNamespace);
 	}
 
 
 	@Override
 	public SingleKeyCommander command(Class type) {
-		return new SingleKeyCommander(type, synClient, asyncClient, classConstructor, recordsCache, defaultNamespace);
+		return new SingleKeyCommander(type, asynClient, classConstructor, recordsCache, defaultNamespace);
 	}
 
 	@Override
 	public boolean exists(Key key) {
-		return synClient.exists(null, key);
+		return asynClient.exists(null, key);
 	}
 
 	@Override
 	public Map<Key, Boolean> exist(Key... keys) {
-		boolean[] exist = synClient.exists(null, keys);
+		boolean[] exist = asynClient.exists(null, keys);
 
 		Map<Key, Boolean> results = new HashMap<>(keys.length);
 		for (int i = 0; i < keys.length; i++) {
@@ -319,7 +317,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	@Override
 	public boolean exists(Class type, String id) {
 		ClassMapper mapper = MapperService.getMapper(type);
-		return synClient.exists(null, new Key(getNamespace(mapper), getSetName(mapper), id));
+		return asynClient.exists(null, new Key(getNamespace(mapper), getSetName(mapper), id));
 	}
 
 	@Override
@@ -332,7 +330,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			String id = ids[i];
 			keys[i] = new Key(namespace, setName, id);
 		}
-		boolean[] exist = synClient.exists(null, keys);
+		boolean[] exist = asynClient.exists(null, keys);
 
 		Map<String, Boolean> results = new HashMap<>(keys.length);
 		for (int i = 0; i < ids.length; i++) {
@@ -345,7 +343,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 	public boolean exists(Class type, Long id) {
 		ClassMapper mapper = MapperService.getMapper(type);
 		Key key = new Key(getNamespace(mapper), getSetName(mapper), id);
-		return synClient.exists(null, key);
+		return asynClient.exists(null, key);
 	}
 
 	@Override
@@ -358,7 +356,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 			Long id = ids[i];
 			keys[i] = new Key(namespace, setName, id);
 		}
-		boolean[] exist = synClient.exists(null, keys);
+		boolean[] exist = asynClient.exists(null, keys);
 
 		Map<Long, Boolean> results = new HashMap<>(keys.length);
 		for (int i = 0; i < ids.length; i++) {
@@ -398,7 +396,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		MapperService.map(mapper, key, record, object);
 
 		// set LDT wrappers
-		mapper.setBigDatatypeFields(object, synClient, key);
+		mapper.setBigDatatypeFields(object, asynClient, key);
 
 		return object;
 	}
@@ -421,7 +419,7 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 
 	@Override
 	public void truncateSet(String namespace, String setName) {
-		Truncater.truncateSet(namespace, setName, synClient);
+		Truncater.truncateSet(namespace, setName, asynClient);
 	}
 
 	@Override
@@ -435,22 +433,22 @@ public class SpikeifyImpl<P extends Spikeify> implements Spikeify {
 		if (setName == null) {
 			throw new SpikeifyError("Error: @SetName annotation not defined on class " + type.getName());
 		}
-		Truncater.truncateSet(ns, setName, synClient);
+		Truncater.truncateSet(ns, setName, asynClient);
 	}
 
 	@Override
 	public void truncateNamespace(String namespace) {
-		Truncater.truncateNamespace(namespace, synClient);
+		Truncater.truncateNamespace(namespace, asynClient);
 	}
 
 	@Override
 	public void dropIndexesInNamespace(String namespace) {
-		Truncater.dropNamespaceIndexes(namespace, asyncClient);
+		Truncater.dropNamespaceIndexes(namespace, asynClient);
 	}
 
 	@Override
 	public void dropIndexesInNamespace(String namespace, String setName) {
-		Truncater.dropSetIndexes(namespace, setName, asyncClient);
+		Truncater.dropSetIndexes(namespace, setName, asynClient);
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package com.spikeify.commands;
 
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.WritePolicy;
@@ -23,10 +22,12 @@ public class MultiObjectDeleter<T> {
 	 * Used internally to create a command chain. Not intended to be used by the user directly.
 	 * Use {@link Spikeify#deleteAll(Object...)} instead.
 	 */
-	public MultiObjectDeleter(IAerospikeClient synClient, IAsyncClient asyncClient,
-	                          RecordsCache recordsCache, String defaultNamespace, T... objects) {
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+	public MultiObjectDeleter(IAsyncClient asynClient,
+	                          RecordsCache recordsCache,
+	                          String defaultNamespace,
+	                          T... objects) {
+
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.defaultNamespace = defaultNamespace;
 		for (T object : objects) {
@@ -34,14 +35,13 @@ public class MultiObjectDeleter<T> {
 		}
 
 		// must be set in order for later queries to return record keys
-		this.synClient.getWritePolicyDefault().sendKey = true;
+		this.asynClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	protected final Map<T, Key> data = new HashMap<>(10);
 
 	private final String defaultNamespace;
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	private final RecordsCache recordsCache;
 	private WritePolicy overridePolicy;
 
@@ -56,8 +56,8 @@ public class MultiObjectDeleter<T> {
 		return this;
 	}
 
-	private WritePolicy getPolicy(){
-		return overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+	private WritePolicy getPolicy() {
+		return overridePolicy != null ? overridePolicy : new WritePolicy(asynClient.getWritePolicyDefault());
 	}
 
 	protected Key collectKey(T obj) {
@@ -84,7 +84,7 @@ public class MultiObjectDeleter<T> {
 		for (T obj : data.keySet()) {
 			Key key = data.get(obj);
 			recordsCache.remove(key);
-			result.put(obj, synClient.delete(getPolicy(), key));
+			result.put(obj, asynClient.delete(getPolicy(), key));
 		}
 
 		return result;

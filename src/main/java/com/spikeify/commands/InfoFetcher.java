@@ -2,6 +2,7 @@ package com.spikeify.commands;
 
 import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Info;
+import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.cluster.Node;
 import com.aerospike.client.query.IndexCollectionType;
 import com.aerospike.client.query.IndexType;
@@ -27,7 +28,7 @@ public class InfoFetcher {
 	public static final String CONFIG_NAMESPACE = "get-config:context=namespace;id=";
 	public static final String REPLICATION_FACTOR = "repl-factor";
 
-	public InfoFetcher(IAerospikeClient synClient) {
+	public InfoFetcher(IAsyncClient synClient) {
 
 		this.synClient = synClient;
 	}

@@ -27,13 +27,12 @@ public class MultiKeyUpdater {
 	 */
 
 	@SuppressWarnings("SameParameterValue")
-	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiKeyUpdater(boolean isTx,  IAsyncClient asynClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Key[] keys, Object[] objects) {
 
 		this.isTx = isTx;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = namespace;
@@ -44,7 +43,7 @@ public class MultiKeyUpdater {
 		this.objects = objects;
 
 		// must be set in order for later queries to return record keys
-		this.synClient.getWritePolicyDefault().sendKey = true;
+		this.asynClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	/**
@@ -52,13 +51,12 @@ public class MultiKeyUpdater {
 	 * Instead use {@link Spikeify#createAll(Long[], Object[])} (Object...)} method.
 	 */
 	@SuppressWarnings("SameParameterValue")
-	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiKeyUpdater(boolean isTx, IAsyncClient asynClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       Long[] keys, Object[] objects) {
 
 		this.isTx = isTx;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = namespace;
@@ -69,7 +67,7 @@ public class MultiKeyUpdater {
 		this.objects = objects;
 
 		// must be set in order for later queries to return record keys
-		this.synClient.getWritePolicyDefault().sendKey = true;
+		this.asynClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	/**
@@ -77,13 +75,12 @@ public class MultiKeyUpdater {
 	 * Instead use {@link Spikeify#createAll(String[], Object[])} (Object...)} or  method.
 	 */
 	@SuppressWarnings("SameParameterValue")
-	public MultiKeyUpdater(boolean isTx, IAerospikeClient synClient, IAsyncClient asyncClient,
+	public MultiKeyUpdater(boolean isTx, IAsyncClient asynClient,
 	                       RecordsCache recordsCache, boolean create, String namespace,
 	                       String[] keys, Object[] objects) {
 
 		this.isTx = isTx;
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.recordsCache = recordsCache;
 		this.create = create;
 		this.namespace = namespace;
@@ -94,7 +91,7 @@ public class MultiKeyUpdater {
 		this.objects = objects;
 
 		// must be set in order for later queries to return record keys
-		this.synClient.getWritePolicyDefault().sendKey = true;
+		this.asynClient.getWritePolicyDefault().sendKey = true;
 	}
 
 	private final Object[] objects;
@@ -111,9 +108,7 @@ public class MultiKeyUpdater {
 
 	private final boolean isTx;
 
-	protected final IAerospikeClient synClient;
-
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 
 	protected final RecordsCache recordsCache;
 
@@ -248,7 +243,7 @@ public class MultiKeyUpdater {
 
 	private WritePolicy getPolicy() {
 
-		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(synClient.getWritePolicyDefault());
+		WritePolicy writePolicy = overridePolicy != null ? overridePolicy : new WritePolicy(asynClient.getWritePolicyDefault());
 
 		writePolicy.recordExistsAction = create ? RecordExistsAction.CREATE_ONLY : forceReplace ? RecordExistsAction.REPLACE : RecordExistsAction.UPDATE;
 
@@ -327,14 +322,14 @@ public class MultiKeyUpdater {
 			// then just touch the entity to update expiry timestamp
 			if (!create && bins.isEmpty()) {
 				if(recordExpiration != null){
-					synClient.touch(usePolicy, key);
+					asynClient.touch(usePolicy, key);
 				}
 			} else {
-				synClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+				asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
 			}
 
 			// set LDT fields
-			mapper.setBigDatatypeFields(object, synClient, key);
+			mapper.setBigDatatypeFields(object, asynClient, key);
 		}
 
 		return result;

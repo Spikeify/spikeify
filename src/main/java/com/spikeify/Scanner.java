@@ -1,6 +1,5 @@
 package com.spikeify;
 
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.QueryPolicy;
 import com.aerospike.client.query.Filter;
@@ -18,8 +17,7 @@ public class Scanner<T> {
 
 	protected final Class<T> type;
 
-	protected final IAerospikeClient synClient;
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 	protected final ClassConstructor classConstructor;
 	protected final RecordsCache recordsCache;
 	protected final ClassMapper<T> mapper;
@@ -32,13 +30,15 @@ public class Scanner<T> {
 	protected QueryPolicy policy = new QueryPolicy();
 	protected Filter[] filters;
 
-	public Scanner(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
-				   RecordsCache recordsCache, String defaultNamespace) {
+	public Scanner(Class<T> type,
+	               IAsyncClient asyncClient,
+	               ClassConstructor classConstructor,
+	               RecordsCache recordsCache,
+	               String defaultNamespace) {
 
 		this.type = type;
 		this.mapper = MapperService.getMapper(type);
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asyncClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
@@ -95,9 +95,9 @@ public class Scanner<T> {
 		statement.setSetName(setName);
 		statement.setFilters(filters);
 
-		RecordSet recordSet = synClient.query(policy, statement);
+		RecordSet recordSet = asynClient.query(policy, statement);
 
-		return new ResultSet<>(mapper, classConstructor, recordsCache, recordSet, synClient);
+		return new ResultSet<>(mapper, classConstructor, recordsCache, recordSet, asynClient);
 	}
 
 	protected void collectMetaData() {
@@ -192,8 +192,7 @@ public class Scanner<T> {
 		Field foundField = null;
 		try {
 			foundField = type.getDeclaredField(nameOfField);
-		}
-		catch (NoSuchFieldException e) {
+		} catch (NoSuchFieldException e) {
 
 			// try again by binName ... if found
 			Field[] allFields = type.getDeclaredFields();
@@ -228,7 +227,7 @@ public class Scanner<T> {
 		if (setName != null) {
 			// explicit set name filtering (index was created manually) ... @Indexed annotation is ignored
 			// index name can not be resolved from annotations we must look up in information
-			InfoFetcher.IndexInfo info = IndexingService.findIndex(synClient, namespace, setName, field);
+			InfoFetcher.IndexInfo info = IndexingService.findIndex(asynClient, namespace, setName, field);
 
 			if (info == null) {
 				throw new SpikeifyError("Index in namespace: " + namespace + ", for set: " + setName + " and field: " + field.getName() + ", not found!");

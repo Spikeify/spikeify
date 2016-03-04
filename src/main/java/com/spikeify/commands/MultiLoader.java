@@ -14,8 +14,8 @@ import java.util.*;
 /**
  * A command chain for getting multiple records from database.
  *
- * @param <T>
- * @param <K>
+ * @param <T> Entity type
+ * @param <K> Key type
  */
 @SuppressWarnings({"unchecked", "WeakerAccess"})
 public class MultiLoader<T, K> {
@@ -23,11 +23,10 @@ public class MultiLoader<T, K> {
 	/**
 	 * Used internally to create a command chain. Not intended to be used by the user directly. Use {@link Spikeify#getAll(Class, Key...)} or similar instead.
 	 */
-	public MultiLoader(Class<T> type, IAerospikeClient synClient, IAsyncClient asyncClient, ClassConstructor classConstructor,
+	public MultiLoader(Class<T> type, IAsyncClient asynClient, ClassConstructor classConstructor,
 	                   RecordsCache recordsCache, String namespace, K... keys) {
 
-		this.synClient = synClient;
-		this.asyncClient = asyncClient;
+		this.asynClient = asynClient;
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = namespace;
@@ -62,9 +61,7 @@ public class MultiLoader<T, K> {
 
 	protected List<Key> keys = new ArrayList<>(10);
 
-	protected final IAerospikeClient synClient;
-
-	protected final IAsyncClient asyncClient;
+	protected final IAsyncClient asynClient;
 
 	protected final ClassConstructor classConstructor;
 
@@ -115,7 +112,7 @@ public class MultiLoader<T, K> {
 
 	private BatchPolicy getPolicy() {
 
-		return overridePolicy != null ? overridePolicy : new BatchPolicy(synClient.getBatchPolicyDefault());
+		return overridePolicy != null ? overridePolicy : new BatchPolicy(asynClient.getBatchPolicyDefault());
 	}
 
 	protected void collectKeys() {
@@ -165,7 +162,7 @@ public class MultiLoader<T, K> {
 		BatchPolicy usePolicy = getPolicy();
 
 		Key[] keysArray = keys.toArray(new Key[keys.size()]);
-		Record[] records = synClient.get(usePolicy, keysArray);
+		Record[] records = asynClient.get(usePolicy, keysArray);
 
 		Map<K, T> result = new HashMap<>(keys.size());
 
@@ -184,7 +181,7 @@ public class MultiLoader<T, K> {
 				MapperService.map(mapper, key, record, object);
 
 				// set LDT wrappers
-				mapper.setBigDatatypeFields(object, synClient, key);
+				mapper.setBigDatatypeFields(object, asynClient, key);
 
 				switch (keyType) {
 					case KEY:
@@ -220,7 +217,7 @@ public class MultiLoader<T, K> {
 		BatchPolicy usePolicy = getPolicy();
 
 		Key[] keysArray = keys.toArray(new Key[keys.size()]);
-		Record[] records = synClient.get(usePolicy, keysArray);
+		Record[] records = asynClient.get(usePolicy, keysArray);
 
 		List<T> result = new ArrayList<>(keys.size());
 
@@ -239,7 +236,7 @@ public class MultiLoader<T, K> {
 				MapperService.map(mapper, key, record, object);
 
 				// set LDT wrappers
-				mapper.setBigDatatypeFields(object, synClient, key);
+				mapper.setBigDatatypeFields(object, asynClient, key);
 
 				result.add(object);
 			}
