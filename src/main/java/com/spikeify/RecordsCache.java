@@ -2,10 +2,7 @@ package com.spikeify;
 
 import com.aerospike.client.Key;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A cache of records, used to calculate changes between loaded and saved objects.
@@ -13,10 +10,10 @@ import java.util.Set;
  */
 public class RecordsCache {
 
-	private final ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>> cache =
-			new ThreadLocal<Map<Key/*key of mapped object*/, Map<String, String>/*record properties*/>>() {
+	private final ThreadLocal<Map<Key/*key of mapped object*/, Map<String, Long>/*record properties*/>> cache =
+			new ThreadLocal<Map<Key/*key of mapped object*/, Map<String, Long>/*record properties*/>>() {
 				@Override
-				protected Map<Key, Map<String, String>> initialValue() {
+				protected Map<Key, Map<String, Long>> initialValue() {
 					return new HashMap<>();
 				}
 			};
@@ -26,17 +23,19 @@ public class RecordsCache {
 	/**
 	 * Insert a set of properties linked to a Key
 	 *
-	 * @param key The Key
+	 * @param key        The Key
 	 * @param properties Object properties
 	 */
 	public void insert(Key key, Map<String, Object> properties) {
 
-		Map<String, String> propertiesKeys = new HashMap<>(properties.size());
+		Map<String, Long> propertiesKeys = new HashMap<>(properties.size());
 		for (Map.Entry<String, Object> prop : properties.entrySet()) {
 			Object property = prop.getValue();
 			if (property != null) {
-				String propertyHash = getPropertyHash(property);
-				propertiesKeys.put(prop.getKey(), propertyHash);
+				Long propertyHash = getPropertyHash(property);
+				if (propertyHash != null) {
+					propertiesKeys.put(prop.getKey(), propertyHash);
+				}
 			}
 		}
 
@@ -56,32 +55,33 @@ public class RecordsCache {
 	 * Updates a set of possibly existing properties.
 	 * Returns changes between new and existing property sets.
 	 *
-	 * @param key The Key
+	 * @param key           The Key
 	 * @param newProperties New object properties
-	 * @param forceReplace Skip smart cache check for changes and replace all property values
+	 * @param forceReplace  Skip smart cache check for changes and replace all property values
 	 * @return Changed properties.
 	 */
 	public Set<String> update(Key key, Map<String, Object> newProperties, boolean forceReplace) {
 
-		Map<String, String> existing = cache.get().get(key);
+		Map<String, Long> existing = cache.get().get(key);
 
 		if (existing != null && !forceReplace) {
 
 			Set<String> changed = new HashSet<>(newProperties.size());
 
 			for (Map.Entry<String, Object> newEntry : newProperties.entrySet()) {
-				Object existingProp = existing.get(newEntry.getKey());
+				String newEntryKey = newEntry.getKey();
+				Object existingPropHash = existing.get(newEntryKey);
 
 				// property does not exist yet or has different value then new property
 				Object newEntryValue = newEntry.getValue();
 				if (newEntryValue != null) {
-					String newEntryHash = getPropertyHash(newEntryValue);
-					if (existingProp == null || !existingProp.equals(newEntryHash)) {
-						changed.add(newEntry.getKey());
+					Long newEntryHash = getPropertyHash(newEntryValue);
+					if (existingPropHash == null || !existingPropHash.equals(newEntryHash)) {
+						changed.add(newEntryKey);
 					}
 				} else { // set to null, write it
-					if (existingProp != null) {
-						changed.add(newEntry.getKey());
+					if (existingPropHash != null) {
+						changed.add(newEntryKey);
 					}
 				}
 			}
@@ -94,9 +94,58 @@ public class RecordsCache {
 		return newProperties.keySet();
 	}
 
+	/**
+	 * Returns a hash of AS-supported properties: Long, Double, String, byte[]
+	 *
+	 * @param property
+	 * @return
+	 */
+	private Long getPropertyHash(Object property) {
+		if (property instanceof Long) {
 
-	private String getPropertyHash(Object property) {
-		return property.getClass().getName() + ":" + property.hashCode();
+			return (Long) property;
+		} else if (property instanceof Double) {
+
+			return Double.doubleToLongBits((Double) property);
+		} else if (property instanceof byte[]) {
+
+			return new MurmurHash3().add((byte[]) property).hash()[0];
+		} else if (property instanceof String) {
+
+			return new MurmurHash3().add(((String) property).getBytes()).hash()[0];
+		} else if (property instanceof Map) {
+
+			Map<Object, Object> propMap = (Map<Object, Object>) property;
+			MurmurHash3 hasher = new MurmurHash3();
+			for (Map.Entry entry : propMap.entrySet()) {
+				Long valueHash = getPropertyHash(entry.getValue());
+				Long keyHash = getPropertyHash(entry.getKey());
+				if (keyHash != null && valueHash != null) {
+					hasher.add(keyHash);
+					hasher.add(valueHash);
+				}
+			}
+
+			return hasher.hash()[0];
+		} else if (property instanceof List) {
+
+			List<Object> propMap = (List<Object>) property;
+			MurmurHash3 hasher = new MurmurHash3();
+			for (Object entry : propMap) {
+
+				Long propertyHash = getPropertyHash(entry);
+				if (propertyHash != null) {
+					hasher.add(propertyHash);
+				}
+			}
+
+			return hasher.hash()[0];
+		} else {
+			// this happens if POJOs are directly saved to database or when POJOs are added to Maps/Lists
+			// AS client then serializes & saves them
+			return getPropertyHash(property.getClass().getName() + property.hashCode());  // a simplistic hash for POJOs
+		}
 	}
+
 
 }

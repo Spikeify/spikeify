@@ -195,7 +195,7 @@ public class MapperUtils {
 						paramTypes.getActualTypeArguments()[1].equals(Object.class)) {
 					return new FieldMapper<>(null, findConverter(field), field);
 				} else {
-					throw new SpikeifyError("Error: field marked with @AnyProperty must be of type long or Long.");
+					throw new SpikeifyError("Error: fields marked with @AnyProperty must be of type Map<String, Object>.");
 				}
 			}
 		}
