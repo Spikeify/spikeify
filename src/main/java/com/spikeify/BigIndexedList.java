@@ -50,6 +50,10 @@ public class BigIndexedList<T> extends BigDatatypeWrapper {
 
 		this.wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
+
+		// need to set timeout for operations with a lot of records, e.g. getAll();
+		wp.timeout = 10_000;  // 10s
+
 		inner = new LargeList((AerospikeClient) client, wp, key, binName);
 
 		if (!(new InfoFetcher(client).isUDFEnabled(key.namespace))) {

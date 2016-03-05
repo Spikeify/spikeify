@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A type-safe wrapper for a native {@link LargeList}, exposing its interface as a Map.
+ * A type-safe wrapper for a native {@link LargeList}, exposed as a Map.
  *
- * @param <K> the type of keys in this list
- * @param <V> the type of values in this list
+ * @param <K> the type of keys in this map
+ * @param <V> the type of values in this map
  */
 public class BigMap<K, V> extends BigDatatypeWrapper {
 
@@ -60,6 +60,9 @@ public class BigMap<K, V> extends BigDatatypeWrapper {
 
 		this.wp = new WritePolicy();
 		wp.recordExistsAction = RecordExistsAction.UPDATE;
+
+		// need to set timeout for operations with a lot of records, e.g. getAll();
+		wp.timeout = 10_000;  // 10s
 
 		// retards from AS
 		inner = new LargeList((AerospikeClient) asynClient, wp, key, binName);
