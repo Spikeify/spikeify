@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <version.fasterxml.jackson>2.7.1</version.fasterxml.jackson>
-        <version.aerospike>3.1.9</version.aerospike>
+        <version.aerospike>3.2.1</version.aerospike>
 
         <version.junit>4.12</version.junit>
     </properties>
