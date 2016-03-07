@@ -1,9 +1,10 @@
 package com.spikeify.commands;
 
+import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.listener.WriteListener;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
@@ -15,6 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * A command chain for creating or updating a single object in database.
@@ -186,6 +192,16 @@ public class SingleKeyUpdater<T, K> {
 	 */
 	@SuppressWarnings("ConstantConditions")
 	public K now() {
+		return now(null);  // invoke internal sync version
+	}
+
+	/**
+	 * Internal update method that can run sync or async, depending on the provided listener being provided or null.
+	 *
+	 * @param writeListener
+	 * @return
+	 */
+	private K now(WriteListener writeListener) {
 
 		collectKeys();
 		mapper.checkKeyType(key);
@@ -239,5 +255,59 @@ public class SingleKeyUpdater<T, K> {
 			default:
 				throw new IllegalStateException("Error: unsupported key type. Must be one of: Key, Long or String"); // should not happen
 		}
+	}
+
+	public Future<K> async() {
+
+		final FutureTask<K> futureTask = new FutureTask<>(new Callable<K>() {
+
+			@Override
+			public K call() throws InterruptedException {
+
+				final AtomicReference<AerospikeException> failureException = new AtomicReference<>(null);
+				final AtomicReference<Key> clientResult = new AtomicReference<>(null);
+
+				final WriteListener writeListener = new WriteListener() {
+					@Override
+					public void onSuccess(Key key) {
+						clientResult.set(key);
+					}
+
+					@Override
+					public void onFailure(AerospikeException exception) {
+						failureException.set(exception);
+					}
+				};
+
+				// perform the actual operation
+				K result = now(writeListener);
+
+				// wait until listener is called and there is no failure
+				while (clientResult.get() != null) {
+
+					Key clientKey = clientResult.get();
+
+					// checking that client key and our key match in type and value
+					if (result instanceof Key && !result.equals(clientKey)) {
+						throw new SpikeifyError("SingleKeyUpdater error: provided and returned key do not match.");
+					} else if (result instanceof Long && !result.equals(clientKey.userKey.toLong())) {
+						throw new SpikeifyError("SingleKeyUpdater error: provided and returned key do not match.");
+					} else if (result instanceof String && !result.equals(clientKey.userKey.getObject())) {
+						throw new SpikeifyError("SingleKeyUpdater error: provided and returned key do not match.");
+					}
+
+					// check for errors
+					if (failureException.get() != null) {
+						throw failureException.get(); // rethrow original exception
+					}
+				}
+
+				return result;
+			}
+		});
+
+		Executors.newCachedThreadPool().execute(futureTask);
+
+		return futureTask;
 	}
 }

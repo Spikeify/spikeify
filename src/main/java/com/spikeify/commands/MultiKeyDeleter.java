@@ -194,7 +194,7 @@ public class MultiKeyDeleter<T, K> {
 
 		FutureTask<Map<Key, Boolean>> futureTask = new FutureTask<>(new Callable<Map<Key, Boolean>>() {
 			@Override
-			public Map<Key, Boolean> call() throws Exception {
+			public Map<Key, Boolean> call() throws InterruptedException {
 
 				final AtomicReference<AerospikeException> failureException = new AtomicReference<>(null);
 				final Map<Key, Boolean> results = new ConcurrentHashMap<>(keys.size());
@@ -219,7 +219,6 @@ public class MultiKeyDeleter<T, K> {
 
 				// wait until all listeners are called and there is no failure
 				while (results.size() < keys.size()) {
-
 					// check for errors
 					if (failureException.get() != null) {
 						throw failureException.get(); // rethrow original exception
