@@ -259,12 +259,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 		return set.containsKey(key);
 	}
 
-	@Override
+	/*@Override
 	public boolean[] exists(Policy policy, Key[] keys) throws AerospikeException {
 		return new boolean[0];
 	}
-
-	@Override
+*/	@Override
 	public boolean[] exists(BatchPolicy policy, Key[] keys) throws AerospikeException {
 		return new boolean[0];
 	}
@@ -300,11 +299,13 @@ public class AerospikeClientMock implements IAerospikeClient {
 	public void get(BatchPolicy batchPolicy, List<BatchRead> list) throws AerospikeException {
 
 	}
+/*
 
 	@Override
 	public Record[] get(Policy policy, Key[] keys) throws AerospikeException {
 		return new Record[0];
 	}
+*/
 
 	@Override
 	public Record[] get(BatchPolicy policy, Key[] keys) throws AerospikeException {
@@ -316,20 +317,20 @@ public class AerospikeClientMock implements IAerospikeClient {
 		return records;
 	}
 
-	@Override
+/*	@Override
 	public Record[] get(Policy policy, Key[] keys, String... binNames) throws AerospikeException {
 		return new Record[0];
-	}
+	}*/
 
 	@Override
 	public Record[] get(BatchPolicy policy, Key[] keys, String... binNames) throws AerospikeException {
 		return new Record[0];
 	}
 
-	@Override
+	/*@Override
 	public Record[] getHeader(Policy policy, Key[] keys) throws AerospikeException {
 		return new Record[0];
-	}
+	}*/
 
 	@Override
 	public Record[] getHeader(BatchPolicy policy, Key[] keys) throws AerospikeException {
@@ -416,20 +417,19 @@ public class AerospikeClientMock implements IAerospikeClient {
 
 	}
 
-	@Override
+	/*@Override
 	public Object execute(Policy policy, Key key, String packageName, String functionName, Value... args) throws AerospikeException {
 		return null;
-	}
+	}*/
 
 	@Override
 	public Object execute(WritePolicy policy, Key key, String packageName, String functionName, Value... args) throws AerospikeException {
 		return null;
 	}
-
-	@Override
+/*	@Override
 	public ExecuteTask execute(Policy policy, Statement statement, String packageName, String functionName, Value... functionArgs) throws AerospikeException {
 		return null;
-	}
+	}*/
 
 	@Override
 	public ExecuteTask execute(WritePolicy policy, Statement statement, String packageName, String functionName, Value... functionArgs) throws AerospikeException {
