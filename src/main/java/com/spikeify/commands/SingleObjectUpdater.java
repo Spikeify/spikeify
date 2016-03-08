@@ -1,16 +1,22 @@
 package com.spikeify.commands;
 
-import com.aerospike.client.*;
+import com.aerospike.client.AerospikeException;
+import com.aerospike.client.Bin;
+import com.aerospike.client.Key;
+import com.aerospike.client.ResultCode;
 import com.aerospike.client.async.IAsyncClient;
+import com.aerospike.client.listener.WriteListener;
 import com.aerospike.client.policy.GenerationPolicy;
 import com.aerospike.client.policy.RecordExistsAction;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
+import com.spikeify.async.WriteListenerFuture;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * A command chain for creating or updating a single object in database.
@@ -125,6 +131,16 @@ public class SingleObjectUpdater<T> {
 	 * @return The key of the record.
 	 */
 	public Key now() {
+		return now(null); // invoke the sync verison
+	}
+
+	/**
+	 * Internal update method that can run sync or async, depending on the provided listener being provided or null.
+	 *
+	 * @param writeListener
+	 * @return
+	 */
+	public Key now(WriteListener writeListener) {
 		// this should be a one-key operation
 		// if multiple keys - use the first key
 
@@ -192,11 +208,15 @@ public class SingleObjectUpdater<T> {
 			// if we are updating an existing record and no bins are to be updated,
 			// then just touch the entity to update expiry timestamp
 			if (!create && bins.isEmpty()) {
-				if(recordExpiration != null){
+				if (recordExpiration != null) {
 					asynClient.touch(usePolicy, key);
 				}
 			} else {
-				asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()])); // update record with some bins
+				if (writeListener == null) {
+					asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));  // sync
+				} else {
+					asynClient.put(usePolicy, writeListener, key, bins.toArray(new Bin[bins.size()]));  // async
+				}
 			}
 		}
 
@@ -204,5 +224,20 @@ public class SingleObjectUpdater<T> {
 		mapper.setBigDatatypeFields(object, asynClient, key);
 
 		return key;
+	}
+
+	public Future<Key> async() {
+
+
+		WriteListenerFuture<Key> future = new WriteListenerFuture<Key>() {
+			@Override
+			public Key prepareResult(Key key) {
+				return key;
+			}
+		};
+
+		now(future);
+
+		return future;
 	}
 }

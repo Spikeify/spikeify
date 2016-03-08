@@ -6,13 +6,13 @@ import com.aerospike.client.policy.ScanPolicy;
 import com.aerospike.client.policy.WritePolicy;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.*;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static org.junit.Assert.*;
 
@@ -348,6 +348,78 @@ public class UpdaterTest extends SpikeifyTest {
 	}
 
 	@Test
+	public void updateEntitiesAsync() {
+
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(100, "EntityOne");
+
+		List<Future<Key>> futures = new ArrayList<>();
+
+		for (EntityOne entity : entities.values()) {
+			Future<Key> res = sfy.update(entity).async();
+			futures.add(res);
+		}
+
+		List<Key> keys = new ArrayList<>();
+		// wait for all async tasks to finish
+		for (Future<Key> future : futures) {
+			try {
+				Key key = future.get();
+				keys.add(key);
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// check result set size
+		Assert.assertEquals(entities.size(), keys.size());
+
+		// reload entities
+		Map<Key, EntityOne> reloaded = sfy.getAll(EntityOne.class, keys.toArray(new Key[keys.size()])).now();
+		Assert.assertEquals(entities.size(), reloaded.size());
+
+		for (Key key : reloaded.keySet()) {
+			EntityOne ent = entities.get(key.userKey.toLong());
+			Assert.assertEquals(ent, reloaded.get(key));
+		}
+	}
+
+	@Test
+	public void updateKeysAsync() throws InterruptedException {
+
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(100, "EntityOne");
+
+		List<Future<Long>> futures = new ArrayList<>();
+
+		for (EntityOne entity : entities.values()) {
+			Future<Long> res = sfy.update(entity.userId, entity).async();
+			futures.add(res);
+		}
+
+		List<Long> keys = new ArrayList<>();
+		// wait for all async tasks to finish
+		for (Future<Long> future : futures) {
+			try {
+				Long key = future.get();
+				keys.add(key);
+			} catch (InterruptedException | ExecutionException e) {
+				e.printStackTrace();
+			}
+		}
+
+		// check result set size
+		Assert.assertEquals(entities.size(), keys.size());
+
+		// reload entities
+		Map<Long, EntityOne> reloaded = sfy.getAll(EntityOne.class, keys.toArray(new Long[keys.size()])).now();
+		Assert.assertEquals(entities.size(), reloaded.size());
+
+		for (Long key : reloaded.keySet()) {
+			EntityOne ent = entities.get(key);
+			Assert.assertEquals(ent, reloaded.get(key));
+		}
+	}
+
+	@Test
 	public void testSkipCacheObjectUpdating() {
 		EntityOne entity1 = new EntityOne();
 		entity1.userId = 1234L;
@@ -437,13 +509,13 @@ public class UpdaterTest extends SpikeifyTest {
 		entity.value = "Some value";
 
 		sfy.create(entity)
-		   .now();
+				.now();
 
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		EntityNull saved = sfy.get(EntityNull.class)
-							  .key(userKey1)
-							  .now();
+				.key(userKey1)
+				.now();
 
 		assertNotNull(saved);
 		assertNotNull(saved.userId);
@@ -461,7 +533,7 @@ public class UpdaterTest extends SpikeifyTest {
 		saved.value = null;
 
 		sfy.update(saved)
-		   .now();
+				.now();
 
 		// check if key exist in database
 		SpikeifyService.getClient().scanAll(new ScanPolicy(), namespace, EntityNull.class.getSimpleName(), new ScanCallback() {
@@ -472,8 +544,8 @@ public class UpdaterTest extends SpikeifyTest {
 		});
 
 		EntityNull check = sfy.get(EntityNull.class)
-						.key(userKey1)
-						.now();
+				.key(userKey1)
+				.now();
 		assertNull(check);
 
 		saved.value = "something";
@@ -483,8 +555,8 @@ public class UpdaterTest extends SpikeifyTest {
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		check = sfy.get(EntityNull.class)
-							  .key(userKey1)
-							  .now();
+				.key(userKey1)
+				.now();
 
 		assertNotNull(check);
 		assertNotNull(check.userId);
@@ -498,7 +570,7 @@ public class UpdaterTest extends SpikeifyTest {
 		entity.userId = userKey1;
 
 		sfy.create(entity)
-						.now();
+				.now();
 	}
 
 	@Test
@@ -510,13 +582,13 @@ public class UpdaterTest extends SpikeifyTest {
 		entity.longValue = 10L;
 
 		sfy.create(entity)
-		   .now();
+				.now();
 
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		EntityNull saved = sfy.get(EntityNull.class)
-							  .key(userKey1)
-							  .now();
+				.key(userKey1)
+				.now();
 
 		assertNotNull(saved);
 		assertNotNull(saved.userId);
@@ -527,13 +599,13 @@ public class UpdaterTest extends SpikeifyTest {
 		saved.longValue = null;
 
 		sfy.update(saved)
-		   .now();
+				.now();
 
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		EntityNull check = sfy.get(EntityNull.class)
-							  .key(userKey1)
-							  .now();
+				.key(userKey1)
+				.now();
 
 		assertNotNull(check);
 		assertNotNull(check.userId);
@@ -550,13 +622,13 @@ public class UpdaterTest extends SpikeifyTest {
 		entity.longValue = 10L;
 
 		sfy.create(entity)
-						.now();
+				.now();
 
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		EntityNull saved = sfy.get(EntityNull.class)
-						.key(userKey1)
-						.now();
+				.key(userKey1)
+				.now();
 
 		assertNotNull(saved);
 		assertNotNull(saved.userId);
@@ -564,9 +636,9 @@ public class UpdaterTest extends SpikeifyTest {
 		assertEquals(10L, saved.longValue.longValue());
 
 		EntityNullV2 checkMapping = sfy.get(EntityNullV2.class)
-						.setName(EntityNull.class.getSimpleName())
-						.key(userKey1)
-						.now();
+				.setName(EntityNull.class.getSimpleName())
+				.key(userKey1)
+				.now();
 
 		assertNotNull(checkMapping);
 		assertNotNull(checkMapping.userId);
@@ -577,14 +649,14 @@ public class UpdaterTest extends SpikeifyTest {
 		saved.longValue = null;
 
 		sfy.update(saved)
-						.now();
+				.now();
 
 		// reload entity and check that only two properties were updated
 		// setName will be implicitly set via Class name
 		EntityNullV2 check = sfy.get(EntityNullV2.class)
-						.setName(EntityNull.class.getSimpleName())
-						.key(userKey1)
-						.now();
+				.setName(EntityNull.class.getSimpleName())
+				.key(userKey1)
+				.now();
 
 		assertNotNull(check);
 		assertNotNull(check.userId);
