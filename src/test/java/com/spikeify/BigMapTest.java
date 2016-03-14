@@ -1,14 +1,11 @@
 package com.spikeify;
 
-import com.aerospike.client.AerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.Value;
 import com.aerospike.client.large.LargeList;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spikeify.entity.*;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -183,6 +180,30 @@ public class BigMapTest extends SpikeifyTest {
 		reloaded = sfy.get(EntityLargeMap.class).key(userKey1).now();
 		Assert.assertEquals(30, reloaded.jsonMap.size());
 
+	}
+
+	@Test
+	public void testRangeWithSameObject() {
+
+		EntityLargeMap entity = new EntityLargeMap();
+		entity.userId = userKey1;
+		sfy.create(entity).now();
+
+		long timestamp = System.currentTimeMillis() * 1000; // create large Long
+		EntitySubJson value = new EntitySubJson(1, "text", new Date(10000));
+
+		Map<Long, EntitySubJson> sample = new HashMap<>(10);
+		for (long i = 0; i < 10000; i++) {
+			sample.put(timestamp + i, value);
+		}
+
+		entity.jsonMap.putAll(sample);
+		assertEquals(10000, entity.jsonMap.size());
+
+		// add 10 more elements
+		EntityLargeMap reloaded = sfy.get(EntityLargeMap.class).key(userKey1).now();
+		Map<Long, EntitySubJson> range = reloaded.jsonMap.range(timestamp + 5000, timestamp + 5999);
+		assertEquals(1000, range.size());
 	}
 
 	@Test

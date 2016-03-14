@@ -118,12 +118,10 @@ public class RecordsCache {
 			Map<Object, Object> propMap = (Map<Object, Object>) property;
 			MurmurHash3 hasher = new MurmurHash3();
 			for (Map.Entry entry : propMap.entrySet()) {
-				Long valueHash = getPropertyHash(entry.getValue());
-				Long keyHash = getPropertyHash(entry.getKey());
-				if (keyHash != null && valueHash != null) {
-					hasher.add(keyHash);
-					hasher.add(valueHash);
-				}
+				Long valueHash = entry.getValue() == null ? Long.MAX_VALUE : getPropertyHash(entry.getValue());
+				Long keyHash = entry.getKey() == null ? Long.MAX_VALUE : getPropertyHash(entry.getKey());
+				hasher.add(keyHash);
+				hasher.add(valueHash);
 			}
 
 			return hasher.hash()[0];
@@ -132,11 +130,8 @@ public class RecordsCache {
 			List<Object> propMap = (List<Object>) property;
 			MurmurHash3 hasher = new MurmurHash3();
 			for (Object entry : propMap) {
-
-				Long propertyHash = getPropertyHash(entry);
-				if (propertyHash != null) {
-					hasher.add(propertyHash);
-				}
+				Long propertyHash = entry == null ? Long.MAX_VALUE : getPropertyHash(entry);
+				hasher.add(propertyHash);
 			}
 
 			return hasher.hash()[0];

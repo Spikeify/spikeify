@@ -386,7 +386,7 @@ public class UpdaterTest extends SpikeifyTest {
 	@Test
 	public void updateKeysAsync() throws InterruptedException {
 
-		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(100, "EntityOne");
+		Map<Long, EntityOne> entities = TestUtils.randomEntityOne(500, "EntityOne");
 
 		List<Future<Long>> futures = new ArrayList<>();
 

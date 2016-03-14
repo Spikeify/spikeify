@@ -19,10 +19,14 @@ public class RecordCacheTest {
 		props1.put("one", 1L);
 		props1.put("two", "test");
 		props1.put("five", null); // null should be ignored
-		List<Long> longs1 = new ArrayList<>();  // add a list of longs
+		List<Object> longs1 = new ArrayList<>();  // add a list of longs
 		longs1.add(1L);
 		longs1.add(2L);
+		longs1.add(null);
 		props1.put("longs", longs1);
+		Map<String, Object> innerMap = new HashMap<>();
+		innerMap.put("1", null);
+		props1.put("innaeMap", innerMap);
 		Set<String> updateResult1 = cache.update(key1, props1, false);
 		Assert.assertEquals(props1.keySet(), updateResult1);
 
@@ -100,7 +104,7 @@ public class RecordCacheTest {
 		Assert.assertEquals(1, updateResult12.size());
 	}
 
-	public static class POJO{
+	public static class POJO {
 		public String one;
 		public int two;
 
