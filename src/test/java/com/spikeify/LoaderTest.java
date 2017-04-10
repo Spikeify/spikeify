@@ -104,7 +104,7 @@ public class LoaderTest extends SpikeifyTest {
 		assertEquals(eleven, entity.eleven);
 		assertEquals((long) unmapped1, entity.unmapped.get("unmapped1"));
 		assertEquals(unmapped2, entity.unmapped.get("unmapped2"));
-		assertEquals(unmapped3, entity.unmapped.get("unmapped3"));
+		assertEquals(unmapped3.floatValue(), (double)entity.unmapped.get("unmapped3"), 1.0f);
 		assertEquals(sub.first, entity.sub.first);
 		assertEquals(sub.second, entity.sub.second);
 		Assert.assertNull(entity.sub.date); // JSON ignored field - deserialize to null

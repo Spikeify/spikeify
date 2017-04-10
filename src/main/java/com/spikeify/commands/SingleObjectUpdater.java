@@ -141,6 +141,18 @@ public class SingleObjectUpdater<T> {
 	 * @return
 	 */
 	public Key now(WriteListener writeListener) {
+		try {
+			return nowInternal(writeListener);
+		} catch (AerospikeException e) {
+			if (e.getResultCode() == 2) {
+				recordsCache.remove(collectKey(object, defaultNamespace));
+				return nowInternal(writeListener);
+			}
+			throw e;
+		}
+	}
+
+	public Key nowInternal(WriteListener writeListener) {
 		// this should be a one-key operation
 		// if multiple keys - use the first key
 

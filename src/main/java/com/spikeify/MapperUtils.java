@@ -174,7 +174,21 @@ public class MapperUtils {
 				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
 					return new FieldMapper<>(null, findConverter(field), field);
 				} else {
-					throw new SpikeifyError("Error: field marked with @Expiration must be of type long or Long.");
+					throw new SpikeifyError("Error: field marked with @Expires must be of type long or Long.");
+				}
+			}
+		}
+		return null;
+	}
+
+	public static FieldMapper<Long, Long> getTtlFieldMapper(Class clazz) {
+		for (Field field : clazz.getDeclaredFields()) {
+			if (field.getAnnotation(TimeToLive.class) != null) {
+				Class fieldType = field.getType();
+				if (long.class.equals(fieldType) || Long.class.equals(fieldType)) {
+					return new FieldMapper<>(null, findConverter(field), field);
+				} else {
+					throw new SpikeifyError("Error: field marked with @TimeToLive must be of type long or Long.");
 				}
 			}
 		}
@@ -238,6 +252,7 @@ public class MapperUtils {
 		return !field.isAnnotationPresent(UserKey.class)
 				&& !field.isAnnotationPresent(Generation.class)
 				&& !field.isAnnotationPresent(Expires.class)
+				&& !field.isAnnotationPresent(TimeToLive.class)
 				&& !field.isAnnotationPresent(SetName.class)
 				&& !field.isAnnotationPresent(Namespace.class)
 				&& !field.isAnnotationPresent(AnyProperty.class)

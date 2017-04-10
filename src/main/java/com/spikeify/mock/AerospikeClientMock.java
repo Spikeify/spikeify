@@ -244,6 +244,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 	}
 
 	@Override
+	public void truncate(InfoPolicy infoPolicy, String s, String s1, Calendar calendar) throws AerospikeException {
+
+	}
+
+	@Override
 	public void touch(WritePolicy policy, Key key) throws AerospikeException {
 
 	}
@@ -358,22 +363,7 @@ public class AerospikeClientMock implements IAerospikeClient {
 	}
 
 	@Override
-	public LargeList getLargeList(Policy policy, Key key, String binName, String userModule) {
-		return null;
-	}
-
-	@Override
-	public LargeList getLargeList(WritePolicy policy, Key key, String binName, String userModule) {
-		return null;
-	}
-
-	@Override
 	public LargeList getLargeList(WritePolicy writePolicy, Key key, String s) {
-		return null;
-	}
-
-	@Override
-	public LargeMap getLargeMap(Policy policy, Key key, String binName, String userModule) {
 		return null;
 	}
 
@@ -383,17 +373,7 @@ public class AerospikeClientMock implements IAerospikeClient {
 	}
 
 	@Override
-	public LargeSet getLargeSet(Policy policy, Key key, String binName, String userModule) {
-		return null;
-	}
-
-	@Override
 	public LargeSet getLargeSet(WritePolicy policy, Key key, String binName, String userModule) {
-		return null;
-	}
-
-	@Override
-	public LargeStack getLargeStack(Policy policy, Key key, String binName, String userModule) {
 		return null;
 	}
 
@@ -409,6 +389,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 
 	@Override
 	public RegisterTask register(Policy policy, ClassLoader resourceLoader, String resourcePath, String serverPath, Language language) throws AerospikeException {
+		return null;
+	}
+
+	@Override
+	public RegisterTask registerUdfString(Policy policy, String s, String s1, Language language) throws AerospikeException {
 		return null;
 	}
 
@@ -453,6 +438,11 @@ public class AerospikeClientMock implements IAerospikeClient {
 
 	@Override
 	public ResultSet queryAggregate(QueryPolicy policy, Statement statement) throws AerospikeException {
+		return null;
+	}
+
+	@Override
+	public ResultSet queryAggregateNode(QueryPolicy queryPolicy, Statement statement, Node node) throws AerospikeException {
 		return null;
 	}
 

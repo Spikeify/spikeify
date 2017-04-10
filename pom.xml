@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.spikeify</groupId>
     <artifactId>core</artifactId>
-    <version>0.2.33</version>
+    <version>0.2.34</version>
     <packaging>jar</packaging>
 
     <name>Spikeify</name>
@@ -17,7 +17,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <version.fasterxml.jackson>2.7.1</version.fasterxml.jackson>
-        <version.aerospike>3.2.1</version.aerospike>
+        <version.aerospike>3.3.4</version.aerospike>
 
         <version.junit>4.12</version.junit>
     </properties>

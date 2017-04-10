@@ -22,6 +22,7 @@ public class ClassMapper<TYPE> {
 
 	private final FieldMapper<Integer, Integer> generationFieldMapper;
 	private final FieldMapper<Long, Long> expirationFieldMapper;
+	private final FieldMapper<Long, Long> ttlFieldMapper;
 	private final FieldMapper<String, String> namespaceFieldMapper;
 	private final FieldMapper<String, String> setNameFieldMapper;
 	private final FieldMapper userKeyFieldMapper;
@@ -46,6 +47,7 @@ public class ClassMapper<TYPE> {
 
 		generationFieldMapper = MapperUtils.getGenerationFieldMapper(clazz);
 		expirationFieldMapper = MapperUtils.getExpirationFieldMapper(clazz);
+		ttlFieldMapper = MapperUtils.getTtlFieldMapper(clazz);
 		namespaceFieldMapper = MapperUtils.getNamespaceFieldMapper(clazz);
 		setNameFieldMapper = MapperUtils.getSetNameFieldMapper(clazz);
 		userKeyFieldMapper = MapperUtils.getUserKeyFieldMapper(clazz);
@@ -106,6 +108,8 @@ public class ClassMapper<TYPE> {
 
 		// acquire @Expires
 		metadata.expires = expirationFieldMapper != null ? expirationFieldMapper.getPropertyValue(target) : null;
+		// acquire @TimeToLive
+		metadata.ttl = ttlFieldMapper != null ? ttlFieldMapper.getPropertyValue(target) : null;
 
 		// acquire @Generation
 		metadata.generation = generationFieldMapper != null ? generationFieldMapper.getPropertyValue(target) : null;
@@ -226,6 +230,9 @@ public class ClassMapper<TYPE> {
 		if (expirationFieldMapper != null) {
 			expirationFieldMapper.setFieldValue(object, ExpirationUtils.getExpirationMillisAbs(recordExpiration));
 		}
+		if (ttlFieldMapper != null) {
+			ttlFieldMapper.setFieldValue(object, ExpirationUtils.getExpirationMillisRelative(recordExpiration));
+		}
 		if (namespaceFieldMapper != null) {
 			namespaceFieldMapper.setFieldValue(object, namespace);
 		}
@@ -239,6 +246,13 @@ public class ClassMapper<TYPE> {
 			return null;
 		}
 		return ExpirationUtils.getRecordExpiration(expirationFieldMapper.getPropertyValue(object));
+	}
+
+	public Long getRecordTtl(TYPE object) {
+		if (ttlFieldMapper == null) {
+			return null;
+		}
+		return ttlFieldMapper.getPropertyValue(object);
 	}
 
 	/**

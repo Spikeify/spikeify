@@ -9,5 +9,6 @@ public class ObjectMetadata {
 	public String setName;
 
 	public Long expires;
+	public Long ttl;
 	public Integer generation;
 }

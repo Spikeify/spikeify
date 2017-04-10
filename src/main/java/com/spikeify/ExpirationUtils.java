@@ -24,6 +24,25 @@ public class ExpirationUtils {
 	}
 
 	/**
+	 * @param recordExpirationTimestamp Timestamp when record expires, in seconds since Jan 01 2010 00:00:00 GMT (relative)
+	 * @return Expiration time in seconds
+	 */
+	public static long getExpirationMillisRelative(long recordExpirationTimestamp) {
+		long timestamp;
+
+		// Aerospike expiry settings are messed up: you put in -1 and get back 0
+		if (recordExpirationTimestamp == 0) {
+			timestamp = -1; // default expiration setting: -1 - no expiration set
+		} else {
+			// convert record expiration time (seconds from 01/01/2010 0:0:0 GMT)
+			// to java epoch time in milliseconds
+			long now = System.currentTimeMillis() / 1000;
+			timestamp = (AS_TIMEBASE_SEC + recordExpirationTimestamp) - now;
+		}
+		return timestamp;
+	}
+
+	/**
 	 * Returns relative expiration time of a record in seconds from now.
 	 *
 	 * @param expiresTimestampMillis A Unix timestamp in milliseconds when record should expire

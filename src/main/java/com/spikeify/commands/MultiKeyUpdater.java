@@ -1,7 +1,7 @@
 package com.spikeify.commands;
 
+import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
 import com.aerospike.client.policy.RecordExistsAction;
@@ -277,62 +277,80 @@ public class MultiKeyUpdater {
 			Object object = objects[i];
 			Key key = keys.get(i);
 
-			if (key == null || object == null) {
-				throw new SpikeifyError("Error: with multi-put all objects and keys must NOT be null");
-			}
+			try {
 
-			result.put(key, object);
+				nowInternalSingle(usePolicy, isReplace, result, object, key);
 
-			ClassMapper mapper = MapperService.getMapper(object.getClass());
-
-			Map<String, Object> props = mapper.getProperties(object);
-			Set<String> changedProps = recordsCache.update(key, props, forceReplace);
-
-			List<Bin> bins = new ArrayList<>();
-			boolean nonNullField = false;
-			for (String propName : changedProps) {
-				Object value = props.get(propName);
-				if (value == null) {
-					if (!isReplace) {
-						bins.add(Bin.asNull(propName));
-					}
-				} else if (value instanceof List<?>) {
-					bins.add(new Bin(propName, (List) value));
-					nonNullField = true;
-				} else if (value instanceof Map<?, ?>) {
-					bins.add(new Bin(propName, (Map) value));
-					nonNullField = true;
-				} else {
-					bins.add(new Bin(propName, value));
-					nonNullField = true;
+			} catch (AerospikeException e) {
+				// Error Code 2: Key not found
+				if (e.getResultCode() == 2) {
+					recordsCache.remove(key);
+					nowInternalSingle(usePolicy, isReplace, result, object, key);
+				}
+				else {
+					throw e;
 				}
 			}
 
-			if (!nonNullField && props.size() == changedProps.size()) {
-				throw new SpikeifyError("Error: cannot create object with no writable properties. " +
-						"At least one object property other then UserKey must be different from NULL.");
-			}
-
-			Integer recordExpiration = mapper.getRecordExpiration(object);
-			if (recordExpiration != null) {
-				usePolicy.expiration = recordExpiration;
-			}
-
-      // if we are updating an existing record and no bins are to be updated,
-			// then just touch the entity to update expiry timestamp
-			if (!create && bins.isEmpty()) {
-				if(recordExpiration != null){
-					asynClient.touch(usePolicy, key);
-				}
-			} else {
-				asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
-			}
-
-			// set LDT fields
-			mapper.setBigDatatypeFields(object, asynClient, key);
 		}
 
 		return result;
+	}
+
+	private void nowInternalSingle(WritePolicy usePolicy, boolean isReplace, Map<Key, Object> result, Object object, Key key) {
+		if (key == null || object == null) {
+            throw new SpikeifyError("Error: with multi-put all objects and keys must NOT be null");
+        }
+
+		result.put(key, object);
+
+		ClassMapper mapper = MapperService.getMapper(object.getClass());
+
+		Map<String, Object> props = mapper.getProperties(object);
+		Set<String> changedProps = recordsCache.update(key, props, forceReplace);
+
+		List<Bin> bins = new ArrayList<>();
+		boolean nonNullField = false;
+		for (String propName : changedProps) {
+			Object value = props.get(propName);
+			if (value == null) {
+				if (!isReplace) {
+					bins.add(Bin.asNull(propName));
+				}
+			} else if (value instanceof List<?>) {
+				bins.add(new Bin(propName, (List) value));
+				nonNullField = true;
+			} else if (value instanceof Map<?, ?>) {
+				bins.add(new Bin(propName, (Map) value));
+				nonNullField = true;
+			} else {
+				bins.add(new Bin(propName, value));
+				nonNullField = true;
+			}
+		}
+
+		if (!nonNullField && props.size() == changedProps.size()) {
+			throw new SpikeifyError("Error: cannot create object with no writable properties. " +
+					"At least one object property other then UserKey must be different from NULL.");
+		}
+
+		Integer recordExpiration = mapper.getRecordExpiration(object);
+		if (recordExpiration != null) {
+			usePolicy.expiration = recordExpiration;
+		}
+
+        // if we are updating an existing record and no bins are to be updated,
+		// then just touch the entity to update expiry timestamp
+		if (!create && bins.isEmpty()) {
+			if(recordExpiration != null){
+				asynClient.touch(usePolicy, key);
+			}
+		} else {
+			asynClient.put(usePolicy, key, bins.toArray(new Bin[bins.size()]));
+		}
+
+		// set LDT fields
+		mapper.setBigDatatypeFields(object, asynClient, key);
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.spikeify.commands;
 
+import com.aerospike.client.AerospikeException;
 import com.aerospike.client.Bin;
 import com.aerospike.client.Key;
 import com.aerospike.client.async.IAsyncClient;
@@ -10,7 +11,6 @@ import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.*;
 import com.spikeify.annotations.Namespace;
 import com.spikeify.annotations.SetName;
-import com.spikeify.async.AbstractPendingFuture;
 import com.spikeify.async.WriteListenerFuture;
 
 import java.util.ArrayList;
@@ -46,7 +46,9 @@ public class SingleKeyUpdater<T, K> {
 		this.namespace = defaultNamespace;
 		this.object = object;
 		this.mapper = MapperService.getMapper((Class<T>) object.getClass());
-		this.recordExpiration = mapper.getRecordExpiration(object);
+		// if both TTL and Expires is defined TTL is preferred
+		Long ttl = mapper.getRecordTtl(object);
+		this.recordExpiration = ttl != null ? Integer.valueOf(ttl.intValue()) : mapper.getRecordExpiration(object);
 		if (key.getClass().equals(Key.class)) {
 			this.key = (Key) key;
 			this.keyType = KeyType.KEY;
@@ -199,6 +201,20 @@ public class SingleKeyUpdater<T, K> {
 	 * @return
 	 */
 	private K now(WriteListener writeListener) {
+		try {
+
+			return nowInternal(writeListener);  // invoke internal sync version
+
+		} catch (AerospikeException e) {
+			if (e.getResultCode() == 2) {
+				recordsCache.remove(key);
+				return nowInternal(writeListener);
+			}
+			throw e;
+		}
+	}
+
+	private K nowInternal(WriteListener writeListener) {
 
 		collectKeys();
 		mapper.checkKeyType(key);

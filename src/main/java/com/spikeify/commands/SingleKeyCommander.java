@@ -32,7 +32,7 @@ public class SingleKeyCommander<T> {
 		this.classConstructor = classConstructor;
 		this.recordsCache = recordsCache;
 		this.namespace = defaultNamespace;
-		mapper = MapperService.getMapper(type);
+		this.mapper = MapperService.getMapper(type);
 		this.namespace = mapper.getNamespace() != null ? mapper.getNamespace() : defaultNamespace;
 		this.setName = mapper.getSetName();
 	}
@@ -49,7 +49,7 @@ public class SingleKeyCommander<T> {
 	protected final ClassMapper<T> mapper;
 	protected final List<Operation> operations = new ArrayList<>();
 	private WritePolicy overridePolicy;
-	private Long expiry;
+	private Integer expiry;
 
 	/**
 	 * Sets the key of the record to be updated.
@@ -161,6 +161,16 @@ public class SingleKeyCommander<T> {
 	}
 
 	/**
+	 * An atomic operation that rewrite the record. Generation and time-to-live are updated.
+	 * The provided field value will be converted to the property value, based on the converters defined via the class mapping.
+	 *
+	 */
+	public SingleKeyCommander<T> touch() {
+		operations.add(Operation.touch());
+		return this;
+	}
+
+	/**
 	 * An atomic operation that sets or updates a value of a bin.
 	 * The provided field value will be converted to the property value, based on the converters defined via the class mapping.
 	 *
@@ -225,12 +235,22 @@ public class SingleKeyCommander<T> {
 	}
 
 	/**
-	 * Set expiation of the
+	 * Set expiration of the
 	 *
 	 * @param timeToExpireAt Java time in milliseconds when this record expires
 	 */
-	public void setExpires(Long timeToExpireAt) {
-		this.expiry = timeToExpireAt;
+	public SingleKeyCommander<T> setExpires(Long timeToExpireAt) {
+		this.expiry = ExpirationUtils.getRecordExpiration(timeToExpireAt);
+		return this;
+	}
+
+	/**
+	 * Sets the expires in seconds (relative).
+	 *
+	 */
+	public SingleKeyCommander<T> setTtl(Long ttl) {
+		this.expiry = ttl != null ? ttl.intValue() : null;
+		return this;
 	}
 
 	private WritePolicy getPolicy() {
@@ -238,7 +258,9 @@ public class SingleKeyCommander<T> {
 		// must be set in order for later queries to return record keys
 		writePolicy.sendKey = true;
 
-		//todo add record expiration
+		if (expiry != null) {
+			writePolicy.expiration = expiry.intValue();
+		}
 
 		return writePolicy;
 	}

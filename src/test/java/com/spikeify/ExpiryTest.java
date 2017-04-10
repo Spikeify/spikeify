@@ -1,16 +1,16 @@
 package com.spikeify;
 
 import com.aerospike.client.Bin;
-import com.aerospike.client.IAerospikeClient;
 import com.aerospike.client.Key;
 import com.aerospike.client.policy.WritePolicy;
 import com.spikeify.entity.EntityExpires;
-import org.junit.After;
+import com.spikeify.entity.EntityTtl;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Random;
 
 @SuppressWarnings({"unchecked", "UnusedAssignment"})
@@ -100,6 +100,8 @@ public class ExpiryTest extends SpikeifyTest {
 	}
 
 	/**
+	 * Fixed with TimeToLive
+	 *
 	 * Set relative expiration date problem. Test is successful, but record will never expire.
 	 * <p>
 	 * expire value is mapped correctly by Spikeify as 86400000.
@@ -109,30 +111,31 @@ public class ExpiryTest extends SpikeifyTest {
 	 */
 	@Test
 	public void setExpiresRelative() {
-		EntityExpires entity = new EntityExpires();
+		EntityTtl entity = new EntityTtl();
 
-		long relativeDate = 24L * 60L * 60L * 1000L; //expire in one day
-		entity.expires = relativeDate;
+		long relativeDate = 24L * 60L * 60L; //expire in one day
+		entity.ttl = relativeDate;
 		Key key1 = new Key(namespace, setName, userKey1);
 
 		Key saveKey = sfy
 				.update(key1, entity)
 				.now();
 
-		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
-		Assert.assertEquals(relativeDate, reloaded.expires, 5000); //test succeeds
+		EntityTtl reloaded = sfy.get(EntityTtl.class).key(saveKey).now();
+		Assert.assertEquals(relativeDate, reloaded.ttl, 5); //test succeeds
 	}
 
 	/**
 	 * sfy.command automatically sets expire to -1, which is wrong.
+	 * The setExpires (relatve) has to be called explicitly
 	 */
 	@Test
 	public void setExpiresCommandRetrieveFlow() {
 		EntityExpires entity = new EntityExpires();
 
 		long milliSecDay = 24L * 60L * 60L * 1000L;
-		long milliSecYear = 365L * milliSecDay;
-		long futureDate = new Date().getTime() + 5L * milliSecYear;
+		long milliSecYear = 100L * milliSecDay;
+		long futureDate = new Date().getTime() + 1L * milliSecYear;
 		entity.expires = futureDate;
 		final Key key1 = new Key(namespace, setName, userKey1);
 
@@ -143,10 +146,33 @@ public class ExpiryTest extends SpikeifyTest {
 		sfy.command(EntityExpires.class).key(key1).add("one", 1).now(); //Error: it sets expire to -1
 
 		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
+		Assert.assertEquals(-1, reloaded.expires.longValue());
 
-		Assert.assertEquals(futureDate, entity.expires.longValue());
+		sfy.command(EntityExpires.class).setExpires(futureDate).key(key1).add("one", 1).now(); //Error: it sets expire to -1
+		reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
+
 		Assert.assertEquals(entity.expires, reloaded.expires, 1);
 		Assert.assertEquals(futureDate, reloaded.expires, 1);
+	}
+
+	@Test
+	public void setTtlCommandRetrieveFlow() {
+		EntityTtl entity = new EntityTtl();
+
+		long secDay = 24L * 60L * 60L;
+		long secYear = 365L * secDay;
+		entity.ttl = 5L * secYear;
+		final Key key1 = new Key(namespace, setName, userKey1);
+
+		Key saveKey = sfy
+				.update(key1, entity)
+				.now();
+
+		sfy.command(EntityTtl.class).setTtl(entity.ttl).key(key1).add("one", 1).touch().now(); //Error: it sets expire to -1
+
+		EntityTtl reloaded = sfy.get(EntityTtl.class).key(saveKey).now();
+
+		Assert.assertEquals(entity.ttl, reloaded.ttl, 1);
 	}
 
 	/**
@@ -195,5 +221,118 @@ public class ExpiryTest extends SpikeifyTest {
 		Assert.assertEquals(entity.expires, reloaded.expires, 500000);
 	}
 
+	@Test
+	public void testExpiredUpdate() {
+
+		EntityExpires entity = new EntityExpires();
+
+		long futureDate = System.currentTimeMillis() + 2000l;
+		entity.expires = futureDate;
+		final Key key1 = new Key(namespace, setName, userKey1);
+
+		final Key saveKey = sfy
+				.create(key1, entity)
+				.now();
+
+		EntityExpires reloaded = sfy.get(EntityExpires.class).key(saveKey).now();
+
+		Assert.assertEquals(entity.expires, reloaded.expires, 500000);
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		reloaded.expires = System.currentTimeMillis() + 120000l;
+		Key updateKey = sfy
+				.update(key1, reloaded)
+				.now();
+
+		reloaded = sfy.get(EntityExpires.class).key(updateKey).now();
+		Assert.assertEquals(entity.expires, reloaded.expires, 500000);
+	}
+
+	@Test
+	public void testTtlExpirationUpdate() {
+
+		EntityTtl entity = new EntityTtl();
+		entity.ttl = 1l;
+		final Key key1 = new Key(namespace, setName, userKey1);
+
+		final Key saveKey = sfy
+				.create(key1, entity)
+				.now();
+
+		EntityTtl reloaded = sfy.get(EntityTtl.class).key(saveKey).now();
+		Assert.assertEquals(entity.ttl, reloaded.ttl, 1);
+
+		// wait to expire...
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		// expired... should create new one
+		reloaded.ttl = 1l;
+		Key updateKey = sfy
+				.update(key1, reloaded)
+				.now();
+
+		reloaded = sfy.get(EntityTtl.class).key(updateKey).now();
+		Assert.assertEquals(entity.ttl, reloaded.ttl, 1);
+
+	}
+
+	@Test
+	public void testTtlExpirationMultiUpdate() {
+
+		EntityTtl entity1 = new EntityTtl();
+		entity1.userId = 1l;
+		entity1.ttl = 2l;
+		entity1.one = 1;
+		EntityTtl entity2 = new EntityTtl();
+		entity2.userId = 2l;
+		entity2.ttl = 2l;
+		entity2.one = 2;
+
+		final Map<Key, Object> savedMap = sfy
+				.createAll(entity1, entity2)
+				.now();
+
+		Assert.assertEquals(2, savedMap.size());
+		Map<Key, EntityTtl> reloaded = sfy.getAll(EntityTtl.class, savedMap.keySet().toArray(new Key[savedMap.size()])).now();
+		Iterator<EntityTtl> it = reloaded.values().iterator();
+		EntityTtl res1 = it.next();
+		EntityTtl res2 = it.next();
+		Assert.assertEquals(1, res1.one);
+		Assert.assertEquals(2, res2.one);
+		Assert.assertEquals(1, res1.ttl.intValue(), 1);
+		Assert.assertEquals(1, res2.ttl.intValue(), 1);
+
+		// wait to expire...
+		try {
+			Thread.sleep(2000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		// expired... should create new one
+		Map<Key, Object> updateMap = sfy
+				.updateAll(entity1, entity2)
+				.now();
+
+		reloaded = sfy.getAll(EntityTtl.class, updateMap.keySet().toArray(new Key[updateMap.size()])).now();
+		Iterator<Object> itr = updateMap.values().iterator();
+		Assert.assertEquals(2, updateMap.size());
+		EntityTtl rel1 = (EntityTtl)itr.next();
+		EntityTtl rel2 = (EntityTtl)itr.next();
+		Assert.assertEquals(1, rel1.one);
+		Assert.assertEquals(2, rel2.one);
+
+		Assert.assertEquals(1, rel1.ttl.intValue(), 1);
+		Assert.assertEquals(1, rel2.ttl.intValue(), 1);
+
+	}
 
 }
