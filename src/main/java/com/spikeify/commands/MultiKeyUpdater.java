@@ -334,7 +334,9 @@ public class MultiKeyUpdater {
 					"At least one object property other then UserKey must be different from NULL.");
 		}
 
-		Integer recordExpiration = mapper.getRecordExpiration(object);
+		// if both TTL and Expires is defined TTL is preferred
+		Long ttl = mapper.getRecordTtl(object);
+		Integer recordExpiration = ttl != null ? Integer.valueOf(ttl.intValue()) : mapper.getRecordExpiration(object);
 		if (recordExpiration != null) {
 			usePolicy.expiration = recordExpiration;
 		}

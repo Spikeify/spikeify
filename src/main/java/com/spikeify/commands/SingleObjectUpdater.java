@@ -47,7 +47,9 @@ public class SingleObjectUpdater<T> {
 		this.create = create;
 		this.defaultNamespace = defaultNamespace;
 		this.mapper = MapperService.getMapper(type);
-		this.recordExpiration = mapper.getRecordExpiration(object);
+		// if both TTL and Expires is defined TTL is preferred
+		Long ttl = mapper.getRecordTtl(object);
+		this.recordExpiration = ttl != null ? Integer.valueOf(ttl.intValue()) : mapper.getRecordExpiration(object);
 		this.object = object;
 	}
 

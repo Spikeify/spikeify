@@ -274,7 +274,7 @@ public class SingleKeyCommander<T> {
 	public Map<String, Object> now() {
 
 		if (operations.isEmpty()) {
-			throw new SpikeifyError("Error missing command: at least one command method must be called: set(), add(), append() or prepend()");
+			throw new SpikeifyError("Error missing command: at least one command method must be called: set(), add(), append(), touch() or prepend()");
 		}
 
 		collectKeys();
